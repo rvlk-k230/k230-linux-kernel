@@ -31,8 +31,34 @@
 	reg = <0x0 0x200000 0x0 0x1fdff000>;  /*linux memory config*/
 };
 
+&i2c0 {
+	status = "okay";
+};
+&i2c1 {
+	status = "okay";
+};
+&i2c2 {
+	status = "okay";
+};
+&i2c3 {
+	status = "okay";
+};
+&spi1 {
+	status = "okay";
+	spidev@0 {
+		compatible = "cisco,spi-petra";
+		reg = <0>;
+		spi-max-frequency = <500000>;
+	};
+};
+
 &spi0 {
 	status = "okay";
+	spidev@0 {
+		compatible = "cisco,spi-petra";
+		reg = <0>;
+		spi-max-frequency = <500000>;
+	};
 	spi-flash@0 {
 		compatible = "jedec,spi-nor";
 		//compatible = "spi-nand";
@@ -43,7 +69,7 @@
 		spi-max-frequency = <100000000>;
 		spi-tx-bus-width = <8>;
 		spi-rx-bus-width = <8>;
-		status = "okay";
+		status = "disabled";
 		partitions {
 			compatible = "fixed-partitions";
 			#address-cells = <1>;
