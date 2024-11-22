@@ -1057,7 +1057,7 @@ static struct clk_hw *k230_clk_hw_onecell_get(struct of_phandle_args *clkspec,
 	return &ksc->clks[idx].hw;
 }
 
-static void __init k230_clk_init_plls(struct device_node *np)
+static void k230_clk_init_plls(struct device_node *np)
 {
 	/* plls are the very son of osc24m, and reg are from sysctl_boot */
 	struct k230_sysclk *ksc = &clksrc;
@@ -1084,16 +1084,17 @@ static void __init k230_clk_init_plls(struct device_node *np)
 		return;
 	}
 }
-CLK_OF_DECLARE_DRIVER(k230_pll, "canaan,k230-pll", k230_clk_init_plls);
 
 static void __init k230_clk_init_clks(struct device_node *np)
 {
 	struct k230_sysclk *ksc = &clksrc;
 	int ret;
 
+	 k230_clk_init_plls(np);
+
 	spin_lock_init(&ksc->clk_lock);
 
-	ksc->regs = of_iomap(np, 0);
+	ksc->regs = of_iomap(np, 1);
 	if (!ksc->regs) {
 		pr_err("%pOFP: failed to map registers\n", np);
 		return;
@@ -1116,4 +1117,4 @@ static void __init k230_clk_init_clks(struct device_node *np)
 		return;
 	}
 }
-CLK_OF_DECLARE_DRIVER(k230_clk, "canaan,k230-clk-composite", k230_clk_init_clks);
+CLK_OF_DECLARE_DRIVER(k230_clk, "canaan,k230-clk", k230_clk_init_clks);
