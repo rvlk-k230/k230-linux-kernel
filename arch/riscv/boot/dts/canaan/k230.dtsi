@@ -4,7 +4,7 @@
  */
 
 #include <dt-bindings/interrupt-controller/irq.h>
-#include "k230-pinctrl.h"
+#include <dt-bindings/clock/k230-clk.h>
 
 /dts-v1/;
 / {
@@ -16,6 +16,10 @@
 		serial0 = &uart0;
 	};
 
+        chosen {
+                bootargs = "earlycon=sbi console=ttyS0,115200 loglevel=8 root=/dev/mmcblk1p2 rw rootwait audit=0 clk_ignore_unused";
+        };
+
 	cpus {
 		#address-cells = <1>;
 		#size-cells = <0>;
@@ -25,11 +29,12 @@
 			compatible = "thead,c908", "riscv";
 			device_type = "cpu";
 			reg = <0>;
-			riscv,isa = "rv64imafdcv_zba_zbb_zbc_zbs_zicbom_zicbop_zicboz_svpbmt";
+			riscv,isa = "rv64imafdcv_zicbom_zicbop_zicboz_zfh_zba_zbb_zbc_zbs_zvfh_svpbmt";
 			riscv,isa-base = "rv64i";
-			riscv,isa-extensions = "i", "m", "a", "f", "d", "c", "v", "zba", "zbb",
-					       "zbc", "zbs", "zicbom", "zicbop", "zicboz",
-					       "zicntr", "zicsr", "zifencei", "zihpm", "svpbmt";
+			riscv,isa-extensions = "i", "m", "a", "f", "d", "c", "v", "zicbom",
+					       "zicbop", "zicboz", "zicntr", "zicsr", "zifencei",
+					       "zihpm", "zfh", "zba", "zbb", "zbc", "zbs", "zvfh",
+					       "svpbmt";
 			riscv,cbom-block-size = <64>;
 			riscv,cbop-block-size = <64>;
 			riscv,cboz-block-size = <64>;
@@ -66,6 +71,16 @@
 		#clock-cells = <0>;
 	};
 
+        osc24m: oscillator {
+                compatible = "fixed-clock";
+                #clock-cells = <0>;
+                clock-frequency = <24000000>;
+                clock-accuracy = <0>;
+                clock-output-names = "osc24m";
+                
+                status = "okay";
+	};
+
 	soc {
 		compatible = "simple-bus";
 		interrupt-parent = <&plic>;
@@ -88,11 +103,6 @@
 			compatible = "canaan,k230-clint", "thead,c900-clint";
 			reg = <0xf 0x04000000 0x0 0x00010000>;
 			interrupts-extended = <&cpu0_intc 3>, <&cpu0_intc 7>;
-		};
-
-		pinctrl: pinctrl@91105000 {
-			compatible = "canaan,k230-pinctrl";
-			reg = <0x0 0x91105000 0x0 0x100>;
 		};
 
 		uart0: serial@91400000 {
@@ -144,5 +154,37 @@
 			reg-shift = <2>;
 			status = "disabled";
 		};
-	};
+
+                plls: clock-plls@91102000 {
+                        compatible = "canaan,k230-pll";
+                        reg = <0x0 0x91102000 0x0 0x1000>;
+                        #clock-cells = <0>;
+                        clocks = <&osc24m>;
+
+                        status = "okay";
+                };
+
+                sysclk: clock-controller@91100000 {
+                        compatible = "canaan,k230-clk-composite";
+                        reg = <0x0 0x91100000 0x0 0x1000>;
+                        #clock-cells = <1>;
+
+                        clocks = <&osc24m>, <&plls>;
+                        clock-output-names = "CPU0_SRC", 
+                        "CPU0_ACLK", "CPU0_PLIC", "CPU0_NOC_DDRCP5", "CPU0_PCLK",
+                        "PMU_PCLK", "HS_HCLK_HIGN_SRC", "HS_HCLK_HIGN_GATE",
+                        "HS_HCLK_SRC", "HS_SD0_HS_AHB_GAT", "HS_SD1_HS_AHB_GAT",
+                        "HS_SSI1_HS_AHB_GA", "HS_SSI2_HS_AHB_GA", "HS_USB0_HS_AHB_GA",
+                        "HS_USB1_HS_AHB_GA", "HS_SSI0_AXI", "HS_SSI1", "HS_SSI2",
+                        "HS_QSPI_AXI_SRC", "HS_SSI1_ACLK_GATE", "HS_SSI2_ACLK_GATE",
+                        "HS_SD_CARD_SRC", "HS_SD0_CARD_TX", "HS_SD1_CARD_TX",
+                        "HS_SD_AXI_SRC", "HS_SD0_AXI_GATE", "HS_SD1_AXI_GATE",
+                        "HS_SD0_BASE_GATE", "HS_SD1_BASE_GATE", "HS_OSPI_SRC",
+                        "HS_USB_REF_51M", "HS_SD_TIMER_SRC", "HS_SD0_TIMER_GATE",
+                        "HS_SD1_TIMER_GATE", "HS_USB0_REFERENCE", "HS_USB1_REFERENCE";
+
+                        status = "okay";
+                };
+                
+        };
 };
