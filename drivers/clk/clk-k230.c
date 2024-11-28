@@ -681,6 +681,7 @@ static unsigned long k230_clk_get_rate(struct clk_hw *hw,
 {
 	struct k230_clk *clk = to_k230_clk(hw);
 	struct k230_clk_cfg *cfg = &k230_clk_cfgs[clk->id];
+	unsigned long flags;
 	u32 mul, div;
 
 	if (!cfg->have_rate) /* no divider, return parents' clk */
@@ -693,23 +694,29 @@ static unsigned long k230_clk_get_rate(struct clk_hw *hw,
 	 * K230_MUL_DIV: mul_mask/div_mask...
 	 */
 	case K230_MUL:
+		spin_lock_irqsave(&clk->ksc->clk_lock, flags);
 		div = cfg->rate_div_max;
 		mul = (readl(cfg->rate_reg) >> cfg->rate_div_shift)
 			& cfg->rate_div_mask;
 		mul++;
+		spin_unlock_irqrestore(&clk->ksc->clk_lock, flags);
 		break;
 	case K230_DIV:
+		spin_lock_irqsave(&clk->ksc->clk_lock, flags);
 		mul = cfg->rate_mul_max;
 		div = (readl(cfg->rate_reg) >> cfg->rate_div_shift)
 			& cfg->rate_div_mask;
 		div++;
+		spin_unlock_irqrestore(&clk->ksc->clk_lock, flags);
 		break;
 	case K230_MUL_DIV:
 		if (!cfg->have_rate_c) {
+			spin_lock_irqsave(&clk->ksc->clk_lock, flags);
 			mul = (readl(cfg->rate_reg) >> cfg->rate_mul_shift)
 				& cfg->rate_mul_mask;
 			div = (readl(cfg->rate_reg) >> cfg->rate_div_shift)
 				& cfg->rate_div_mask;
+			spin_unlock_irqrestore(&clk->ksc->clk_lock, flags);
 		} else {
 			mul = (readl(cfg->rate_reg_c) >> cfg->rate_mul_shift_c)
 				& cfg->rate_mul_mask_c;
