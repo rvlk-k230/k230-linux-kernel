@@ -378,8 +378,9 @@ static int k230_pll_prepare(struct clk_hw *hw)
 	int ret;
 
 	/* wait for PLL lock until it reachs lock status */
-	ret = read_poll_timeout(readl, reg, (reg & K230_PLL_STATUS_MASK) ==
-			K230_PLL_STATUS_MASK, 400, 0, false, pll->lock);
+	ret = readl_poll_timeout(pll->lock, reg,
+				 (reg & K230_PLL_STATUS_MASK) == K230_PLL_STATUS_MASK,
+				 100, 500);
 	/* this will not happen actually */
 	if (ret)
 		pr_err("PLL timeout! \n");
