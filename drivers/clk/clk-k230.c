@@ -1282,8 +1282,7 @@ static int k230_clk_init_sysclk(struct device_node *np)
 
 	if (!np) {
 		pr_err("%pOFP: device node pointer is NULL", np);
-		ret = -EINVAL;
-		goto out;
+		return -EINVAL;
 	}
 
 	spin_lock_init(&ksc->clk_lock);
@@ -1291,8 +1290,7 @@ static int k230_clk_init_sysclk(struct device_node *np)
 	ksc->regs = of_iomap(np, 1);
 	if (!ksc->regs) {
 		pr_err("%pOFP: failed to map registers\n", np);
-		ret = -ENOMEM;
-		goto out;
+		return -ENOMEM;
 	}
 
 	ret = k230_register_clks(np, ksc);
@@ -1302,15 +1300,12 @@ static int k230_clk_init_sysclk(struct device_node *np)
 	}
 
 	ret = of_clk_add_hw_provider(np, k230_clk_hw_onecell_get, ksc);
-	if (ret) {
+	if (ret)
 		pr_err("%pOFP: add clock provider failed %d\n", np, ret);
-		goto out_unmap;
-	}
 
 out_unmap:
 	if (ret)
 		iounmap(ksc->regs);
-out:
 	return ret;
 }
 
