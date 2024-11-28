@@ -1245,7 +1245,7 @@ static struct clk_hw *k230_clk_hw_onecell_get(struct of_phandle_args *clkspec, v
 	return &ksc->clks[idx].hw;
 }
 
-static int k230_clk_init_clk_plls(struct device_node *np)
+static int k230_clk_init_plls(struct device_node *np)
 {
 	/* plls are the very son of osc24m, and reg are from sysctl_boot */
 	struct k230_sysclk *ksc = &clksrc;
@@ -1285,7 +1285,7 @@ out:
 	return ret;
 }
 
-static int k230_clk_init_clk_composite(struct device_node *np)
+static int k230_clk_init_sysclk(struct device_node *np)
 {
 	struct k230_sysclk *ksc = &clksrc;
 	int ret = 0;
@@ -1328,14 +1328,14 @@ static void __init k230_clk_init_clks(struct device_node *np)
 {
 	int ret = 0;
 
-	ret = k230_clk_init_clk_plls(np);
+	ret = k230_clk_init_plls(np);
 	if (ret) {
 		pr_err("%pOFP: init clk plls failed %d", np, ret);
 		return;
 	}
 	pr_info("%pOFP: success to init plls", np);
 
-	ret = k230_clk_init_clk_composite(np);
+	ret = k230_clk_init_sysclk(np);
 	if (ret) {
 		pr_err("%pOFP: init clk clks failed %d", np, ret);
 		return;
