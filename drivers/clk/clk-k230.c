@@ -493,8 +493,9 @@ static int k230_register_pll(struct device_node *np,
 	struct k230_pll *pll = &ksc->plls[pllid];
 	struct clk_init_data init = {};
 	int ret;
+	/* pll0-3 are son of osc24m. */
 	const struct clk_parent_data parent_data[] = {
-		{ /* .index = 0 for osc24m */ }, /* pll0-3 are son of osc24m. */
+		{ .fw_name = "osc24m" },
 	};
 
 	init.name = name;
