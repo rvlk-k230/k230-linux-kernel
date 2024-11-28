@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
- * Author: Bo Wang <Juvenoia@...>
  * Author: Xukai Wang <kingxukai@zohomail.com>
+ * Author: Troy Mitchell <troymitchell988@gmail.com>
  * Kendryte Canaan K230 Clock Drivers
  */
 #define pr_fmt(fmt)     "K230-clk: " fmt

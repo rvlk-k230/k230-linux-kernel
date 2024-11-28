@@ -7,8 +7,8 @@ $schema: http://devicetree.org/meta-schemas/core.yaml#
 title: Canaan Kendryte K230 Clock
 
 maintainers:
-  - Bo Wang <Juvenoia@...>
   - Xukai Wang <kingxukai@zohomail.com>
+  - Troy Mitchell <troymitchell988@gmail.com>
 
 description:
   Canaan Kendryte K230 SoC clocks driver bindings. The clock
