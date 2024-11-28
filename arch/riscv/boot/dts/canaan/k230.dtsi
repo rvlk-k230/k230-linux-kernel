@@ -17,10 +17,6 @@
 		serial0 = &uart0;
 	};
 
-	chosen {
-		bootargs = "earlycon=sbi console=ttyS0,115200 loglevel=8 root=/dev/mmcblk1p2 rw rootwait audit=0 clk_ignore_unused";
-	};
-
 	cpus {
 		#address-cells = <1>;
 		#size-cells = <0>;
@@ -74,11 +70,9 @@
 
 	osc24m: clock-24m{
 		compatible = "fixed-clock";
-
 		#clock-cells = <0>;
 		clock-frequency = <24000000>;
 		clock-output-names = "osc24m";
-
 		status = "okay";
 	};
 
@@ -161,12 +155,11 @@
 			status = "disabled";
 		};
 
-		sysclk: clock-controller {
+		sysclk: clock-controller@91100000 {
 			compatible = "canaan,k230-clk";
 			reg = <0x0 0x91102000 0x0 0x1000>, <0x0 0x91100000 0x0 0x1000>;
-
-			#clock-cells = <1>;
 			clocks = <&osc24m>;
+			#clock-cells = <1>;
 			clock-output-names = "CPU0_SRC",
 			"CPU0_ACLK", "CPU0_PLIC", "CPU0_NOC_DDRCP4", "CPU0_PCLK",
 			"PMU_PCLK", "HS_HCLK_HIGN_SRC", "HS_HCLK_HIGN_GATE",
@@ -179,7 +172,6 @@
 			"HS_SD0_BASE_GATE", "HS_SD1_BASE_GATE", "HS_OSPI_SRC",
 			"HS_USB_REF_51M", "HS_SD_TIMER_SRC", "HS_SD0_TIMER_GATE",
 			"HS_SD1_TIMER_GATE", "HS_USB0_REFERENCE", "HS_USB1_REFERENCE";
-
 			status = "okay";
 		};
 	};
