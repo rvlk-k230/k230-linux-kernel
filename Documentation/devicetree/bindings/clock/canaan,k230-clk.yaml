@@ -17,6 +17,9 @@ properties:
   clocks:
     maxItems: 1
 
+  reg:
+    maxItems: 2
+
   '#clock-cells':
     const: 1
 
@@ -24,41 +27,23 @@ required:
   - compatible
   - '#clock-cells'
   - clocks
+  - reg
 
 additionalProperties: false
 
 examples:
   - |
     #include <dt-bindings/clock/k230-clk.h>
-    osc24m: oscillator {
+    clock-24m {
         #clock-cells  = <0>;
         compatible  = "fixed-clock";
         clock-frequency = <24000000>;
-        clock-accuracy  = <0>;
         clock-output-names = "osc24m";
-
-        status  = "okay";
     };
 
-    sysclk: clock-controller {
+    clock-controller@91100000 {
     	compatible = "canaan,k230-clk";
-        reg = <0x0 0x91102000 0x0 0x1000>, <0x0 0x91100000 0x0 0x1000>;
+      reg = <0x91102000 0x1000>, <0x91100000 0x1000>;
     	#clock-cells = <1>;
-
     	clocks = <&osc24m>;
-    	clock-output-names = "CPU0_SRC",
-    	"CPU0_ACLK", "CPU0_PLIC", "CPU0_NOC_DDRCP4", "CPU0_PCLK",
-    	"PMU_PCLK", "HS_HCLK_HIGN_SRC", "HS_HCLK_HIGN_GATE",
-    	"HS_HCLK_SRC", "HS_SD0_HS_AHB_GAT", "HS_SD1_HS_AHB_GAT",
-    	"HS_SSI1_HS_AHB_GA", "HS_SSI2_HS_AHB_GA", "HS_USB0_HS_AHB_GA",
-    	"HS_USB1_HS_AHB_GA", "HS_SSI0_AXI", "HS_SSI1", "HS_SSI2",
-    	"HS_QSPI_AXI_SRC", "HS_SSI1_ACLK_GATE", "HS_SSI2_ACLK_GATE",
-    	"HS_SD_CARD_SRC", "HS_SD0_CARD_TX", "HS_SD1_CARD_TX",
-    	"HS_SD_AXI_SRC", "HS_SD0_AXI_GATE", "HS_SD1_AXI_GATE",
-    	"HS_SD0_BASE_GATE", "HS_SD1_BASE_GATE", "HS_OSPI_SRC",
-    	"HS_USB_REF_51M", "HS_SD_TIMER_SRC", "HS_SD0_TIMER_GATE",
-    	"HS_SD1_TIMER_GATE", "HS_USB0_REFERENCE", "HS_USB1_REFERENCE";
-
-    	status = "okay";
     };
-};
