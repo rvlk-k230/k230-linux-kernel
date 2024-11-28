@@ -444,8 +444,7 @@ static int k230_pll_init(struct clk_hw *hw)
 	return 0;
 }
 
-static unsigned long k230_pll_get_rate(struct clk_hw *hw,
-				       unsigned long parent_rate)
+static unsigned long k230_pll_get_rate(struct clk_hw *hw, unsigned long parent_rate)
 {
 	struct k230_pll *pll = to_k230_pll(hw);
 	u32 reg;
@@ -479,9 +478,11 @@ static const struct clk_ops k230_pll_ops = {
 };
 
 static int k230_register_pll(struct device_node *np,
-				    struct k230_sysclk *ksc,
-				    enum k230_pll_id pllid, const char *name,
-				    int num_parents, const struct clk_ops *ops)
+			     struct k230_sysclk *ksc,
+			     enum k230_pll_id pllid,
+			     const char *name,
+			     int num_parents,
+			     const struct clk_ops *ops)
 {
 	struct k230_pll *pll = &ksc->plls[pllid];
 	struct clk_init_data init = {};
@@ -723,10 +724,15 @@ static unsigned long k230_clk_get_rate(struct clk_hw *hw,
 }
 
 static int k230_clk_find_approximate(struct k230_clk *clk,
-					u32 mul_min, u32 mul_max, u32 div_min, u32 div_max,
-					enum k230_clk_div_type method,
-					unsigned long rate, unsigned long parent_rate,
-					u32 *div, u32 *mul)
+				     u32 mul_min,
+				     u32 mul_max,
+				     u32 div_min,
+				     u32 div_max,
+				     enum k230_clk_div_type method,
+				     unsigned long rate,
+				     unsigned long parent_rate,
+				     u32 *div,
+				     u32 *mul)
 {
 	long abs_min;
 	long abs_current;
@@ -843,7 +849,7 @@ static int k230_clk_find_approximate(struct k230_clk *clk,
 	/* mul and div can be changeable. */
 	case K230_MUL_DIV:
 		if (cfg->rate_reg_off == K230_CLK_CODEC_ADC_MCLKDIV_OFFSET ||
-			cfg->rate_reg_off == K230_CLK_CODEC_DAC_MCLKDIV_OFFSET) {
+		    cfg->rate_reg_off == K230_CLK_CODEC_DAC_MCLKDIV_OFFSET) {
 			for (u32 j = 0; j < 9; j++) {
 				if (0 == (rate - codec_clk[j])) {
 					*div = codec_div[j][0];
@@ -851,7 +857,7 @@ static int k230_clk_find_approximate(struct k230_clk *clk,
 				}
 			}
 		} else if (cfg->rate_reg_off == K230_CLK_AUDIO_CLKDIV_OFFSET ||
-			cfg->rate_reg_off == K230_CLK_PDM_CLKDIV_OFFSET) {
+			   cfg->rate_reg_off == K230_CLK_PDM_CLKDIV_OFFSET) {
 			for (u32 j = 0; j < 20; j++) {
 				if (0 == (rate - pdm_clk[j])) {
 					*div = pdm_div[j][0];
@@ -870,8 +876,7 @@ static int k230_clk_find_approximate(struct k230_clk *clk,
 	return 0;
 }
 
-static long k230_clk_round_rate(struct clk_hw *hw, unsigned long rate,
-				unsigned long *parent_rate)
+static long k230_clk_round_rate(struct clk_hw *hw, unsigned long rate, unsigned long *parent_rate)
 {
 	struct k230_clk *clk = to_k230_clk(hw);
 	struct k230_clk_cfg *cfg = &k230_clk_cfgs[clk->id];
@@ -1009,9 +1014,12 @@ static const  struct clk_ops k230_clk_ops_arr[K230_CLK_OPS_ID_NUM] = {
 	},
 };
 
-static int k230_register_clk(struct device_node *np, struct k230_sysclk *ksc,
-				int id, const struct clk_parent_data *parent_data,
-				u8 num_parents, unsigned long flags)
+static int k230_register_clk(struct device_node *np,
+			     struct k230_sysclk *ksc,
+			     int id,
+			     const struct clk_parent_data *parent_data,
+			     u8 num_parents,
+			     unsigned long flags)
 {
 	struct k230_clk *clk = &ksc->clks[id];
 	struct k230_clk_cfg *cfg = &k230_clk_cfgs[id];
@@ -1081,7 +1089,7 @@ static int k230_register_osc24m_child(struct device_node *np,
 				      int id)
 {
 	const struct clk_parent_data parent_data = {
-		/* .index = 0 for osc24m.. */
+		.fw_name = "osc24m"
 	};
 	return k230_register_clk(np, ksc, id, &parent_data, 1, 0);
 }
@@ -1150,7 +1158,7 @@ static int k230_clk_mux_get_hw(struct k230_sysclk *ksc,
 			       struct clk_hw **hw1,
 			       struct clk_hw **hw2)
 {
-	int ret = 0;
+	int ret;
 	struct k230_clk_parent *pclk1, *pclk2;
 
 	pclk1 = &cfg->parent1;
@@ -1158,12 +1166,10 @@ static int k230_clk_mux_get_hw(struct k230_sysclk *ksc,
 
 	ret = _k230_clk_mux_get_hw(ksc, pclk1, hw1);
 	if (ret)
-		goto out;
+		return ret;
 
 	ret = _k230_clk_mux_get_hw(ksc, pclk2, hw2);
-	if (ret)
-		goto out;
-out:
+
 	return ret;
 }
 
@@ -1237,14 +1243,12 @@ static struct clk_hw *k230_clk_hw_onecell_get(struct of_phandle_args *clkspec, v
 	if (clkspec->args_count != 1)
 		return ERR_PTR(-EINVAL);
 	idx = clkspec->args[0];
+	if (idx >= K230_NUM_CLKS)
+		return ERR_PTR(-EINVAL);
 
 	if (!data)
 		return ERR_PTR(-EINVAL);
-
 	ksc = (struct k230_sysclk *)data;
-
-	if (idx >= K230_NUM_CLKS)
-		return ERR_PTR(-EINVAL);
 
 	return &ksc->clks[idx].hw;
 }
