@@ -534,6 +534,15 @@ static int k230_register_plls(struct device_node *np, struct k230_sysclk *ksc)
 	}
 
 out:
+	if (i != K230_PLL_NUM) {
+		for (i--; i >= 0; i--) {
+			cfg = &k230_pll_cfgs[i];
+
+			clk_hw_unregister(&ksc->plls[cfg->pll_id].hw);
+			pr_warn("Unregistered PLL: %s\n", cfg->name);
+		}
+	}
+
 	return ret;
 }
 
