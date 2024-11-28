@@ -895,7 +895,7 @@ static int k230_clk_set_rate(struct clk_hw *hw, unsigned long rate,
 {
 	struct k230_clk *clk = to_k230_clk(hw);
 	struct k230_clk_cfg *cfg = &k230_clk_cfgs[clk->id];
-
+	unsigned long flags;
 	u32 div = 0, mul = 0, reg = 0, reg_c = 0;
 
 	if ((!cfg->have_rate) || (!cfg->rate_reg)) {
@@ -921,6 +921,7 @@ static int k230_clk_set_rate(struct clk_hw *hw, unsigned long rate,
 		return -EINVAL;
 	}
 
+	spin_lock_irqsave(&clk->ksc->clk_lock, flags);
 	if (!cfg->have_rate_c) {
 		reg = readl(cfg->rate_reg);
 		reg &= ~((cfg->rate_div_mask) << (cfg->rate_div_shift));
@@ -948,6 +949,7 @@ static int k230_clk_set_rate(struct clk_hw *hw, unsigned long rate,
 		writel(reg_c, cfg->rate_reg_c);
 	}
 	writel(reg, cfg->rate_reg);
+	spin_unlock_irqrestore(&clk->ksc->clk_lock, flags);
 
 	rate = k230_clk_get_rate(hw, parent_rate);
 	return 0;
