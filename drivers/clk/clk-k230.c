@@ -539,7 +539,7 @@ out:
 	return ret;
 }
 
-static int k230_register_pll_divs(struct device_node *np, struct k230_sysclk *ksc)
+static void k230_register_pll_divs(struct device_node *np, struct k230_sysclk *ksc)
 {
 	for (int i = 0; i < K230_PLL_DIV_NUM; i++) {
 		ksc->dclks[i].hw = clk_hw_register_fixed_factor(NULL, k230_pll_div_cfgs[i].name,
@@ -547,7 +547,6 @@ static int k230_register_pll_divs(struct device_node *np, struct k230_sysclk *ks
 								0, 1, k230_pll_div_cfgs[i].div);
 		ksc->dclks[i].ksc = ksc;
 	}
-	return 0;
 }
 
 static int k230_clk_enable(struct clk_hw *hw)
@@ -1251,8 +1250,7 @@ static int k230_clk_init_plls(struct device_node *np)
 
 	if (!np) {
 		pr_err("%pOFP: device node pointer is NULL", np);
-		ret = -EINVAL;
-		goto out;
+		return -EINVAL;
 	}
 
 	spin_lock_init(&ksc->pll_lock);
@@ -1269,17 +1267,11 @@ static int k230_clk_init_plls(struct device_node *np)
 		goto out_unmap;
 	}
 
-	/* Registration for all pll_divs */
-	ret = k230_register_pll_divs(np, ksc);
-	if (ret) {
-		pr_err("%pOFP: register pll divs failed %d", np, ret);
-		goto out_unmap;
-	}
+	k230_register_pll_divs(np, ksc);
 
 out_unmap:
 	if (ret)
 		iounmap(ksc->pll_regs);
-out:
 	return ret;
 }
 
