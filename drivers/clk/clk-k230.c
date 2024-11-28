@@ -527,14 +527,13 @@ static int k230_register_plls(struct device_node *np, struct k230_sysclk *ksc)
 	}
 
 out:
-	if (i != K230_PLL_NUM) {
+	if (i != K230_PLL_NUM)
 		for (i--; i >= 0; i--) {
 			cfg = &k230_pll_cfgs[i];
 
 			clk_hw_unregister(&ksc->plls[cfg->pll_id].hw);
 			pr_warn("%pOFP: Unregistered PLL: %s\n", np, cfg->name);
 		}
-	}
 
 	return ret;
 }
@@ -1173,14 +1172,14 @@ static int k230_register_clks(struct device_node *np, struct k230_sysclk *ksc)
 	struct k230_clk_cfg *cfg;
 	struct k230_clk_parent *pclk;
 	struct clk_hw *hw1, *hw2;
-	int ret = 0;
+	int ret, i;
 
 	/*
 	 *  pll0_div2 sons: CPU0_SRC
 	 *  pll0_div4 sons: CPU0_PCLK
 	 *  CPU0_SRC sons: CPU0_ACLK, CPU0_PLIC, CPU0_NOC_DDRCP4
 	 */
-	for (int i = 0; i < K230_NUM_CLKS; i++) {
+	for (i = 0; i < K230_NUM_CLKS; i++) {
 		cfg = &k230_clk_cfgs[i];
 		if (cfg->have_mux) {
 			ret = k230_clk_mux_get_hw(ksc, cfg, &hw1, &hw2);
@@ -1220,6 +1219,13 @@ static int k230_register_clks(struct device_node *np, struct k230_sysclk *ksc)
 	}
 
 out:
+	if (i != K230_NUM_CLKS)
+		for (i--; i >= 0; i--) {
+			cfg = &k230_clk_cfgs[i];
+
+			clk_hw_unregister(&ksc->clks[i].hw);
+			pr_warn("%pOFP: Unregistered clk: %s\n", np, cfg->name);
+		}
 	return ret;
 }
 
