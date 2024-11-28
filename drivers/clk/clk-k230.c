@@ -182,7 +182,6 @@ static struct k230_pll_div_cfg k230_pll_div_cfgs[K230_PLL_DIV_NUM] = {
 #define K230_CLK_CODEC_DAC_MCLKDIV_OFFSET 0x3c
 
 /* K230 CLKS. */
-
 struct k230_clk {
 	int id;
 	struct k230_sysclk *ksc;
@@ -213,7 +212,7 @@ struct k230_clk_parent {
 };
 
 struct k230_clk_cfg {
-/* attr */
+	/* attr */
 	const char *name;
 	/* 0-read & write; 1-only read */
 	bool read_only;
@@ -221,49 +220,47 @@ struct k230_clk_cfg {
 	struct k230_clk_parent parent2;
 	int flags;
 
-/* rate */
-	/* info */
+	/* rate reg */
 	u32 rate_reg_off;
 	u32 rate_reg_off_c;
+	void __iomem *rate_reg;
+	void __iomem *rate_reg_c;
+	/* rate info*/
 	u32 rate_write_enable_bit;
 	u32 rate_write_enable_bit_c;
 	enum k230_clk_div_type method;
 	bool have_rate;
 	bool have_rate_c;
-	/* mul */
+	/* rate mul */
 	u32 rate_mul_min;
 	u32 rate_mul_max;
 	u32 rate_mul_shift;
 	u32 rate_mul_mask;
-	/* mul-changable */
+	/* rate mul-changable */
 	u32 rate_mul_min_c;
 	u32 rate_mul_max_c;
 	u32 rate_mul_shift_c;
 	u32 rate_mul_mask_c;
-	/* div */
+	/* rate div */
 	u32 rate_div_min;
 	u32 rate_div_max;
 	u32 rate_div_shift;
 	u32 rate_div_mask;
-	/* reg */
-	void __iomem *rate_reg;
-	void __iomem *rate_reg_c;
-
-/* gate */
-	bool have_gate;
+	/* gate reg */
 	u32 gate_reg_off;
+	void __iomem *gate_reg;
+	/* gate info*/
+	bool have_gate;
 	u32 gate_bit_enable;
 	u32 gate_bit_reverse;
-	/* reg */
-	void __iomem *gate_reg;
 
-/* mux */
-	bool have_mux;
+	/* mux reg */
 	u32 mux_reg_off;
+	void __iomem *mux_reg;
+	/* mux info */
+	bool have_mux;
 	u32 mux_reg_shift;
 	u32 mux_reg_mask;
-	/* reg */
-	void __iomem *mux_reg;
 };
 
 /*
@@ -420,7 +417,6 @@ static int k230_pll_enable(struct clk_hw *hw)
 
 static void k230_pll_disable(struct clk_hw *hw)
 {
-
 	struct k230_pll *pll = to_k230_pll(hw);
 	struct k230_sysclk *ksc = pll->ksc;
 	u32 reg;
@@ -442,9 +438,8 @@ static int k230_pll_is_enabled(struct clk_hw *hw)
 
 static int k230_pll_init(struct clk_hw *hw)
 {
-	if (k230_pll_is_enabled(hw)) {
+	if (k230_pll_is_enabled(hw))
 		return clk_prepare_enable(hw->clk);
-	}
 
 	return 0;
 }
@@ -477,11 +472,9 @@ static unsigned long k230_pll_get_rate(struct clk_hw *hw,
 static const struct clk_ops k230_pll_ops = {
 	.init		= k230_pll_init,
 	.prepare	= k230_pll_prepare,
-	/* gate */
 	.enable	        = k230_pll_enable,
 	.disable	= k230_pll_disable,
 	.is_enabled	= k230_pll_is_enabled,
-	/* rate */
 	.recalc_rate	= k230_pll_get_rate,
 };
 
@@ -887,9 +880,9 @@ static long k230_clk_round_rate(struct clk_hw *hw, unsigned long rate,
 	u32 div = 0, mul = 0;
 
 	if (k230_clk_find_approximate(clk,
-					cfg->rate_mul_min, cfg->rate_mul_max,
-					cfg->rate_div_min, cfg->rate_div_max,
-					cfg->method, rate, *parent_rate, &div, &mul)) {
+				      cfg->rate_mul_min, cfg->rate_mul_max,
+				      cfg->rate_div_min, cfg->rate_div_max,
+				      cfg->method, rate, *parent_rate, &div, &mul)) {
 		pr_err("[%s]: clk %s round rate error!\n", __func__, clk_hw_get_name(hw));
 		return -EINVAL;
 	}
@@ -915,15 +908,15 @@ static int k230_clk_set_rate(struct clk_hw *hw, unsigned long rate,
 		return -EINVAL;
 	}
 
-	if (cfg->read_only == true) {
+	if (cfg->read_only) {
 		pr_err("This clk rate is read only");
 		return -EPERM;
 	}
 
 	if (k230_clk_find_approximate(clk,
-					cfg->rate_mul_min, cfg->rate_mul_max,
-					cfg->rate_div_min, cfg->rate_div_max,
-					cfg->method, rate, parent_rate, &div, &mul)) {
+				      cfg->rate_mul_min, cfg->rate_mul_max,
+				      cfg->rate_div_min, cfg->rate_div_max,
+				      cfg->method, rate, parent_rate, &div, &mul)) {
 		pr_err("[%s]: clk %s set rate error!\n", __func__, clk_hw_get_name(hw));
 		return -EINVAL;
 	}
@@ -1087,7 +1080,8 @@ static int k230_register_mux_clk(struct device_node *np,
 }
 
 static int k230_register_osc24m_child(struct device_node *np,
-					      struct k230_sysclk *ksc, int id)
+				      struct k230_sysclk *ksc,
+				      int id)
 {
 	const struct clk_parent_data parent_data = {
 		/* .index = 0 for osc24m.. */
@@ -1096,9 +1090,10 @@ static int k230_register_osc24m_child(struct device_node *np,
 }
 
 static int k230_register_pll_child(struct device_node *np,
-					   struct k230_sysclk *ksc, int id,
-					   enum k230_pll_id pllid,
-					   unsigned long flags)
+				   struct k230_sysclk *ksc,
+				   int id,
+				   enum k230_pll_id pllid,
+				   unsigned long flags)
 {
 	const struct clk_parent_data parent_data = {
 		.hw = &ksc->plls[pllid].hw,
@@ -1107,9 +1102,10 @@ static int k230_register_pll_child(struct device_node *np,
 }
 
 static int k230_register_pll_div_child(struct device_node *np,
-					       struct k230_sysclk *ksc, int id,
-					       enum k230_pll_div_id pll_div_id,
-					       unsigned long flags)
+				       struct k230_sysclk *ksc,
+				       int id,
+				       enum k230_pll_div_id pll_div_id,
+				       unsigned long flags)
 {
 	const struct clk_parent_data parent_data = {
 		.hw = ksc->dclks[pll_div_id].hw,
@@ -1118,8 +1114,9 @@ static int k230_register_pll_div_child(struct device_node *np,
 }
 
 static int k230_register_clk_child(struct device_node *np,
-					   struct k230_sysclk *ksc, int id,
-					   int parent_id)
+				   struct k230_sysclk *ksc,
+				   int id,
+				   int parent_id)
 {
 	const struct clk_parent_data parent_data = {
 		.hw = &ksc->clks[parent_id].hw,
@@ -1128,7 +1125,8 @@ static int k230_register_clk_child(struct device_node *np,
 }
 
 static int _k230_clk_mux_get_hw(struct k230_sysclk *ksc,
-		struct k230_clk_parent *pclk, struct clk_hw **hw)
+				struct k230_clk_parent *pclk,
+				struct clk_hw **hw)
 {
 	switch (pclk->type) {
 	case K230_OSC24M:
@@ -1150,8 +1148,10 @@ static int _k230_clk_mux_get_hw(struct k230_sysclk *ksc,
 	return 0;
 }
 
-static int k230_clk_mux_get_hw(struct k230_sysclk *ksc, struct k230_clk_cfg *cfg,
-				struct clk_hw **hw1, struct clk_hw **hw2)
+static int k230_clk_mux_get_hw(struct k230_sysclk *ksc,
+			       struct k230_clk_cfg *cfg,
+			       struct clk_hw **hw1,
+			       struct clk_hw **hw2)
 {
 	int ret = 0;
 	struct k230_clk_parent *pclk1, *pclk2;
@@ -1225,8 +1225,7 @@ out:
 	return ret;
 }
 
-static struct clk_hw *k230_clk_hw_onecell_get(struct of_phandle_args *clkspec,
-					      void *data)
+static struct clk_hw *k230_clk_hw_onecell_get(struct of_phandle_args *clkspec, void *data)
 {
 	struct k230_sysclk *ksc;
 	unsigned int idx;
