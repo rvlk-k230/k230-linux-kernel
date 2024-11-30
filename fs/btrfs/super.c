@@ -28,6 +28,7 @@
 #include <linux/btrfs.h>
 #include <linux/security.h>
 #include <linux/fs_parser.h>
+#include <linux/swap.h>
 #include "messages.h"
 #include "delayed-inode.h"
 #include "ctree.h"
@@ -339,6 +340,15 @@ static int btrfs_parse_param(struct fs_context *fc, struct fs_parameter *param)
 		fallthrough;
 	case Opt_compress:
 	case Opt_compress_type:
+		/*
+		 * Provide the same semantics as older kernels that don't use fs
+		 * context, specifying the "compress" option clears
+		 * "force-compress" without the need to pass
+		 * "compress-force=[no|none]" before specifying "compress".
+		 */
+		if (opt != Opt_compress_force && opt != Opt_compress_force_type)
+			btrfs_clear_opt(ctx->mount_opt, FORCE_COMPRESS);
+
 		if (opt == Opt_compress || opt == Opt_compress_force) {
 			ctx->compress_type = BTRFS_COMPRESS_ZLIB;
 			ctx->compress_level = BTRFS_ZLIB_DEFAULT_LEVEL;
@@ -683,8 +693,11 @@ bool btrfs_check_options(const struct btrfs_fs_info *info,
 		ret = false;
 
 	if (!test_bit(BTRFS_FS_STATE_REMOUNTING, &info->fs_state)) {
-		if (btrfs_raw_test_opt(*mount_opt, SPACE_CACHE))
+		if (btrfs_raw_test_opt(*mount_opt, SPACE_CACHE)) {
 			btrfs_info(info, "disk space caching is enabled");
+			btrfs_warn(info,
+"space cache v1 is being deprecated and will be removed in a future release, please use -o space_cache=v2");
+		}
 		if (btrfs_raw_test_opt(*mount_opt, FREE_SPACE_TREE))
 			btrfs_info(info, "using free-space-tree");
 	}
@@ -1494,8 +1507,7 @@ static int btrfs_reconfigure(struct fs_context *fc)
 	sync_filesystem(sb);
 	set_bit(BTRFS_FS_STATE_REMOUNTING, &fs_info->fs_state);
 
-	if (!mount_reconfigure &&
-	    !btrfs_check_options(fs_info, &ctx->mount_opt, fc->sb_flags))
+	if (!btrfs_check_options(fs_info, &ctx->mount_opt, fc->sb_flags))
 		return -EINVAL;
 
 	ret = btrfs_check_features(fs_info, !(fc->sb_flags & SB_RDONLY));
@@ -2398,13 +2410,28 @@ static long btrfs_nr_cached_objects(struct super_block *sb, struct shrink_contro
 
 	trace_btrfs_extent_map_shrinker_count(fs_info, nr);
 
-	return nr;
+	/*
+	 * Only report the real number for DEBUG builds, as there are reports of
+	 * serious performance degradation caused by too frequent shrinks.
+	 */
+	if (IS_ENABLED(CONFIG_BTRFS_DEBUG))
+		return nr;
+	return 0;
 }
 
 static long btrfs_free_cached_objects(struct super_block *sb, struct shrink_control *sc)
 {
 	const long nr_to_scan = min_t(unsigned long, LONG_MAX, sc->nr_to_scan);
 	struct btrfs_fs_info *fs_info = btrfs_sb(sb);
+
+	/*
+	 * We may be called from any task trying to allocate memory and we don't
+	 * want to slow it down with scanning and dropping extent maps. It would
+	 * also cause heavy lock contention if many tasks concurrently enter
+	 * here. Therefore only allow kswapd tasks to scan and drop extent maps.
+	 */
+	if (!current_is_kswapd())
+		return 0;
 
 	return btrfs_free_extent_maps(fs_info, nr_to_scan);
 }

@@ -116,6 +116,26 @@ void pud_init(void *addr)
 EXPORT_SYMBOL_GPL(pud_init);
 #endif
 
+void kernel_pte_init(void *addr)
+{
+	unsigned long *p, *end;
+
+	p = (unsigned long *)addr;
+	end = p + PTRS_PER_PTE;
+
+	do {
+		p[0] = _PAGE_GLOBAL;
+		p[1] = _PAGE_GLOBAL;
+		p[2] = _PAGE_GLOBAL;
+		p[3] = _PAGE_GLOBAL;
+		p[4] = _PAGE_GLOBAL;
+		p += 8;
+		p[-3] = _PAGE_GLOBAL;
+		p[-2] = _PAGE_GLOBAL;
+		p[-1] = _PAGE_GLOBAL;
+	} while (p != end);
+}
+
 pmd_t mk_pmd(struct page *page, pgprot_t prot)
 {
 	pmd_t pmd;
@@ -128,7 +148,7 @@ pmd_t mk_pmd(struct page *page, pgprot_t prot)
 void set_pmd_at(struct mm_struct *mm, unsigned long addr,
 		pmd_t *pmdp, pmd_t pmd)
 {
-	*pmdp = pmd;
+	WRITE_ONCE(*pmdp, pmd);
 	flush_tlb_all();
 }
 

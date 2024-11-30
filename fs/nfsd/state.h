@@ -79,6 +79,7 @@ struct nfsd4_callback_ops {
 	void (*prepare)(struct nfsd4_callback *);
 	int (*done)(struct nfsd4_callback *, struct rpc_task *);
 	void (*release)(struct nfsd4_callback *);
+	uint32_t opcode;
 };
 
 /*
@@ -113,6 +114,8 @@ struct nfs4_stid {
 /* For a deleg stateid kept around only to process free_stateid's: */
 #define SC_STATUS_REVOKED	BIT(1)
 #define SC_STATUS_ADMIN_REVOKED	BIT(2)
+#define SC_STATUS_FREEABLE	BIT(3)
+#define SC_STATUS_FREED		BIT(4)
 	unsigned short		sc_status;
 
 	struct list_head	sc_cp_list;
@@ -781,5 +784,5 @@ static inline bool try_to_expire_client(struct nfs4_client *clp)
 }
 
 extern __be32 nfsd4_deleg_getattr_conflict(struct svc_rqst *rqstp,
-		struct inode *inode, bool *file_modified, u64 *size);
+		struct dentry *dentry, bool *file_modified, u64 *size);
 #endif   /* NFSD4_STATE_H */
