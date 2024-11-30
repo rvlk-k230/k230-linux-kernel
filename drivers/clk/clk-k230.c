@@ -4,7 +4,6 @@
  * Author: Troy Mitchell <troymitchell988@gmail.com>
  * Kendryte Canaan K230 Clock Drivers
  */
-#include <linux/bug.h>
 #include <linux/bitfield.h>
 #include <linux/clk.h>
 #include <linux/clk-provider.h>
@@ -380,7 +379,7 @@ static int k230_pll_prepare(struct clk_hw *hw)
 				 400, 0);
 	/* this will not happen actually */
 	if (ret)
-		pr_err("%pOFP: PLL timeout! \n", pll->ksc->np);
+		pr_err("%pOFP: PLL timeout!\n", pll->ksc->np);
 
 	return ret;
 }
@@ -870,7 +869,7 @@ static int k230_clk_find_approximate(struct k230_clk *clk,
 		break;
 
 	default:
-		BUG();
+		WARN_ON_ONCE(true);
 		return -EPERM;
 	}
 	return 0;
@@ -1147,7 +1146,7 @@ static int _k230_clk_mux_get_hw(struct k230_sysclk *ksc,
 		*hw = &ksc->clks[pclk->clk_id].hw;
 		break;
 	default:
-		BUG();
+		WARN_ON_ONCE(true);
 		return -EPERM;
 	}
 	return 0;
