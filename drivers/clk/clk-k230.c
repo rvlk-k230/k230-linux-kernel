@@ -885,7 +885,10 @@ static long k230_clk_round_rate(struct clk_hw *hw, unsigned long rate, unsigned 
 				      cfg->rate_mul_min, cfg->rate_mul_max,
 				      cfg->rate_div_min, cfg->rate_div_max,
 				      cfg->method, rate, *parent_rate, &div, &mul)) {
-		pr_err("%pOFP: [%s]: clk %s round rate error!\n", clk->ksc->np, __func__, clk_hw_get_name(hw));
+		pr_err("%pOFP: [%s]: clk %s round rate error!\n",
+		       clk->ksc->np,
+		       __func__,
+		       clk_hw_get_name(hw));
 		return -EINVAL;
 	}
 
@@ -919,7 +922,10 @@ static int k230_clk_set_rate(struct clk_hw *hw, unsigned long rate,
 				      cfg->rate_mul_min, cfg->rate_mul_max,
 				      cfg->rate_div_min, cfg->rate_div_max,
 				      cfg->method, rate, parent_rate, &div, &mul)) {
-		pr_err("%pOFP: [%s]: clk %s set rate error!\n", clk->ksc->np, __func__, clk_hw_get_name(hw));
+		pr_err("%pOFP: [%s]: clk %s set rate error!\n",
+		       clk->ksc->np,
+		       __func__,
+		       clk_hw_get_name(hw));
 		return -EINVAL;
 	}
 
