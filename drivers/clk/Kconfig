@@ -470,12 +470,6 @@ config COMMON_CLK_K230
         default ARCH_CANAAN
         help
           Support for the Canaan Kendryte K230 RISC-V SoC clocks.
-	  This option enables support for the clock controller of the Canaan Kendryte K230 RISC-V SoC.
-          It provides basic functionality for managing the SoC clock sources, including PLLs and sysclk.
-          The clock tree of the K230 SoC consists of multiple clock sources, with PLLs generating sysclk,
-          which is then used by various peripherals. This driver does not cover all clock sources, but
-          it manages the core clock infrastructure necessary for the K230 SoC.
-          Enable this option if you are working with the K230 SoC and need clock management support.
 
 config COMMON_CLK_SP7021
 	tristate "Clock driver for Sunplus SP7021 SoC"
