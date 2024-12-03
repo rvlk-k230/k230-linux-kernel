@@ -341,6 +341,17 @@ static struct k230_clk_cfg k230_clk_cfgs[] = {
 		K230_GATE_FORMAT(0, 13, 0, true),
 		K230_MUX_FORMAT_ZERO,
 	},
+	[K230_PMU_PCLK] = {
+		.name = "pmu_pclk",
+		.read_only = false,
+		.flags = 0,
+		.parent1 = {
+			.type = K230_OSC24M,
+		},
+		K230_RATE_FORMAT_ZERO,
+		K230_GATE_FORMAT(0x10, 0, 0, true),
+		K230_MUX_FORMAT_ZERO,
+	},
 };
 #define K230_NUM_CLKS ARRAY_SIZE(k230_clk_cfgs)
 
@@ -455,7 +466,7 @@ static unsigned long k230_pll_get_rate(struct clk_hw *hw, unsigned long parent_r
 
 	reg = readl(pll->lock);
 	if (!(reg & (K230_PLL_STATUS_MASK))) { /* unlocked */
-		pr_err("%pOFP: %s is unlock.", pll->ksc->np, clk_hw_get_name(hw));
+		pr_err("%pOFP: %s is unlock.\n", pll->ksc->np, clk_hw_get_name(hw));
 		return 0;
 	}
 	reg = readl(pll->div);
@@ -557,7 +568,7 @@ static int k230_clk_enable(struct clk_hw *hw)
 	u32 reg;
 
 	if (!cfg->have_gate) {
-		pr_err("%pOFP: This clock doesn't have gate", ksc->np);
+		pr_err("%pOFP: This clock doesn't have gate\n", ksc->np);
 		return -EINVAL;
 	}
 
@@ -582,7 +593,7 @@ static void k230_clk_disable(struct clk_hw *hw)
 	u32 reg;
 
 	if (!cfg->have_gate) {
-		pr_err("%pOFP: This clock doesn't have gate", ksc->np);
+		pr_err("%pOFP: This clock doesn't have gate\n", ksc->np);
 		return;
 	}
 
@@ -608,7 +619,7 @@ static int k230_clk_is_enabled(struct clk_hw *hw)
 	int ret;
 
 	if (!cfg->have_gate) {
-		pr_err("%pOFP: This clock doesn't have gate", ksc->np);
+		pr_err("%pOFP: This clock doesn't have gate\n", ksc->np);
 		return -EINVAL;
 	}
 
@@ -635,7 +646,7 @@ static int k230_clk_set_parent(struct clk_hw *hw, u8 index)
 	u8 reg;
 
 	if (!cfg->have_mux) {
-		pr_err("%pOFP: This clock doesn't have mux", ksc->np);
+		pr_err("%pOFP: This clock doesn't have mux\n", ksc->np);
 		return -EINVAL;
 	}
 
@@ -656,7 +667,7 @@ static u8 k230_clk_get_parent(struct clk_hw *hw)
 	u8 reg;
 
 	if (!cfg->have_mux) {
-		pr_err("%pOFP: This clock doesn't have mux", ksc->np);
+		pr_err("%pOFP: This clock doesn't have mux\n", ksc->np);
 		return -EINVAL;
 	}
 
@@ -904,17 +915,17 @@ static int k230_clk_set_rate(struct clk_hw *hw, unsigned long rate,
 	u32 div = 0, mul = 0, reg = 0, reg_c = 0;
 
 	if ((!cfg->have_rate) || (!cfg->rate_reg)) {
-		pr_err("%pOFP: This clock may have no rate", clk->ksc->np);
+		pr_err("%pOFP: This clock may have no rate\n", clk->ksc->np);
 		return -EINVAL;
 	}
 
 	if ((rate > parent_rate) || (rate == 0) || (parent_rate == 0)) {
-		pr_err("%pOFP: rate or parent_rate error", clk->ksc->np);
+		pr_err("%pOFP: rate or parent_rate error\n", clk->ksc->np);
 		return -EINVAL;
 	}
 
 	if (cfg->read_only) {
-		pr_err("%pOFP: This clk rate is read only", clk->ksc->np);
+		pr_err("%pOFP: This clk rate is read only\n", clk->ksc->np);
 		return -EPERM;
 	}
 
@@ -1218,13 +1229,13 @@ static int k230_register_clks(struct device_node *np, struct k230_sysclk *ksc)
 				ret = k230_register_clk_child(np, ksc, i, pclk->clk_id);
 				break;
 			default:
-				pr_err("%pOFP: Invalid type", np);
+				pr_err("%pOFP: Invalid type\n", np);
 				ret = -EINVAL;
 				goto out;
 			}
 		}
 		if (ret) {
-			pr_err("%pOFP: register child id %d failed", np, i);
+			pr_err("%pOFP: register child id %d failed\n", np, i);
 			goto out;
 		}
 	}
@@ -1264,7 +1275,7 @@ static int k230_clk_init_plls(struct device_node *np)
 	int ret = 0;
 
 	if (!np) {
-		pr_err("%pOFP: device node pointer is NULL", np);
+		pr_err("%pOFP: device node pointer is NULL\n", np);
 		return -EINVAL;
 	}
 
@@ -1278,7 +1289,7 @@ static int k230_clk_init_plls(struct device_node *np)
 
 	ret = k230_register_plls(np, ksc);
 	if (ret) {
-		pr_err("%pOFP: register plls failed %d", np, ret);
+		pr_err("%pOFP: register plls failed %d\n", np, ret);
 		goto out_unmap;
 	}
 
@@ -1296,7 +1307,7 @@ static int k230_clk_init_sysclk(struct device_node *np)
 	int ret = 0;
 
 	if (!np) {
-		pr_err("%pOFP: device node pointer is NULL", np);
+		pr_err("%pOFP: device node pointer is NULL\n", np);
 		return -EINVAL;
 	}
 
@@ -1310,7 +1321,7 @@ static int k230_clk_init_sysclk(struct device_node *np)
 
 	ret = k230_register_clks(np, ksc);
 	if (ret) {
-		pr_err("%pOFP: register clock provider failed %d", np, ret);
+		pr_err("%pOFP: register clock provider failed %d\n", np, ret);
 		goto out_unmap;
 	}
 
@@ -1333,16 +1344,16 @@ static void __init k230_clk_init_clks(struct device_node *np)
 
 	ret = k230_clk_init_plls(np);
 	if (ret) {
-		pr_err("%pOFP: init clk plls failed %d", np, ret);
+		pr_err("%pOFP: init clk plls failed %d\n", np, ret);
 		return;
 	}
-	pr_info("%pOFP: success to init plls", np);
+	pr_info("%pOFP: success to init plls\n", np);
 
 	ret = k230_clk_init_sysclk(np);
 	if (ret) {
-		pr_err("%pOFP: init clk clks failed %d", np, ret);
+		pr_err("%pOFP: init clk clks failed %d\n", np, ret);
 		return;
 	}
-	pr_info("%pOFP: success to init clks", np);
+	pr_info("%pOFP: success to init clks\n", np);
 }
 CLK_OF_DECLARE_DRIVER(k230_clk, "canaan,k230-clk", k230_clk_init_clks);

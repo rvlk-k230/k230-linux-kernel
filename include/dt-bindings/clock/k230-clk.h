@@ -1,15 +1,13 @@
 /* SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause) */
 /*
- * Author: Bo Wang <Juvenoia@...>
+ * Author: Xukai Wang <Juvenoia@...>
  * Kendryte Canaan K230 Clock Drivers
  */
 
 #ifndef CLOCK_K230_CLK_H
 #define CLOCK_K230_CLK_H
 
-/*
- * Kendryte K230 SoC clock identifiers (arbitrary values).
- */
+/* Kendryte K230 SoC clock identifiers (arbitrary values). */
 #define K230_CPU0_SRC           0
 #define K230_CPU0_ACLK          1
 #define K230_CPU0_PLIC          2
