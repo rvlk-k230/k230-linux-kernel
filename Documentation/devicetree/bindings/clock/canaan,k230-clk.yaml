@@ -8,7 +8,6 @@ title: Canaan Kendryte K230 Clock
 
 maintainers:
 	- Xukai Wang <kingxukai@zohomail.com>
-	- Troy Mitchell <troymitchell988@gmail.com>
 
 properties:
 	compatible:
