@@ -7,36 +7,34 @@ $schema: http://devicetree.org/meta-schemas/core.yaml#
 title: Canaan Kendryte K230 Clock
 
 maintainers:
-	- Xukai Wang <kingxukai@zohomail.com>
+  - Xukai Wang <kingxukai@zohomail.com>
 
 properties:
-	compatible:
-			const: canaan,k230-clk
-	
-	clocks:
-			maxItems: 1
-	
-	reg:
-			maxItems: 2
-	
-	'#clock-cells':
-			const: 1
+  compatible:
+    const: canaan,k230-clk
+
+  clocks:
+    maxItems: 1
+
+  reg:
+    maxItems: 2
+
+  '#clock-cells':
+    const: 1
 
 required:
-	- compatible
-	- reg
-	- clocks
-	- '#clock-cells'
+  - compatible
+  - reg
+  - clocks
+  - '#clock-cells'
 
 additionalProperties: false
 
 examples:
-	- |
-		#include <dt-bindings/clock/k230-clk.h>
-
-		clock-controller {
-				compatible = "canaan,k230-clk";
-				reg = <0x91102000 0x1000>, <0x91100000 0x1000>;
-				#clock-cells = <1>;
-				clocks = <&osc24m>;
-		};
+  - |
+    sysclk: clock-controller@91102000 {
+        compatible = "canaan,k230-clk";
+        reg = <0x91102000 0x1000>, <0x91100000 0x1000>;
+        #clock-cells = <1>;
+        clocks = <&osc24m>;
+    };
