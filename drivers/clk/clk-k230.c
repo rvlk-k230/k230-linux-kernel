@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
+ * Kendryte Canaan K230 Clock Drivers
+ *
  * Author: Xukai Wang <kingxukai@zohomail.com>
  * Author: Troy Mitchell <troymitchell988@gmail.com>
- * Kendryte Canaan K230 Clock Drivers
  */
 #include <linux/bitfield.h>
 #include <linux/clk.h>
@@ -260,10 +261,6 @@ struct k230_clk_cfg {
 	u32 mux_reg_mask;
 };
 
-/*
- * SRC: K230-SDK-DTS,
- * SEE: /src/little/linux/arch/riscv/boot/dts/kendryte/clock-provider.dtsi
- */
 static struct k230_clk_cfg k230_clk_cfgs[] = {
 	[K230_CPU0_SRC] = {
 		.name = "cpu0_src",
