@@ -494,7 +494,6 @@ static int k230_register_pll(struct device_node *np,
 	struct k230_pll *pll = &ksc->plls[pllid];
 	struct clk_init_data init = {};
 	int ret;
-	/* pll0-3 are son of osc24m. */
 	const struct clk_parent_data parent_data[] = {
 		{ .fw_name = "osc24m" },
 	};
@@ -743,7 +742,6 @@ static int k230_clk_find_approximate(struct k230_clk *clk,
 {
 	long abs_min;
 	long abs_current;
-	/* we used integer to instead of float */
 	long perfect_divide;
 
 	struct k230_clk_cfg *cfg = &k230_clk_cfgs[clk->id];
@@ -759,6 +757,7 @@ static int k230_clk_find_approximate(struct k230_clk *clk,
 		24576000,
 		49152000
 	};
+
 	uint32_t codec_div[9][2] = {
 		{3125, 16},
 		{3125, 24},
@@ -1255,6 +1254,7 @@ static struct clk_hw *k230_clk_hw_onecell_get(struct of_phandle_args *clkspec, v
 
 	if (clkspec->args_count != 1)
 		return ERR_PTR(-EINVAL);
+
 	idx = clkspec->args[0];
 	if (idx >= K230_NUM_CLKS)
 		return ERR_PTR(-EINVAL);
@@ -1344,13 +1344,11 @@ static void __init k230_clk_init_clks(struct device_node *np)
 		pr_err("%pOFP: init clk plls failed %d\n", np, ret);
 		return;
 	}
-	pr_info("%pOFP: success to init plls\n", np);
 
 	ret = k230_clk_init_sysclk(np);
 	if (ret) {
 		pr_err("%pOFP: init clk clks failed %d\n", np, ret);
 		return;
 	}
-	pr_info("%pOFP: success to init clks\n", np);
 }
 CLK_OF_DECLARE_DRIVER(k230_clk, "canaan,k230-clk", k230_clk_init_clks);
