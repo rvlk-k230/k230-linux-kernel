@@ -1313,9 +1313,10 @@ out_unmap:
 	return ret;
 }
 
-static void __init k230_clk_init_clks(struct device_node *np)
+static void __init k230_clk_init_clks(struct platform_device *pd)
 {
 	struct k230_sysclk *ksc = &clksrc;
+	struct device_node *np = pd->dev.of_node;
 	int ret = 0;
 
 	ksc->np = np;
@@ -1332,4 +1333,18 @@ static void __init k230_clk_init_clks(struct device_node *np)
 		return;
 	}
 }
-CLK_OF_DECLARE_DRIVER(k230_clk, "canaan,k230-clk", k230_clk_init_clks);
+
+static const struct of_device_id k230_clk_match_table[] = {
+	{.compatible = "canaan,k230-clk"},
+	{ },
+};
+MODULE_DEVICE_TABLE(of, k230_clk_match_table);
+
+static struct platform_driver k230_driver = {
+	.driver = {
+		.name  = "k230_clock_controller",
+		.of_match_table = k230_clk_match_table,
+	},
+	.probe = k230_clk_init_clks,
+};
+builtin_platform_driver(k230_driver);
