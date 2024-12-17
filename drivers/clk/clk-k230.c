@@ -244,6 +244,7 @@ struct k230_clk_cfg {
 	u32 rate_div_max;
 	u32 rate_div_shift;
 	u32 rate_div_mask;
+
 	/* gate reg */
 	u32 gate_reg_off;
 	void __iomem *gate_reg;
@@ -415,9 +416,8 @@ static int k230_pll_enable(struct clk_hw *hw)
 	struct k230_pll *pll = to_k230_pll(hw);
 	struct k230_sysclk *ksc = pll->ksc;
 
-	spin_lock(&ksc->pll_lock);
+	guard(spinlock)(&ksc->pll_lock);
 	k230_pll_enable_hw(ksc->regs, pll);
-	spin_unlock(&ksc->pll_lock);
 
 	return 0;
 }
@@ -428,14 +428,13 @@ static void k230_pll_disable(struct clk_hw *hw)
 	struct k230_sysclk *ksc = pll->ksc;
 	u32 reg;
 
-	spin_lock(&ksc->pll_lock);
+	guard(spinlock)(&ksc->pll_lock);
 	reg = readl(pll->gate);
 
 	reg &= ~(K230_PLL_GATE_ENABLE);
 	reg |= (K230_PLL_GATE_WRITE_ENABLE);
 
 	writel(reg, pll->gate);
-	spin_unlock(&ksc->pll_lock);
 }
 
 static int k230_pll_is_enabled(struct clk_hw *hw)
@@ -560,7 +559,6 @@ static int k230_clk_enable(struct clk_hw *hw)
 	struct k230_clk *clk = to_k230_clk(hw);
 	struct k230_sysclk *ksc = clk->ksc;
 	struct k230_clk_cfg *cfg = &k230_clk_cfgs[clk->id];
-	unsigned long flags;
 	u32 reg;
 
 	if (!cfg->have_gate) {
@@ -568,14 +566,13 @@ static int k230_clk_enable(struct clk_hw *hw)
 		return -EINVAL;
 	}
 
-	spin_lock_irqsave(&ksc->clk_lock, flags);
+	guard(spinlock)(&ksc->clk_lock);
 	reg = readl(cfg->gate_reg);
 	if (cfg->gate_bit_reverse)
 		reg &= ~BIT(cfg->gate_bit_enable);
 	else
 		reg |= BIT(cfg->gate_bit_enable);
 	writel(reg, cfg->gate_reg);
-	spin_unlock_irqrestore(&ksc->clk_lock, flags);
 
 	return 0;
 }
@@ -585,7 +582,6 @@ static void k230_clk_disable(struct clk_hw *hw)
 	struct k230_clk *clk = to_k230_clk(hw);
 	struct k230_sysclk *ksc = clk->ksc;
 	struct k230_clk_cfg *cfg = &k230_clk_cfgs[clk->id];
-	unsigned long flags;
 	u32 reg;
 
 	if (!cfg->have_gate) {
@@ -593,7 +589,7 @@ static void k230_clk_disable(struct clk_hw *hw)
 		return;
 	}
 
-	spin_lock_irqsave(&ksc->clk_lock, flags);
+	guard(spinlock)(&ksc->clk_lock);
 	reg = readl(cfg->gate_reg);
 
 	if (cfg->gate_bit_reverse)
@@ -602,7 +598,6 @@ static void k230_clk_disable(struct clk_hw *hw)
 		reg &= ~BIT(cfg->gate_bit_enable);
 
 	writel(reg, cfg->gate_reg);
-	spin_unlock_irqrestore(&ksc->clk_lock, flags);
 }
 
 static int k230_clk_is_enabled(struct clk_hw *hw)
@@ -610,7 +605,6 @@ static int k230_clk_is_enabled(struct clk_hw *hw)
 	struct k230_clk *clk = to_k230_clk(hw);
 	struct k230_sysclk *ksc = clk->ksc;
 	struct k230_clk_cfg *cfg = &k230_clk_cfgs[clk->id];
-	unsigned long flags;
 	u32 reg;
 	int ret;
 
@@ -619,7 +613,7 @@ static int k230_clk_is_enabled(struct clk_hw *hw)
 		return -EINVAL;
 	}
 
-	spin_lock_irqsave(&ksc->clk_lock, flags);
+	guard(spinlock)(&ksc->clk_lock);
 	reg = readl(cfg->gate_reg);
 
 	/* Check gate bit condition based on configuration and then set ret */
@@ -628,7 +622,6 @@ static int k230_clk_is_enabled(struct clk_hw *hw)
 	else
 		ret = (BIT(cfg->gate_bit_enable) & ~reg) ? 1 : 0;
 
-	spin_unlock_irqrestore(&ksc->clk_lock, flags);
 
 	return ret;
 }
@@ -638,7 +631,6 @@ static int k230_clk_set_parent(struct clk_hw *hw, u8 index)
 	struct k230_clk *clk = to_k230_clk(hw);
 	struct k230_sysclk *ksc = clk->ksc;
 	struct k230_clk_cfg *cfg = &k230_clk_cfgs[clk->id];
-	unsigned long flags;
 	u8 reg;
 
 	if (!cfg->have_mux) {
@@ -646,10 +638,9 @@ static int k230_clk_set_parent(struct clk_hw *hw, u8 index)
 		return -EINVAL;
 	}
 
-	spin_lock_irqsave(&ksc->clk_lock, flags);
+	guard(spinlock)(&ksc->clk_lock);
 	reg = (cfg->mux_reg_mask & index) << cfg->mux_reg_shift;
 	writeb(reg, cfg->mux_reg);
-	spin_unlock_irqrestore(&ksc->clk_lock, flags);
 
 	return 0;
 }
@@ -659,7 +650,6 @@ static u8 k230_clk_get_parent(struct clk_hw *hw)
 	struct k230_clk *clk = to_k230_clk(hw);
 	struct k230_sysclk *ksc = clk->ksc;
 	struct k230_clk_cfg *cfg = &k230_clk_cfgs[clk->id];
-	unsigned long flags;
 	u8 reg;
 
 	if (!cfg->have_mux) {
@@ -667,9 +657,8 @@ static u8 k230_clk_get_parent(struct clk_hw *hw)
 		return -EINVAL;
 	}
 
-	spin_lock_irqsave(&ksc->clk_lock, flags);
+	guard(spinlock)(&ksc->clk_lock);
 	reg = readb(cfg->mux_reg);
-	spin_unlock_irqrestore(&ksc->clk_lock, flags);
 
 	return reg;
 }
@@ -679,12 +668,12 @@ static unsigned long k230_clk_get_rate(struct clk_hw *hw,
 {
 	struct k230_clk *clk = to_k230_clk(hw);
 	struct k230_clk_cfg *cfg = &k230_clk_cfgs[clk->id];
-	unsigned long flags;
 	u32 mul, div;
 
 	if (!cfg->have_rate) /* no divider, return parents' clk */
 		return parent_rate;
 
+	guard(spinlock)(&clk->ksc->clk_lock);
 	switch (cfg->method) {
 	/*
 	 * K230_MUL: div_mask+1/div_max...
@@ -692,29 +681,23 @@ static unsigned long k230_clk_get_rate(struct clk_hw *hw,
 	 * K230_MUL_DIV: mul_mask/div_mask...
 	 */
 	case K230_MUL:
-		spin_lock_irqsave(&clk->ksc->clk_lock, flags);
 		div = cfg->rate_div_max;
 		mul = (readl(cfg->rate_reg) >> cfg->rate_div_shift)
 			& cfg->rate_div_mask;
 		mul++;
-		spin_unlock_irqrestore(&clk->ksc->clk_lock, flags);
 		break;
 	case K230_DIV:
-		spin_lock_irqsave(&clk->ksc->clk_lock, flags);
 		mul = cfg->rate_mul_max;
 		div = (readl(cfg->rate_reg) >> cfg->rate_div_shift)
 			& cfg->rate_div_mask;
 		div++;
-		spin_unlock_irqrestore(&clk->ksc->clk_lock, flags);
 		break;
 	case K230_MUL_DIV:
 		if (!cfg->have_rate_c) {
-			spin_lock_irqsave(&clk->ksc->clk_lock, flags);
 			mul = (readl(cfg->rate_reg) >> cfg->rate_mul_shift)
 				& cfg->rate_mul_mask;
 			div = (readl(cfg->rate_reg) >> cfg->rate_div_shift)
 				& cfg->rate_div_mask;
-			spin_unlock_irqrestore(&clk->ksc->clk_lock, flags);
 		} else {
 			mul = (readl(cfg->rate_reg_c) >> cfg->rate_mul_shift_c)
 				& cfg->rate_mul_mask_c;
@@ -907,7 +890,6 @@ static int k230_clk_set_rate(struct clk_hw *hw, unsigned long rate,
 {
 	struct k230_clk *clk = to_k230_clk(hw);
 	struct k230_clk_cfg *cfg = &k230_clk_cfgs[clk->id];
-	unsigned long flags;
 	u32 div = 0, mul = 0, reg = 0, reg_c = 0;
 
 	if ((!cfg->have_rate) || (!cfg->rate_reg)) {
@@ -936,7 +918,7 @@ static int k230_clk_set_rate(struct clk_hw *hw, unsigned long rate,
 		return -EINVAL;
 	}
 
-	spin_lock_irqsave(&clk->ksc->clk_lock, flags);
+	guard(spinlock)(&clk->ksc->clk_lock);
 	if (!cfg->have_rate_c) {
 		reg = readl(cfg->rate_reg);
 		reg &= ~((cfg->rate_div_mask) << (cfg->rate_div_shift));
@@ -964,7 +946,6 @@ static int k230_clk_set_rate(struct clk_hw *hw, unsigned long rate,
 		writel(reg_c, cfg->rate_reg_c);
 	}
 	writel(reg, cfg->rate_reg);
-	spin_unlock_irqrestore(&clk->ksc->clk_lock, flags);
 
 	rate = k230_clk_get_rate(hw, parent_rate);
 	return 0;

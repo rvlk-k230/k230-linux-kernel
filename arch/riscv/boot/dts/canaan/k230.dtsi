@@ -158,7 +158,7 @@
 			"CPU0_PLIC",
 			"CPU0_NOC_DDRCP4",
 			"CPU0_PCLK",
-			"PMU_PCLK"
+			"PMU_PCLK";
 		};
 	};
 };
