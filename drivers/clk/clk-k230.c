@@ -1313,38 +1313,43 @@ out_unmap:
 	return ret;
 }
 
-static void __init k230_clk_init_clks(struct platform_device *pd)
+static int __init k230_clk_init_clks(struct platform_device *pd)
 {
 	struct k230_sysclk *ksc = &clksrc;
 	struct device_node *np = pd->dev.of_node;
 	int ret = 0;
 
+	pr_info("%s\n", __func__);
 	ksc->np = np;
 
 	ret = k230_clk_init_plls(np);
 	if (ret) {
 		pr_err("%pOFP: init clk plls failed %d\n", np, ret);
-		return;
+		goto err_out;
 	}
 
 	ret = k230_clk_init_sysclk(np);
 	if (ret) {
 		pr_err("%pOFP: init clk clks failed %d\n", np, ret);
-		return;
+		goto err_out;
 	}
+	pr_info("init clks OK!\n");
+
+err_out:
+	return ret;
 }
 
-static const struct of_device_id k230_clk_match_table[] = {
+static const struct of_device_id k230_clk_id_match_table[] = {
 	{.compatible = "canaan,k230-clk"},
 	{ },
 };
 MODULE_DEVICE_TABLE(of, k230_clk_match_table);
 
-static struct platform_driver k230_driver = {
+static struct platform_driver k230_clk_driver = {
 	.driver = {
 		.name  = "k230_clock_controller",
-		.of_match_table = k230_clk_match_table,
+		.of_match_table = k230_clk_id_match_table,
 	},
 	.probe = k230_clk_init_clks,
 };
-builtin_platform_driver(k230_driver);
+builtin_platform_driver(k230_clk_driver);
