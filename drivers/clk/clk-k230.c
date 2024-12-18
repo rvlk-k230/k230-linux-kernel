@@ -1247,93 +1247,93 @@ static struct clk_hw *k230_clk_hw_onecell_get(struct of_phandle_args *clkspec, v
 	return &ksc->clks[idx].hw;
 }
 
-static int k230_clk_init_plls(struct device_node *np)
+static int k230_clk_init_plls(struct platform_device *pdev)
 {
 	struct k230_sysclk *ksc = &clksrc;
+	struct device_node *np = pdev->dev.of_node;
 	int ret = 0;
 
 	if (!np) {
 		pr_err("%pOFP: device node pointer is NULL\n", np);
-		return -EINVAL;
+		ret = -EINVAL;
+		goto err_out;
 	}
 
 	spin_lock_init(&ksc->pll_lock);
 
-	ksc->pll_regs = of_iomap(np, 0);
+	ksc->pll_regs = devm_platform_ioremap_resource(pdev, 0);
 	if (!ksc->pll_regs) {
 		pr_err("%pOFP: failed to map registers\n", np);
-		return -ENOMEM;
+		ret = PTR_ERR(ksc->pll_regs);
+		goto err_out;
 	}
 
 	ret = k230_register_plls(np, ksc);
 	if (ret) {
 		pr_err("%pOFP: register plls failed %d\n", np, ret);
-		goto out_unmap;
+		goto err_out;
 	}
 
 	k230_register_pll_divs(np, ksc);
 
-out_unmap:
-	if (ret)
-		iounmap(ksc->pll_regs);
+err_out:
 	return ret;
 }
 
-static int k230_clk_init_sysclk(struct device_node *np)
+static int k230_clk_init_sysclk(struct platform_device *pdev)
 {
 	struct k230_sysclk *ksc = &clksrc;
+	struct device_node *np = pdev->dev.of_node;
 	int ret = 0;
 
 	if (!np) {
 		pr_err("%pOFP: device node pointer is NULL\n", np);
-		return -EINVAL;
+		ret = -EINVAL;
+		goto err_out;
 	}
 
 	spin_lock_init(&ksc->clk_lock);
 
-	ksc->regs = of_iomap(np, 1);
+	ksc->regs = devm_platform_ioremap_resource(pdev, 1);
 	if (!ksc->regs) {
 		pr_err("%pOFP: failed to map registers\n", np);
-		return -ENOMEM;
+		ret = PTR_ERR(ksc->regs);
+		goto err_out;
 	}
 
 	ret = k230_register_clks(np, ksc);
 	if (ret) {
 		pr_err("%pOFP: register clock provider failed %d\n", np, ret);
-		goto out_unmap;
+		goto err_out;
 	}
 
-	ret = of_clk_add_hw_provider(np, k230_clk_hw_onecell_get, ksc);
+	ret = devm_of_clk_add_hw_provider(&pdev->dev, k230_clk_hw_onecell_get, ksc);
 	if (ret)
 		pr_err("%pOFP: add clock provider failed %d\n", np, ret);
 
-out_unmap:
-	if (ret)
-		iounmap(ksc->regs);
+err_out:
 	return ret;
 }
 
-static int __init k230_clk_init_clks(struct platform_device *pd)
+static int __init k230_clk_init_clks(struct platform_device *pdev)
 {
 	struct k230_sysclk *ksc = &clksrc;
-	struct device_node *np = pd->dev.of_node;
+	struct device_node *np = pdev->dev.of_node;
 	int ret = 0;
 
-	pr_info("%s\n", __func__);
 	ksc->np = np;
 
-	ret = k230_clk_init_plls(np);
+	ret = k230_clk_init_plls(pdev);
 	if (ret) {
 		pr_err("%pOFP: init clk plls failed %d\n", np, ret);
 		goto err_out;
 	}
 
-	ret = k230_clk_init_sysclk(np);
+	ret = k230_clk_init_sysclk(pdev);
 	if (ret) {
 		pr_err("%pOFP: init clk clks failed %d\n", np, ret);
 		goto err_out;
 	}
-	pr_info("init clks OK!\n");
 
 err_out:
 	return ret;
