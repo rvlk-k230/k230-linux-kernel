@@ -1317,7 +1317,7 @@ err_out:
 	return ret;
 }
 
-static int __init k230_clk_init_clks(struct platform_device *pdev)
+static int k230_clk_init_clks(struct platform_device *pdev)
 {
 	struct k230_sysclk *ksc = &clksrc;
 	struct device_node *np = pdev->dev.of_node;
