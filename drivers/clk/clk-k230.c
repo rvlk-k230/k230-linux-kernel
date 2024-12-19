@@ -492,6 +492,7 @@ static int k230_register_pll(struct device_node *np,
 {
 	struct k230_pll *pll = &ksc->plls[pllid];
 	struct clk_init_data init = {};
+	struct device *dev = &of_find_device_by_node(np)->dev;
 	int ret;
 	const struct clk_parent_data parent_data[] = {
 		{ .fw_name = "osc24m" },
@@ -505,7 +506,8 @@ static int k230_register_pll(struct device_node *np,
 	pll->hw.init = &init;
 	pll->ksc = ksc;
 
-	ret = of_clk_hw_register(np, &pll->hw);
+
+	ret = devm_clk_hw_register(dev, &pll->hw);
 	if (ret) {
 		pll->id = -1;
 		goto out;
@@ -533,25 +535,29 @@ static int k230_register_plls(struct device_node *np, struct k230_sysclk *ksc)
 	}
 
 out:
-	if (i != K230_PLL_NUM)
-		for (i--; i >= 0; i--) {
-			cfg = &k230_pll_cfgs[i];
-
-			clk_hw_unregister(&ksc->plls[cfg->pll_id].hw);
-			pr_warn("%pOFP: Unregistered PLL: %s\n", np, cfg->name);
-		}
-
 	return ret;
 }
 
-static void k230_register_pll_divs(struct device_node *np, struct k230_sysclk *ksc)
+static int k230_register_pll_divs(struct device_node *np, struct k230_sysclk *ksc)
 {
+	struct device *dev = &of_find_device_by_node(np)->dev;
+	struct clk_hw *hw;
+	int ret = 0;
+
 	for (int i = 0; i < K230_PLL_DIV_NUM; i++) {
-		ksc->dclks[i].hw = clk_hw_register_fixed_factor(NULL, k230_pll_div_cfgs[i].name,
+		hw = devm_clk_hw_register_fixed_factor(dev, k230_pll_div_cfgs[i].name,
 								k230_pll_div_cfgs[i].parent_name,
 								0, 1, k230_pll_div_cfgs[i].div);
+		if (hw) {
+			ret = -PTR_ERR(hw);
+			goto err_out;
+		}
+		ksc->dclks[i].hw = hw;
 		ksc->dclks[i].ksc = ksc;
 	}
+
+err_out:
+	return ret;
 }
 
 static int k230_clk_enable(struct clk_hw *hw)
@@ -726,7 +732,6 @@ static int k230_clk_find_approximate(struct k230_clk *clk,
 	long abs_min;
 	long abs_current;
 	long perfect_divide;
-
 	struct k230_clk_cfg *cfg = &k230_clk_cfgs[clk->id];
 
 	uint32_t codec_clk[9] = {
@@ -1016,6 +1021,7 @@ static int k230_register_clk(struct device_node *np,
 {
 	struct k230_clk *clk = &ksc->clks[id];
 	struct k230_clk_cfg *cfg = &k230_clk_cfgs[id];
+	struct device *dev = &of_find_device_by_node(np)->dev;
 	struct clk_init_data init = {};
 	int clk_id = 0;
 	int ret = 0;
@@ -1054,7 +1060,7 @@ static int k230_register_clk(struct device_node *np,
 	clk->ksc = ksc;
 	clk->hw.init = &init;
 
-	ret = of_clk_hw_register(np, &clk->hw);
+	ret = devm_clk_hw_register(dev, &clk->hw);
 	if (ret) {
 		pr_err("%pOFP: register clock %s failed\n", np, k230_clk_cfgs[id].name);
 		clk->id = -1;
@@ -1159,10 +1165,11 @@ static int k230_clk_mux_get_hw(struct k230_sysclk *ksc,
 
 	ret = _k230_clk_mux_get_hw(ksc, pclk1, hw1);
 	if (ret)
-		return ret;
+		goto out;
 
 	ret = _k230_clk_mux_get_hw(ksc, pclk2, hw2);
 
+out:
 	return ret;
 }
 
@@ -1208,7 +1215,6 @@ static int k230_register_clks(struct device_node *np, struct k230_sysclk *ksc)
 			default:
 				pr_err("%pOFP: Invalid type\n", np);
 				ret = -EINVAL;
-				goto out;
 			}
 		}
 		if (ret) {
@@ -1218,13 +1224,6 @@ static int k230_register_clks(struct device_node *np, struct k230_sysclk *ksc)
 	}
 
 out:
-	if (i != K230_NUM_CLKS)
-		for (i--; i >= 0; i--) {
-			cfg = &k230_clk_cfgs[i];
-
-			clk_hw_unregister(&ksc->clks[i].hw);
-			pr_warn("%pOFP: Unregistered clk: %s\n", np, cfg->name);
-		}
 	return ret;
 }
 
@@ -1242,6 +1241,7 @@ static struct clk_hw *k230_clk_hw_onecell_get(struct of_phandle_args *clkspec, v
 
 	if (!data)
 		return ERR_PTR(-EINVAL);
+
 	ksc = (struct k230_sysclk *)data;
 
 	return &ksc->clks[idx].hw;
@@ -1274,7 +1274,9 @@ static int k230_clk_init_plls(struct platform_device *pdev)
 		goto err_out;
 	}
 
-	k230_register_pll_divs(np, ksc);
+	ret = k230_register_pll_divs(np, ksc);
+	if (ret)
+		pr_err("%pOFP: register pll_divs falied %d\n", np, ret);
 
 err_out:
 	return ret;
