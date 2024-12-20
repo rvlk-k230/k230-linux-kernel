@@ -501,7 +501,6 @@ static int k230_register_pll(struct platform_device *pdev,
 	const struct clk_parent_data parent_data[] = {
 		{
 			.fw_name = "osc24m",
-			.index = 0,
 		},
 	};
 
@@ -885,6 +884,7 @@ static long k230_clk_round_rate(struct clk_hw *hw, unsigned long rate, unsigned 
 	struct k230_sysclk *ksc = clk->ksc;
 	struct k230_clk_cfg *cfg = &k230_clk_cfgs[clk->id];
 	u32 div = 0, mul = 0;
+
 	dev_info(&ksc->pdev->dev, "%s's parent_rate is %lu\n", clk_hw_get_name(hw), *parent_rate);
 
 	if (k230_clk_find_approximate(clk,
@@ -1352,7 +1352,7 @@ err_out:
 }
 
 static const struct of_device_id k230_clk_ids[] = {
-	{.compatible = "canaan,k230-clk"},
+	{ .compatible = "canaan,k230-clk" },
 	{ },
 };
 MODULE_DEVICE_TABLE(of, k230_clk_ids);
