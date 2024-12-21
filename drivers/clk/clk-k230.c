@@ -497,10 +497,7 @@ static int k230_register_pll(struct platform_device *pdev,
 	struct device *dev = &pdev->dev;
 	int ret;
 	const struct clk_parent_data parent_data[] = {
-		{
-			//.fw_name = "osc24m",
-			.index = 0,
-		},
+		{ .index = 0, },
 	};
 
 	init.name = name;
