@@ -682,7 +682,7 @@ static unsigned long k230_clk_get_rate(struct clk_hw *hw,
 	if (!cfg->have_rate) /* no divider, return parents' clk */
 		return parent_rate;
 
-	guard(spinlock)(&clk->ksc->clk_lock);
+	guard(spinlock)(&ksc->clk_lock);
 	switch (cfg->method) {
 	/*
 	 * K230_MUL: div_mask+1/div_max...
