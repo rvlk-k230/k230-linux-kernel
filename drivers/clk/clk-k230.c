@@ -458,8 +458,6 @@ static unsigned long k230_pll_get_rate(struct clk_hw *hw, unsigned long parent_r
 	u32 reg;
 	u32 r, f, od;
 
-	dev_info(&ksc->pdev->dev, "%s's parent_rate is %lu\n", clk_hw_get_name(hw), parent_rate);
-
 	reg = readl(pll->bypass);
 	if (reg & K230_PLL_BYPASS_ENABLE)
 		return parent_rate;
@@ -500,7 +498,8 @@ static int k230_register_pll(struct platform_device *pdev,
 	int ret;
 	const struct clk_parent_data parent_data[] = {
 		{
-			.fw_name = "osc24m",
+			//.fw_name = "osc24m",
+			.index = 0,
 		},
 	};
 
@@ -683,7 +682,6 @@ static unsigned long k230_clk_get_rate(struct clk_hw *hw,
 	struct k230_clk_cfg *cfg = &k230_clk_cfgs[clk->id];
 	u32 mul, div;
 
-	dev_info(&ksc->pdev->dev, "%s's parent_rate is %lu\n", clk_hw_get_name(hw), parent_rate);
 	if (!cfg->have_rate) /* no divider, return parents' clk */
 		return parent_rate;
 
@@ -885,8 +883,6 @@ static long k230_clk_round_rate(struct clk_hw *hw, unsigned long rate, unsigned 
 	struct k230_clk_cfg *cfg = &k230_clk_cfgs[clk->id];
 	u32 div = 0, mul = 0;
 
-	dev_info(&ksc->pdev->dev, "%s's parent_rate is %lu\n", clk_hw_get_name(hw), *parent_rate);
-
 	if (k230_clk_find_approximate(clk,
 				      cfg->rate_mul_min, cfg->rate_mul_max,
 				      cfg->rate_div_min, cfg->rate_div_max,
@@ -933,7 +929,7 @@ static int k230_clk_set_rate(struct clk_hw *hw, unsigned long rate,
 		return -EINVAL;
 	}
 
-	guard(spinlock)(&clk->ksc->clk_lock);
+	guard(spinlock)(&ksc->clk_lock);
 	if (!cfg->have_rate_c) {
 		reg = readl(cfg->rate_reg);
 		reg &= ~((cfg->rate_div_mask) << (cfg->rate_div_shift));
@@ -962,7 +958,6 @@ static int k230_clk_set_rate(struct clk_hw *hw, unsigned long rate,
 	}
 	writel(reg, cfg->rate_reg);
 
-	rate = k230_clk_get_rate(hw, parent_rate);
 	return 0;
 }
 
@@ -1098,7 +1093,7 @@ static int k230_register_osc24m_child(struct platform_device *pdev,
 				      int id)
 {
 	const struct clk_parent_data parent_data = {
-		.fw_name = "osc24m"
+		.index = 0,
 	};
 	return k230_register_clk(pdev, ksc, id, &parent_data, 1, 0);
 }
