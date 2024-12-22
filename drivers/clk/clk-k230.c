@@ -1330,14 +1330,12 @@ static int k230_clk_probe(struct platform_device *pdev)
 		dev_err(&pdev->dev, "init clk plls failed %d\n", ret);
 		goto err_out;
 	}
-	pr_info("k230 init plls OK!\n");
 
 	ret = k230_clk_init_sysclk(pdev);
 	if (ret) {
 		dev_err(&pdev->dev, "init clk clks failed %d\n", ret);
 		goto err_out;
 	}
-	pr_info("k230 init clks OK!\n");
 
 err_out:
 	return ret;
