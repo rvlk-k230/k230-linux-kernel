@@ -212,10 +212,11 @@ struct k230_clk_parent {
 struct k230_clk_cfg {
 	/* attr */
 	const char *name;
-	/* 0-read & write; 1-only read */
+	/* 0-read & write; 1-read only */
 	bool read_only;
 	struct k230_clk_parent parent1;
 	struct k230_clk_parent parent2;
+	bool status;
 	int flags;
 
 	/* rate reg */
@@ -267,6 +268,7 @@ static struct k230_clk_cfg k230_clk_cfgs[] = {
 		.name = "cpu0_src",
 		.read_only = false,
 		.flags = 0,
+		.status = true,
 		.parent1 = {
 			.type = K230_PLL_DIV,
 			.pll_div_id = K230_PLL0_DIV2,
@@ -283,6 +285,7 @@ static struct k230_clk_cfg k230_clk_cfgs[] = {
 		.name = "cpu0_aclk",
 		.read_only = false,
 		.flags = 0,
+		.status = true,
 		.parent1 = {
 			.type = K230_CLK_COMPOSITE,
 			.clk_id = K230_CPU0_SRC,
@@ -299,6 +302,7 @@ static struct k230_clk_cfg k230_clk_cfgs[] = {
 		.name = "cpu0_plic",
 		.read_only = false,
 		.flags = 0,
+		.status = true,
 		.parent1 = {
 			.type = K230_CLK_COMPOSITE,
 			.clk_id = K230_CPU0_SRC,
@@ -315,6 +319,7 @@ static struct k230_clk_cfg k230_clk_cfgs[] = {
 		.name = "cpu0_noc_ddrcp4",
 		.read_only = false,
 		.flags = 0,
+		.status = true,
 		.parent1 = {
 			.type = K230_CLK_COMPOSITE,
 			.clk_id = K230_CPU0_SRC,
@@ -327,6 +332,7 @@ static struct k230_clk_cfg k230_clk_cfgs[] = {
 		.name = "cpu0_pclk",
 		.read_only = false,
 		.flags = 0,
+		.status = true,
 		.parent1 = {
 			.type = K230_PLL_DIV,
 			.pll_div_id = K230_PLL0_DIV4,
@@ -343,6 +349,7 @@ static struct k230_clk_cfg k230_clk_cfgs[] = {
 		.name = "pmu_pclk",
 		.read_only = false,
 		.flags = 0,
+		.status = true,
 		.parent1 = {
 			.type = K230_OSC24M,
 		},
@@ -354,7 +361,6 @@ static struct k230_clk_cfg k230_clk_cfgs[] = {
 #define K230_NUM_CLKS ARRAY_SIZE(k230_clk_cfgs)
 
 struct k230_sysclk {
-	/* just for print */
 	struct platform_device *pdev;
 	void __iomem			*pll_regs, *regs;
 	spinlock_t			pll_lock, clk_lock;
@@ -1023,18 +1029,17 @@ static int k230_register_clk(struct platform_device *pdev,
 {
 	struct k230_clk *clk = &ksc->clks[id];
 	struct k230_clk_cfg *cfg = &k230_clk_cfgs[id];
-	struct device *dev = &pdev->dev;
 	struct clk_init_data init = {};
 	int clk_id = 0;
 	int ret = 0;
 
 	if (cfg->have_rate) {
-		cfg->rate_reg = (clksrc.regs + cfg->rate_reg_off);
+		cfg->rate_reg = (ksc->regs + cfg->rate_reg_off);
 		clk_id += K230_CLK_OPS_ID_RATE_ONLY;
 	}
 
 	if (cfg->have_mux) {
-		cfg->mux_reg = (clksrc.regs + cfg->mux_reg_off);
+		cfg->mux_reg = (ksc->regs + cfg->mux_reg_off);
 		clk_id += K230_CLK_OPS_ID_MUX_ONLY;
 
 		/* mux clock doesn't match the case that num_parents less than 2 */
@@ -1045,12 +1050,12 @@ static int k230_register_clk(struct platform_device *pdev,
 	}
 
 	if (cfg->have_gate) {
-		cfg->gate_reg = (clksrc.regs + cfg->gate_reg_off);
+		cfg->gate_reg = (ksc->regs + cfg->gate_reg_off);
 		clk_id += K230_CLK_OPS_ID_GATE_ONLY;
 	}
 
 	if (cfg->have_rate_c)
-		cfg->rate_reg_c = (clksrc.regs + cfg->rate_reg_off_c);
+		cfg->rate_reg_c = (ksc->regs + cfg->rate_reg_off_c);
 
 	init.name = k230_clk_cfgs[id].name;
 	init.flags = flags;
@@ -1062,7 +1067,7 @@ static int k230_register_clk(struct platform_device *pdev,
 	clk->ksc = ksc;
 	clk->hw.init = &init;
 
-	ret = devm_clk_hw_register(dev, &clk->hw);
+	ret = devm_clk_hw_register(&pdev->dev, &clk->hw);
 	if (ret) {
 		dev_err(&pdev->dev, "register clock %s failed\n", k230_clk_cfgs[id].name);
 		clk->id = -1;
@@ -1078,11 +1083,26 @@ static int k230_register_mux_clk(struct platform_device *pdev,
 					struct clk_hw *hw1, struct clk_hw *hw2,
 					int id)
 {
-	const struct clk_parent_data parent_data[] = {
-		{ .hw = hw1 },
-		{ .hw = hw2 }
+	const struct clk_parent_data parent_data[][2] = {
+		[0] = {
+			{ .hw = hw1 },
+			{ .hw = hw2 }
+		},
+		[1] = {
+			{ .hw = hw1 },
+			{ .index = 0 },
+		},
+		[2] = {
+			{ .hw = hw2 },
+			{ .index = 0 },
+		},
 	};
-	return k230_register_clk(pdev, ksc, id, parent_data, 2, 0);
+	if (hw1 && hw2)
+		return k230_register_clk(pdev, ksc, id, parent_data[0], 2, 0);
+	else if (hw1)
+		return k230_register_clk(pdev, ksc, id, parent_data[1], 2, 0);
+	else
+		return k230_register_clk(pdev, ksc, id, parent_data[2], 2, 0);
 }
 
 static int k230_register_osc24m_child(struct platform_device *pdev,
@@ -1189,6 +1209,9 @@ static int k230_register_clks(struct platform_device *pdev, struct k230_sysclk *
 	 */
 	for (i = 0; i < K230_NUM_CLKS; i++) {
 		cfg = &k230_clk_cfgs[i];
+		if (!cfg->status)
+			continue;
+
 		if (cfg->have_mux) {
 			ret = k230_clk_mux_get_hw(ksc, cfg, &hw1, &hw2);
 			if (ret)
