@@ -8,6 +8,20 @@
 #ifndef CLOCK_K230_CLK_H
 #define CLOCK_K230_CLK_H
 
+/* Kendryte K230 SoC pll_div identifiers (arbitrary values). */
+#define		K230_PLL0_DIV2			0
+#define		K230_PLL0_DIV3			1
+#define		K230_PLL0_DIV4			2
+#define		K230_PLL1_DIV2			3
+#define		K230_PLL1_DIV3			4
+#define		K230_PLL1_DIV4			5
+#define		K230_PLL2_DIV2			6
+#define		K230_PLL2_DIV3			7
+#define		K230_PLL2_DIV4			8
+#define		K230_PLL3_DIV2			9
+#define		K230_PLL3_DIV3			10
+#define		K230_PLL3_DIV4			11
+
 /* Kendryte K230 SoC clock identifiers (arbitrary values). */
 #define		K230_CPU0_SRC			0
 #define		K230_CPU0_ACLK			1
