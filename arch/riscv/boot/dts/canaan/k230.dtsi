@@ -147,18 +147,48 @@
 			status = "disabled";
 		};
 
-		sysclk: clock-controller@91100000 {
-			compatible = "canaan,k230-clk";
-			reg = <0x0 0x91102000 0x0 0x1000>, <0x0 0x91100000 0x0 0x1000>;
+		plls: clock-plls@91102000 {
+			reg = <0x0 0x91102000 0x0 0x1000>;
 			clocks = <&osc24m>;
 			#clock-cells = <1>;
-			clock-output-names =
-			"CPU0_SRC",
-			"CPU0_ACLK",
-			"CPU0_PLIC",
-			"CPU0_NOC_DDRCP4",
-			"CPU0_PCLK",
-			"PMU_PCLK";
+		};
+
+		sysclk: clock-controller@91100000 {
+			compatible = "canaan,k230-clk";
+			reg = <0x0 0x91100000 0x0 0x1000>;
+			clocks = <&osc24m>,
+				 <&plls K230_PLL0_DIV2>,
+				 <&plls K230_PLL0_DIV3>,
+				 <&plls K230_PLL0_DIV4>,
+				 <&plls K230_PLL1_DIV2>,
+				 <&plls K230_PLL1_DIV3>,
+				 <&plls K230_PLL1_DIV4>,
+				 <&plls K230_PLL2_DIV2>,
+				 <&plls K230_PLL2_DIV3>,
+				 <&plls K230_PLL2_DIV4>,
+				 <&plls K230_PLL3_DIV2>,
+				 <&plls K230_PLL3_DIV3>,
+				 <&plls K230_PLL3_DIV4>;
+			clock-names = "osc24m",
+				      "pll0_div2",
+				      "pll0_div3",
+				      "pll0_div4",
+				      "pll1_div2",
+				      "pll1_div3",
+				      "pll1_div4",
+				      "pll2_div2",
+				      "pll2_div3",
+				      "pll2_div4",
+				      "pll3_div2",
+				      "pll3_div3",
+				      "pll3_div4",
+			#clock-cells = <1>;
+			clock-output-names = "CPU0_SRC",
+					     "CPU0_ACLK",
+					     "CPU0_PLIC",
+					     "CPU0_NOC_DDRCP4",
+					     "CPU0_PCLK",
+					     "PMU_PCLK";
 		};
 	};
 };
