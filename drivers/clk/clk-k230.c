@@ -7,6 +7,7 @@
  */
 #include <linux/bitfield.h>
 #include <linux/clk.h>
+#include <linux/clkdev.h>
 #include <linux/clk-provider.h>
 #include <linux/delay.h>
 #include <linux/io.h>
@@ -971,9 +972,9 @@ static int k230_clk_set_rate(struct clk_hw *hw, unsigned long rate,
 	.is_enabled	= k230_clk_is_enabled
 
 #define K230_CLK_OPS_RATE				\
-	.set_rate    = k230_clk_set_rate,		\
-	.round_rate  = k230_clk_round_rate,		\
-	.recalc_rate = k230_clk_get_rate
+	.set_rate	= k230_clk_set_rate,		\
+	.round_rate	= k230_clk_round_rate,		\
+	.recalc_rate	= k230_clk_get_rate
 
 #define K230_CLK_OPS_MUX				\
 	.set_parent	= k230_clk_set_parent,		\
@@ -1328,8 +1329,18 @@ static int k230_clk_init_plls(struct platform_device *pdev)
 		dev_err(&pdev->dev, "register pll_divs falied %d\n", ret);
 
 	ret = devm_of_clk_add_hw_provider(&pdev->dev, k230_clk_hw_pll_divs_onecell_get, ksc);
-	if (ret)
+	if (ret) {
 		dev_err(&pdev->dev, "add plls provider failed %d\n", ret);
+		goto err_out;
+	}
+
+	for (int i = 0; i < K230_PLL_DIV_NUM; i++) {
+		ret = devm_clk_hw_register_clkdev(&pdev->dev, ksc->dclks[i].hw, k230_pll_div_cfgs[i].name, NULL);
+		if (ret) {
+			dev_err(&pdev->dev, "clock lookup create failed");
+			goto err_out;
+		}
+	}
 
 err_out:
 	return ret;
