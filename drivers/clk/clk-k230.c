@@ -142,6 +142,22 @@ struct k230_pll_div_cfg {
 	int div;
 };
 
+enum {
+K230_PLL0_DIV2,
+K230_PLL0_DIV3,
+K230_PLL0_DIV4,
+K230_PLL1_DIV2,
+K230_PLL1_DIV3,
+K230_PLL1_DIV4,
+K230_PLL2_DIV2,
+K230_PLL2_DIV3,
+K230_PLL2_DIV4,
+K230_PLL3_DIV2,
+K230_PLL3_DIV3,
+K230_PLL3_DIV4,
+K230_PLL_DIV_NUM 
+};
+
 static struct k230_pll_div_cfg k230_pll_div_cfgs[] = {
 	[K230_PLL0_DIV2] = { "pll0", "pll0_div2", 2},
 	[K230_PLL0_DIV3] = { "pll0", "pll0_div3", 3},
@@ -156,7 +172,6 @@ static struct k230_pll_div_cfg k230_pll_div_cfgs[] = {
 	[K230_PLL3_DIV3] = { "pll3", "pll3_div3", 3},
 	[K230_PLL3_DIV4] = { "pll3", "pll3_div4", 4},
 };
-#define K230_PLL_DIV_NUM ARRAY_SIZE(k230_pll_div_cfgs)
 
 /* K230 CLK registers offset */
 #define K230_CLK_AUDIO_CLKDIV_OFFSET 0x34
@@ -1301,8 +1316,6 @@ static int k230_clk_init_plls(struct platform_device *pdev)
 	struct k230_sysclk *ksc = &clksrc;
 	int ret = 0;
 
-	ksc->pdev = pdev;
-
 	if (!pdev) {
 		dev_err(&pdev->dev, "platform device pointer is NULL\n");
 		ret = -EINVAL;
@@ -1346,27 +1359,10 @@ err_out:
 	return ret;
 }
 
-static const struct of_device_id k230_pll_ids[] = {
-	{ .compatible = "canaan,k230-plls" },
-	{ },
-};
-MODULE_DEVICE_TABLE(of, k230_pll_ids);
-
-static struct platform_driver k230_pll_driver = {
-	.driver = {
-		.name  = "k230_plls",
-		.of_match_table = k230_pll_ids,
-	},
-	.probe = k230_clk_init_plls,
-};
-builtin_platform_driver(k230_pll_driver);
-
 static int k230_clk_init_sysclk(struct platform_device *pdev)
 {
 	struct k230_sysclk *ksc = &clksrc;
 	int ret = 0;
-
-	ksc->pdev = pdev;
 
 	if (!pdev) {
 		dev_err(&pdev->dev, "platform device pointer is NULL\n");
@@ -1376,7 +1372,7 @@ static int k230_clk_init_sysclk(struct platform_device *pdev)
 
 	spin_lock_init(&ksc->clk_lock);
 
-	ksc->regs = devm_platform_ioremap_resource(pdev, 0);
+	ksc->regs = devm_platform_ioremap_resource(pdev, 1);
 	if (!ksc->regs) {
 		dev_err(&pdev->dev, "failed to map registers\n");
 		ret = PTR_ERR(ksc->regs);
@@ -1397,6 +1393,35 @@ err_out:
 	return ret;
 }
 
+static int k230_clk_probe(struct platform_device *pdev)
+{
+	struct k230_sysclk *ksc = &clksrc;
+	int ret = 0;
+
+	ksc->pdev = pdev;
+
+	if (!pdev) {
+		dev_err(&pdev->dev, "platform device pointer is NULL\n");
+		ret = -EINVAL;
+		goto err_out;
+	}
+
+	ret = k230_clk_init_plls(pdev);
+	if (ret) {
+		dev_err(&pdev->dev, "k230 init plls failed with %d", ret);
+		goto err_out;
+	}
+
+	ret = k230_clk_init_sysclk(pdev);
+	if (ret) {
+		dev_err(&pdev->dev, "k230 init clks failed with %d", ret);
+		goto err_out;
+	}
+
+err_out:
+	return ret;
+}
+
 static const struct of_device_id k230_clk_ids[] = {
 	{ .compatible = "canaan,k230-clk" },
 	{ },
@@ -1408,6 +1433,6 @@ static struct platform_driver k230_clk_driver = {
 		.name  = "k230_clock_controller",
 		.of_match_table = k230_clk_ids,
 	},
-	.probe = k230_clk_init_sysclk,
+	.probe = k230_clk_probe,
 };
 builtin_platform_driver(k230_clk_driver);
