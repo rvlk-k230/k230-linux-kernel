@@ -142,20 +142,21 @@ struct k230_pll_div_cfg {
 	int div;
 };
 
-enum {
-K230_PLL0_DIV2,
-K230_PLL0_DIV3,
-K230_PLL0_DIV4,
-K230_PLL1_DIV2,
-K230_PLL1_DIV3,
-K230_PLL1_DIV4,
-K230_PLL2_DIV2,
-K230_PLL2_DIV3,
-K230_PLL2_DIV4,
-K230_PLL3_DIV2,
-K230_PLL3_DIV3,
-K230_PLL3_DIV4,
-K230_PLL_DIV_NUM 
+/* K230 PLL_DIVS */
+enum k230_pll_div_id {
+	K230_PLL0_DIV2,
+	K230_PLL0_DIV3,
+	K230_PLL0_DIV4,
+	K230_PLL1_DIV2,
+	K230_PLL1_DIV3,
+	K230_PLL1_DIV4,
+	K230_PLL2_DIV2,
+	K230_PLL2_DIV3,
+	K230_PLL2_DIV4,
+	K230_PLL3_DIV2,
+	K230_PLL3_DIV3,
+	K230_PLL3_DIV4,
+	K230_PLL_DIV_NUM
 };
 
 static struct k230_pll_div_cfg k230_pll_div_cfgs[] = {
@@ -203,7 +204,7 @@ enum k230_clk_parent_type {
 struct k230_clk_parent {
 	enum k230_clk_parent_type type;
 	union {
-		int pll_div_id;
+		enum k230_pll_div_id pll_div_id;
 		enum k230_pll_id pll_id;
 		int clk_id;
 	};
@@ -1148,7 +1149,7 @@ static int k230_register_pll_child(struct platform_device *pdev,
 static int k230_register_pll_div_child(struct platform_device *pdev,
 				       struct k230_sysclk *ksc,
 				       int id,
-				       int pll_div_id,
+				       enum k230_pll_div_id pll_div_id,
 				       unsigned long flags)
 {
 	const struct clk_parent_data parent_data = {
