@@ -1112,12 +1112,9 @@ static int k230_register_mux_clk(struct platform_device *pdev,
 					int num_parent,
 					int id)
 {
-	const struct clk_parent_data _parent_data[];
-
-	for (int i = 0; i < num_parent; i++)
-		_parent_data[i] = parent_data[i];
-
-	return k230_register_clk(pdev, ksc, id, _parent_data, num_parent, 0);
+	return k230_register_clk(pdev, ksc, id,
+				(const struct clk_parent_data *)parent_data,
+				num_parent, 0);
 }
 
 static int k230_register_osc24m_child(struct platform_device *pdev,
@@ -1207,15 +1204,11 @@ out:
 	return ret;
 }
 
-DEFINE_FREE(clk_parent_data_put, struct clk_parent_data *, if (_T) kfree(_T))
-
 static int k230_register_clks(struct platform_device *pdev, struct k230_sysclk *ksc)
 {
 	struct k230_clk_cfg *cfg;
 	struct k230_clk_parent *pclk;
-	struct clk_parent_data *parent_data __free(clk_parent_data_put) = kmalloc(
-			sizeof(struct clk_parent_data) * K230_CLK_MAX_PARENT_NUM,
-			GFP_KERNEL);
+	struct clk_parent_data parent_data[K230_CLK_MAX_PARENT_NUM];
 	int ret, i;
 
 	/*
