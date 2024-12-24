@@ -201,7 +201,7 @@ enum k230_clk_parent_type {
 	K230_CLK_COMPOSITE,
 };
 
-#define K230_CLK_MAX_PARENT_NUM 4
+#define K230_CLK_MAX_PARENT_NUM 6
 
 struct k230_clk_parent {
 	enum k230_clk_parent_type type;
@@ -1112,12 +1112,11 @@ static int k230_register_mux_clk(struct platform_device *pdev,
 					int num_parent,
 					int id)
 {
-	const struct clk_parent_data _parent_data[K230_CLK_MAX_PARENT_NUM] = {
-		[0] = parent_data[0],
-		[1] = parent_data[1],
-		[2] = parent_data[2],
-		[3] = parent_data[3],
-	}; 
+	const struct clk_parent_data _parent_data[];
+
+	for (int i = 0; i < num_parent; i++)
+		_parent_data[i] = parent_data[i];
+
 	return k230_register_clk(pdev, ksc, id, _parent_data, num_parent, 0);
 }
 
@@ -1208,11 +1207,15 @@ out:
 	return ret;
 }
 
+DEFINE_FREE(clk_parent_data_put, struct clk_parent_data *, if (_T) kfree(_T))
+
 static int k230_register_clks(struct platform_device *pdev, struct k230_sysclk *ksc)
 {
 	struct k230_clk_cfg *cfg;
 	struct k230_clk_parent *pclk;
-	struct clk_parent_data parent_data[K230_CLK_MAX_PARENT_NUM];
+	struct clk_parent_data *parent_data __free(clk_parent_data_put) = kmalloc(
+			sizeof(struct clk_parent_data) * K230_CLK_MAX_PARENT_NUM,
+			GFP_KERNEL);
 	int ret, i;
 
 	/*
