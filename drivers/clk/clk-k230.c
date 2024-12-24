@@ -1350,7 +1350,7 @@ static int k230_clk_init_plls(struct platform_device *pdev)
 	for (int i = 0; i < K230_PLL_DIV_NUM; i++) {
 		ret = devm_clk_hw_register_clkdev(&pdev->dev, ksc->dclks[i].hw, k230_pll_div_cfgs[i].name, NULL);
 		if (ret) {
-			dev_err(&pdev->dev, "clock lookup create failed");
+			dev_err(&pdev->dev, "clock_lookup create failed %d\n", ret);
 			goto err_out;
 		}
 	}
@@ -1408,13 +1408,13 @@ static int k230_clk_probe(struct platform_device *pdev)
 
 	ret = k230_clk_init_plls(pdev);
 	if (ret) {
-		dev_err(&pdev->dev, "k230 init plls failed with %d", ret);
+		dev_err(&pdev->dev, "init plls failed with %d\n", ret);
 		goto err_out;
 	}
 
 	ret = k230_clk_init_sysclk(pdev);
 	if (ret) {
-		dev_err(&pdev->dev, "k230 init clks failed with %d", ret);
+		dev_err(&pdev->dev, "init clks failed with %d\n", ret);
 		goto err_out;
 	}
 
