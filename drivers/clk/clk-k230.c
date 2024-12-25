@@ -383,7 +383,7 @@ static struct k230_clk_cfg k230_clk_cfgs[] = {
 		K230_RATE_FORMAT_ZERO,
 		K230_GATE_FORMAT(0x18, 24, 0, true),
 		K230_MUX_FORMAT(0x20, 18, 0x1, true),
-       },
+	},
 };
 #define K230_NUM_CLKS ARRAY_SIZE(k230_clk_cfgs)
 
@@ -1163,8 +1163,8 @@ static int k230_register_clk_child(struct platform_device *pdev,
 }
 
 static int _k230_clk_mux_get_parent_data(struct k230_sysclk *ksc,
-				struct k230_clk_parent *pclk, 
-				struct clk_parent_data *parent_data)
+					struct k230_clk_parent *pclk,
+					struct clk_parent_data *parent_data)
 {
 	switch (pclk->type) {
 	case K230_OSC24M:
@@ -1339,7 +1339,8 @@ static int k230_clk_init_plls(struct platform_device *pdev)
 	}
 
 	for (int i = 0; i < K230_PLL_DIV_NUM; i++) {
-		ret = devm_clk_hw_register_clkdev(&pdev->dev, ksc->dclks[i].hw, k230_pll_div_cfgs[i].name, NULL);
+		ret = devm_clk_hw_register_clkdev(&pdev->dev, ksc->dclks[i].hw,
+						k230_pll_div_cfgs[i].name, NULL);
 		if (ret) {
 			dev_err(&pdev->dev, "clock_lookup create failed %d\n", ret);
 			goto err_out;
