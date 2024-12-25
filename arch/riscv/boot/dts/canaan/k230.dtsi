@@ -152,7 +152,8 @@
 			reg = <0x0 0x91102000 0x0 0x1000>, <0x0 0x91100000 0x0 0x1000>;
 			clocks = <&osc24m>;
 			#clock-cells = <1>;
-			clock-output-names = "CPU0_SRC",
+			clock-output-names =
+			"CPU0_SRC",
 			"CPU0_ACLK",
 			"CPU0_PLIC",
 			"CPU0_NOC_DDRCP4",
