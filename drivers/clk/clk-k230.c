@@ -5,6 +5,8 @@
  * Author: Xukai Wang <kingxukai@zohomail.com>
  * Author: Troy Mitchell <troymitchell988@gmail.com>
  */
+
+#include <dt-bindings/clock/k230-clk.h>
 #include <linux/bitfield.h>
 #include <linux/clk.h>
 #include <linux/clkdev.h>
@@ -21,7 +23,6 @@
 #include <linux/platform_device.h>
 #include <linux/slab.h>
 #include <linux/spinlock.h>
-#include <dt-bindings/clock/k230-clk.h>
 
 /* PLL control register bits. */
 #define K230_PLL_BYPASS_ENABLE		BIT(19)
@@ -41,8 +42,15 @@
 #define K230_PLL_BYPASS_REG_OFFSET	0x04
 #define K230_PLL_GATE_REG_OFFSET	0x08
 #define K230_PLL_LOCK_REG_OFFSET	0x0C
+
 /* PLL lock register bits.  */
 #define K230_PLL_STATUS_MASK            BIT(0)
+
+/* K230 CLK registers offset */
+#define K230_CLK_AUDIO_CLKDIV_OFFSET 0x34
+#define K230_CLK_PDM_CLKDIV_OFFSET 0x40
+#define K230_CLK_CODEC_ADC_MCLKDIV_OFFSET 0x38
+#define K230_CLK_CODEC_DAC_MCLKDIV_OFFSET 0x3c
 
 /* K230 CLK MACROS */
 #define K230_GATE_FORMAT(_reg, _bit, _reverse, _have_gate)                      \
@@ -173,12 +181,6 @@ static struct k230_pll_div_cfg k230_pll_div_cfgs[] = {
 	[K230_PLL3_DIV3] = { "pll3", "pll3_div3", 3},
 	[K230_PLL3_DIV4] = { "pll3", "pll3_div4", 4},
 };
-
-/* K230 CLK registers offset */
-#define K230_CLK_AUDIO_CLKDIV_OFFSET 0x34
-#define K230_CLK_PDM_CLKDIV_OFFSET 0x40
-#define K230_CLK_CODEC_ADC_MCLKDIV_OFFSET 0x38
-#define K230_CLK_CODEC_DAC_MCLKDIV_OFFSET 0x3c
 
 /* K230 CLKS. */
 struct k230_clk {
@@ -585,13 +587,12 @@ static int k230_register_pll_divs(struct platform_device *pdev, struct k230_sysc
 							0, 1, k230_pll_div_cfgs[i].div);
 		if (IS_ERR(hw)) {
 			ret = PTR_ERR(hw);
-			goto err_out;
+			return ret;
 		}
 		ksc->dclks[i].hw = hw;
 		ksc->dclks[i].ksc = ksc;
 	}
 
-err_out:
 	return ret;
 }
 
@@ -816,6 +817,7 @@ static int k230_clk_find_approximate(struct k230_clk *clk,
 		24576000,
 		49152000
 	};
+
 	uint32_t pdm_div[20][2] = {
 		{3125, 1},
 		{6250, 3},
@@ -898,7 +900,6 @@ static int k230_clk_find_approximate(struct k230_clk *clk,
 			return -EINVAL;
 		}
 		break;
-
 	default:
 		WARN_ON_ONCE(true);
 		return -EPERM;
@@ -1319,23 +1320,23 @@ static int k230_clk_init_plls(struct platform_device *pdev)
 	if (!ksc->pll_regs) {
 		dev_err(&pdev->dev, "failed to map registers\n");
 		ret = PTR_ERR(ksc->pll_regs);
-		goto err_out;
+		return ret;
 	}
 
 	ret = k230_register_plls(pdev, ksc);
 	if (ret) {
 		dev_err(&pdev->dev, "register plls failed %d\n", ret);
-		goto err_out;
+		return ret;
 	}
 
 	ret = k230_register_pll_divs(pdev, ksc);
 	if (ret)
-		dev_err(&pdev->dev, "register pll_divs falied %d\n", ret);
+		dev_err(&pdev->dev, "register pll_divs failed %d\n", ret);
 
 	ret = devm_of_clk_add_hw_provider(&pdev->dev, k230_clk_hw_pll_divs_onecell_get, ksc);
 	if (ret) {
 		dev_err(&pdev->dev, "add plls provider failed %d\n", ret);
-		goto err_out;
+		return ret;
 	}
 
 	for (int i = 0; i < K230_PLL_DIV_NUM; i++) {
@@ -1343,11 +1344,10 @@ static int k230_clk_init_plls(struct platform_device *pdev)
 						k230_pll_div_cfgs[i].name, NULL);
 		if (ret) {
 			dev_err(&pdev->dev, "clock_lookup create failed %d\n", ret);
-			goto err_out;
+			return ret;
 		}
 	}
 
-err_out:
 	return ret;
 }
 
@@ -1362,20 +1362,19 @@ static int k230_clk_init_sysclk(struct platform_device *pdev)
 	if (!ksc->regs) {
 		dev_err(&pdev->dev, "failed to map registers\n");
 		ret = PTR_ERR(ksc->regs);
-		goto err_out;
+		return ret;
 	}
 
 	ret = k230_register_clks(pdev, ksc);
 	if (ret) {
 		dev_err(&pdev->dev, "register clock provider failed %d\n", ret);
-		goto err_out;
+		return ret;
 	}
 
 	ret = devm_of_clk_add_hw_provider(&pdev->dev, k230_clk_hw_onecell_get, ksc);
 	if (ret)
 		dev_err(&pdev->dev, "add clock provider failed %d\n", ret);
 
-err_out:
 	return ret;
 }
 
@@ -1389,28 +1388,27 @@ static int k230_clk_probe(struct platform_device *pdev)
 	if (!pdev) {
 		dev_err(&pdev->dev, "platform device pointer is NULL\n");
 		ret = -EINVAL;
-		goto err_out;
+		return ret;
 	}
 
 	ret = k230_clk_init_plls(pdev);
 	if (ret) {
 		dev_err(&pdev->dev, "init plls failed with %d\n", ret);
-		goto err_out;
+		return ret;
 	}
 
 	ret = k230_clk_init_sysclk(pdev);
 	if (ret) {
 		dev_err(&pdev->dev, "init clks failed with %d\n", ret);
-		goto err_out;
+		return ret;
 	}
 
-err_out:
 	return ret;
 }
 
 static const struct of_device_id k230_clk_ids[] = {
 	{ .compatible = "canaan,k230-clk" },
-	{ },
+	{ /*sentinel*/ },
 };
 MODULE_DEVICE_TABLE(of, k230_clk_ids);
 
