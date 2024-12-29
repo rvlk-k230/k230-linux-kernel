@@ -1408,7 +1408,7 @@ static int k230_clk_probe(struct platform_device *pdev)
 
 static const struct of_device_id k230_clk_ids[] = {
 	{ .compatible = "canaan,k230-clk" },
-	{ /*sentinel*/ },
+	{ /* Sentinel */ },
 };
 MODULE_DEVICE_TABLE(of, k230_clk_ids);
 
