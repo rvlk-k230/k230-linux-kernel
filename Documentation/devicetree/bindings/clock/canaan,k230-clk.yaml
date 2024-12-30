@@ -13,12 +13,12 @@ properties:
   compatible:
     const: canaan,k230-clk
 
-  clocks: 
-		const: 1
+  clocks:
+    maxItems: 1
 
   reg:
     maxItems: 2
-		minItems: 1
+    minItems: 1
 
   '#clock-cells':
     const: 1
