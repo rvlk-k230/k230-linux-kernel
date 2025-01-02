@@ -17,8 +17,14 @@ properties:
     maxItems: 1
 
   reg:
-    maxItems: 2
+    description: |
+      The `reg` property specifies the base address and size of the device's registers.
+      - The first address corresponds to the base address of the PLL control registers.
+      - The second address corresponds to the base address of the sysclk control registers.
     minItems: 1
+    items:
+      - description: Base address and size of the PLL control registers.
+      - description: Base address and size of the sysclk control registers.
 
   '#clock-cells':
     const: 1
