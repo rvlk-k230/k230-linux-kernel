@@ -6,22 +6,13 @@
  * Author: Troy Mitchell <troymitchell988@gmail.com>
  */
 
-#include <dt-bindings/clock/k230-clk.h>
-#include <linux/bitfield.h>
+#include <dt-bindings/clock/canaan,k230-clk.h>
 #include <linux/clk.h>
 #include <linux/clkdev.h>
 #include <linux/clk-provider.h>
-#include <linux/delay.h>
-#include <linux/io.h>
 #include <linux/iopoll.h>
 #include <linux/module.h>
-#include <linux/of.h>
-#include <linux/of_address.h>
-#include <linux/of_clk.h>
-#include <linux/of_device.h>
-#include <linux/of_platform.h>
 #include <linux/platform_device.h>
-#include <linux/slab.h>
 #include <linux/spinlock.h>
 
 /* PLL control register bits. */
@@ -773,7 +764,7 @@ static int k230_clk_find_approximate(struct k230_clk *clk,
 	long perfect_divide;
 	struct k230_clk_cfg *cfg = &k230_clk_cfgs[clk->id];
 
-	u32 codec_clk[9] = {
+	const u32 codec_clk[9] = {
 		2048000,
 		3072000,
 		4096000,
@@ -785,7 +776,7 @@ static int k230_clk_find_approximate(struct k230_clk *clk,
 		49152000
 	};
 
-	u32 codec_div[9][2] = {
+	const u32 codec_div[9][2] = {
 		{3125, 16},
 		{3125, 24},
 		{3125, 32},
@@ -797,7 +788,7 @@ static int k230_clk_find_approximate(struct k230_clk *clk,
 		{3125, 384}
 	};
 
-	u32 pdm_clk[20] = {
+	const u32 pdm_clk[20] = {
 		128000,
 		192000,
 		256000,
@@ -935,7 +926,7 @@ static int k230_clk_set_rate(struct clk_hw *hw, unsigned long rate,
 	struct k230_clk *clk = to_k230_clk(hw);
 	struct k230_sysclk *ksc = clk->ksc;
 	struct k230_clk_cfg *cfg = &k230_clk_cfgs[clk->id];
-	u32 div = 0, mul = 0, reg = 0, reg_c = 0;
+	u32 div = 0, mul = 0, reg = 0, reg_c;
 
 	if (!cfg->have_rate || !cfg->rate_reg) {
 		dev_err(&ksc->pdev->dev, "This clock may have no rate\n");
@@ -1194,7 +1185,7 @@ static int k230_clk_mux_get_parent_data(struct k230_sysclk *ksc,
 					struct clk_parent_data *parent_data,
 					int num_parent)
 {
-	int ret;
+	int ret = 0;
 	struct k230_clk_parent *pclk = cfg->parent;
 
 	for (int i = 0; i < num_parent; i++) {
@@ -1212,7 +1203,7 @@ static int k230_register_clks(struct platform_device *pdev, struct k230_sysclk *
 	struct k230_clk_cfg *cfg;
 	struct k230_clk_parent *pclk;
 	struct clk_parent_data parent_data[K230_CLK_MAX_PARENT_NUM];
-	int ret, i;
+	int ret = 0, i;
 
 	/*
 	 *  Single parent clock:
@@ -1332,8 +1323,10 @@ static int k230_clk_init_plls(struct platform_device *pdev)
 	}
 
 	ret = k230_register_pll_divs(pdev, ksc);
-	if (ret)
+	if (ret) {
 		dev_err(&pdev->dev, "register pll_divs failed %d\n", ret);
+		return ret;
+	}
 
 	ret = devm_of_clk_add_hw_provider(&pdev->dev, k230_clk_hw_pll_divs_onecell_get, ksc);
 	if (ret) {
