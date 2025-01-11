@@ -109,7 +109,7 @@ struct k230_pll_cfg {
 	const char *name;
 };
 
-static struct k230_pll_cfg k230_pll_cfgs[] = {
+static const struct k230_pll_cfg k230_pll_cfgs[] = {
 	[K230_PLL0] = {
 		.reg = K230_PLL0_OFFSET_BASE,
 		.pll_id = K230_PLL0,
@@ -159,7 +159,7 @@ enum k230_pll_div_id {
 	K230_PLL_DIV_NUM
 };
 
-static struct k230_pll_div_cfg k230_pll_div_cfgs[] = {
+static const struct k230_pll_div_cfg k230_pll_div_cfgs[] = {
 	[K230_PLL0_DIV2] = { "pll0", "pll0_div2", 2},
 	[K230_PLL0_DIV3] = { "pll0", "pll0_div3", 3},
 	[K230_PLL0_DIV4] = { "pll0", "pll0_div4", 4},
@@ -811,7 +811,7 @@ static int k230_clk_find_approximate(struct k230_clk *clk,
 		49152000
 	};
 
-	u32 pdm_div[20][2] = {
+	const u32 pdm_div[20][2] = {
 		{3125, 1},
 		{6250, 3},
 		{3125, 2},
