@@ -574,10 +574,8 @@ static int k230_register_pll_divs(struct platform_device *pdev, struct k230_sysc
 		hw = devm_clk_hw_register_fixed_factor(dev, k230_pll_div_cfgs[i].name,
 						       k230_pll_div_cfgs[i].parent_name,
 						       0, 1, k230_pll_div_cfgs[i].div);
-		if (IS_ERR(hw)) {
-			ret = PTR_ERR(hw);
-			return ret;
-		}
+		if (IS_ERR(hw))
+			return PTR_ERR(hw);
 		ksc->dclks[i].hw = hw;
 		ksc->dclks[i].ksc = ksc;
 	}
@@ -592,10 +590,8 @@ static int k230_clk_enable(struct clk_hw *hw)
 	struct k230_clk_cfg *cfg = &k230_clk_cfgs[clk->id];
 	u32 reg;
 
-	if (!cfg->have_gate) {
-		dev_err(&ksc->pdev->dev, "This clock doesn't have gate\n");
-		return -EINVAL;
-	}
+	if (!cfg->have_gate)
+		return dev_err_probe(&ksc->pdev->dev, -EINVAL, "This clock doesn't have gate\n");
 
 	guard(spinlock)(&ksc->clk_lock);
 	reg = readl(cfg->gate_reg);
@@ -637,23 +633,18 @@ static int k230_clk_is_enabled(struct clk_hw *hw)
 	struct k230_sysclk *ksc = clk->ksc;
 	struct k230_clk_cfg *cfg = &k230_clk_cfgs[clk->id];
 	u32 reg;
-	int ret;
 
-	if (!cfg->have_gate) {
-		dev_err(&ksc->pdev->dev, "This clock doesn't have gate\n");
-		return -EINVAL;
-	}
+	if (!cfg->have_gate)
+		return dev_err_probe(&ksc->pdev->dev, -EINVAL, "This clock doesn't have gate\n");
 
 	guard(spinlock)(&ksc->clk_lock);
 	reg = readl(cfg->gate_reg);
 
 	/* Check gate bit condition based on configuration and then set ret */
 	if (cfg->gate_bit_reverse)
-		ret = (BIT(cfg->gate_bit_enable) & reg) ? 1 : 0;
+		return (BIT(cfg->gate_bit_enable) & reg) ? 1 : 0;
 	else
-		ret = (BIT(cfg->gate_bit_enable) & ~reg) ? 1 : 0;
-
-	return ret;
+		return (BIT(cfg->gate_bit_enable) & ~reg) ? 1 : 0;
 }
 
 static int k230_clk_set_parent(struct clk_hw *hw, u8 index)
@@ -663,10 +654,8 @@ static int k230_clk_set_parent(struct clk_hw *hw, u8 index)
 	struct k230_clk_cfg *cfg = &k230_clk_cfgs[clk->id];
 	u8 reg;
 
-	if (!cfg->have_mux) {
-		dev_err(&ksc->pdev->dev, "This clock doesn't have mux\n");
-		return -EINVAL;
-	}
+	if (!cfg->have_mux)
+		return dev_err_probe(&ksc->pdev->dev, -EINVAL, "This clock doesn't have mux\n");
 
 	guard(spinlock)(&ksc->clk_lock);
 	reg = (cfg->mux_reg_mask & index) << cfg->mux_reg_shift;
@@ -682,10 +671,8 @@ static u8 k230_clk_get_parent(struct clk_hw *hw)
 	struct k230_clk_cfg *cfg = &k230_clk_cfgs[clk->id];
 	u8 reg;
 
-	if (!cfg->have_mux) {
-		dev_err(&ksc->pdev->dev, "This clock doesn't have mux\n");
-		return -EINVAL;
-	}
+	if (!cfg->have_mux)
+		return dev_err_probe(&ksc->pdev->dev, -EINVAL, "This clock doesn't have mux\n");
 
 	guard(spinlock)(&ksc->clk_lock);
 	reg = readb(cfg->mux_reg);
@@ -906,10 +893,11 @@ static long k230_clk_round_rate(struct clk_hw *hw, unsigned long rate, unsigned 
 				      cfg->rate_mul_min, cfg->rate_mul_max,
 				      cfg->rate_div_min, cfg->rate_div_max,
 				      cfg->method, rate, *parent_rate, &div, &mul)) {
-		dev_err(&ksc->pdev->dev, "[%s]: clk %s round rate error!\n",
+		dev_err(&ksc->pdev->dev,
+			"[%s]: clk %s round rate error!\n",
 			__func__,
 			clk_hw_get_name(hw));
-		return -EINVAL;
+		return 0;
 	}
 
 	return div_u64((u64)(*parent_rate) * mul, div);
@@ -923,30 +911,21 @@ static int k230_clk_set_rate(struct clk_hw *hw, unsigned long rate,
 	struct k230_clk_cfg *cfg = &k230_clk_cfgs[clk->id];
 	u32 div = 0, mul = 0, reg = 0, reg_c;
 
-	if (!cfg->have_rate || !cfg->rate_reg) {
-		dev_err(&ksc->pdev->dev, "This clock may have no rate\n");
-		return -EINVAL;
-	}
+	if (!cfg->have_rate || !cfg->rate_reg)
+		return dev_err_probe(&ksc->pdev->dev, -EINVAL, "This clock may have no rate\n");
 
-	if (rate > parent_rate || rate == 0 || parent_rate == 0) {
-		dev_err(&ksc->pdev->dev, "rate or parent_rate error\n");
-		return -EINVAL;
-	}
+	if (rate > parent_rate || rate == 0 || parent_rate == 0)
+		return dev_err_probe(&ksc->pdev->dev, -EINVAL, "rate or parent_rate error\n");
 
-	if (cfg->read_only) {
-		dev_err(&ksc->pdev->dev, "This clk rate is read only\n");
-		return -EPERM;
-	}
+	if (cfg->read_only)
+		return dev_err_probe(&ksc->pdev->dev, -EPERM, "This clk rate is read only\n");
 
 	if (k230_clk_find_approximate(clk,
 				      cfg->rate_mul_min, cfg->rate_mul_max,
 				      cfg->rate_div_min, cfg->rate_div_max,
-				      cfg->method, rate, parent_rate, &div, &mul)) {
-		dev_err(&ksc->pdev->dev, "[%s]: clk %s set rate error!\n",
-			__func__,
-			clk_hw_get_name(hw));
-		return -EINVAL;
-	}
+				      cfg->method, rate, parent_rate, &div, &mul))
+		return dev_err_probe(&ksc->pdev->dev, -EINVAL, "[%s]: clk %s set rate error!\n",
+				     __func__, clk_hw_get_name(hw));
 
 	guard(spinlock)(&ksc->clk_lock);
 	if (!cfg->have_rate_c) {
@@ -1239,8 +1218,7 @@ static int k230_register_clks(struct platform_device *pdev, struct k230_sysclk *
 							      pclk->clk_id);
 				break;
 			default:
-				dev_err(&pdev->dev, "Invalid type\n");
-				ret = -EINVAL;
+				return dev_err_probe(&pdev->dev, -EINVAL, "Invalid type\n");
 			}
 		}
 		if (ret)
@@ -1298,22 +1276,16 @@ static int k230_clk_init_plls(struct platform_device *pdev)
 	spin_lock_init(&ksc->pll_lock);
 
 	ksc->pll_regs = devm_platform_ioremap_resource(pdev, 0);
-	if (!ksc->pll_regs) {
-		dev_err(&pdev->dev, "failed to map registers\n");
-		ret = PTR_ERR(ksc->pll_regs);
-		return ret;
-	}
+	if (!ksc->pll_regs)
+		return dev_err_probe(&pdev->dev, PTR_ERR(ksc->pll_regs), "map registers failed\n");
 
 	ret = k230_register_plls(pdev, ksc);
-	if (ret) {
-		dev_err(&pdev->dev, "register plls failed %d\n", ret);
-		return ret;
-	}
+	if (ret)
+		return dev_err_probe(&pdev->dev, ret, "register plls failed\n");
 
 	ret = k230_register_pll_divs(pdev, ksc);
-	if (ret) {
+	if (ret)
 		return dev_err_probe(&pdev->dev, ret, "register pll_divs failed\n");
-	}
 
 	ret = devm_of_clk_add_hw_provider(&pdev->dev, k230_clk_hw_pll_divs_onecell_get, ksc);
 	if (ret)
