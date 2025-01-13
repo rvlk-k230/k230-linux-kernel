@@ -36,7 +36,8 @@ examples:
   - |
     clock-controller@91102000 {
         compatible = "canaan,k230-clk";
-        reg = <0x91102000 0x1000>, <0x91100000 0x1000>;
+        reg = <0x91102000 0x1000>,
+              <0x91100000 0x1000>;
         clocks = <&osc24m>;
         #clock-cells = <1>;
     };
