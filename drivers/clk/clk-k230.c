@@ -390,7 +390,7 @@ struct k230_sysclk {
 	struct k230_pll			plls[K230_PLL_NUM];
 	struct k230_clk			clks[K230_NUM_CLKS];
 	struct k230_pll_div		dclks[K230_PLL_DIV_NUM];
-} clksrc;
+};
 
 static void k230_init_pll(void __iomem *regs, enum k230_pll_id pll_id,
 			  struct k230_pll *pll)
@@ -418,7 +418,7 @@ static int k230_pll_prepare(struct clk_hw *hw)
 				 400, 0);
 	/* this will not happen actually */
 	if (ret)
-		dev_err(&ksc->pdev->dev, "PLL timeout!\n");
+		return dev_err_probe(&ksc->pdev->dev, ret, "PLL timeout!\n");
 
 	return ret;
 }
@@ -538,19 +538,16 @@ static int k230_register_pll(struct platform_device *pdev,
 	pll->ksc = ksc;
 
 	ret = devm_clk_hw_register(dev, &pll->hw);
-	if (ret) {
-		pll->id = -1;
-		goto out;
-	}
+	if (ret)
+		return dev_err_probe(dev, ret, "failed to register pll");
 
-out:
 	return ret;
 }
 
 static int k230_register_plls(struct platform_device *pdev, struct k230_sysclk *ksc)
 {
 	int i, ret;
-	struct k230_pll_cfg *cfg;
+	const struct k230_pll_cfg *cfg;
 
 	for (i = 0; i < K230_PLL_NUM; i++) {
 		cfg = &k230_pll_cfgs[i];
@@ -559,13 +556,11 @@ static int k230_register_plls(struct platform_device *pdev, struct k230_sysclk *
 
 		ret = k230_register_pll(pdev, ksc, cfg->pll_id, cfg->name, 1,
 					&k230_pll_ops);
-		if (ret) {
-			dev_err(&pdev->dev, "register %s failed\n", cfg->name);
-			goto out;
-		}
+		if (ret)
+			return dev_err_probe(&pdev->dev, ret,
+					     "register %s failed\n", cfg->name);
 	}
 
-out:
 	return ret;
 }
 
@@ -1065,10 +1060,8 @@ static int k230_register_clk(struct platform_device *pdev,
 		clk_id += K230_CLK_OPS_ID_MUX_ONLY;
 
 		/* mux clock doesn't match the case that num_parents less than 2 */
-		if (num_parents < 2) {
-			ret = -EINVAL;
-			goto out;
-		}
+		if (num_parents < 2)
+			return -EINVAL;
 	}
 
 	if (cfg->have_gate) {
@@ -1090,13 +1083,12 @@ static int k230_register_clk(struct platform_device *pdev,
 	clk->hw.init = &init;
 
 	ret = devm_clk_hw_register(&pdev->dev, &clk->hw);
-	if (ret) {
-		dev_err(&pdev->dev, "register clock %s failed\n", k230_clk_cfgs[id].name);
-		clk->id = -1;
-		goto out;
-	}
+	if (ret)
+		return dev_err_probe(&pdev->dev,
+				     ret,
+				     "register clock %s failed\n",
+				     k230_clk_cfgs[id].name);
 
-out:
 	return ret;
 }
 
@@ -1191,10 +1183,9 @@ static int k230_clk_mux_get_parent_data(struct k230_sysclk *ksc,
 	for (int i = 0; i < num_parent; i++) {
 		ret = _k230_clk_mux_get_parent_data(ksc, &pclk[i], &parent_data[i]);
 		if (ret)
-			goto out;
+			return ret;
 	}
 
-out:
 	return ret;
 }
 
@@ -1223,12 +1214,12 @@ static int k230_register_clks(struct platform_device *pdev, struct k230_sysclk *
 			ret = k230_clk_mux_get_parent_data(ksc, cfg, parent_data,
 							   cfg->num_parent);
 			if (ret)
-				goto out;
+				return ret;
 
 			ret = k230_register_mux_clk(pdev, ksc, parent_data,
 						    cfg->num_parent, i);
 			if (ret)
-				goto out;
+				return ret;
 		} else {
 			pclk = cfg->parent;
 			switch (pclk->type) {
@@ -1252,13 +1243,10 @@ static int k230_register_clks(struct platform_device *pdev, struct k230_sysclk *
 				ret = -EINVAL;
 			}
 		}
-		if (ret) {
-			dev_err(&pdev->dev, "register child id %d failed\n", i);
-			goto out;
-		}
+		if (ret)
+			return dev_err_probe(&pdev->dev, ret, "register child id %d failed\n", i);
 	}
 
-out:
 	return ret;
 }
 
@@ -1304,8 +1292,8 @@ static struct clk_hw *k230_clk_hw_onecell_get(struct of_phandle_args *clkspec, v
 
 static int k230_clk_init_plls(struct platform_device *pdev)
 {
-	struct k230_sysclk *ksc = &clksrc;
-	int ret = 0;
+	int ret;
+	struct k230_sysclk *ksc = platform_get_drvdata(pdev);
 
 	spin_lock_init(&ksc->pll_lock);
 
@@ -1324,23 +1312,18 @@ static int k230_clk_init_plls(struct platform_device *pdev)
 
 	ret = k230_register_pll_divs(pdev, ksc);
 	if (ret) {
-		dev_err(&pdev->dev, "register pll_divs failed %d\n", ret);
-		return ret;
+		return dev_err_probe(&pdev->dev, ret, "register pll_divs failed\n");
 	}
 
 	ret = devm_of_clk_add_hw_provider(&pdev->dev, k230_clk_hw_pll_divs_onecell_get, ksc);
-	if (ret) {
-		dev_err(&pdev->dev, "add plls provider failed %d\n", ret);
-		return ret;
-	}
+	if (ret)
+		return dev_err_probe(&pdev->dev, ret, "add plls provider failed\n");
 
 	for (int i = 0; i < K230_PLL_DIV_NUM; i++) {
 		ret = devm_clk_hw_register_clkdev(&pdev->dev, ksc->dclks[i].hw,
 						  k230_pll_div_cfgs[i].name, NULL);
-		if (ret) {
-			dev_err(&pdev->dev, "clock_lookup create failed %d\n", ret);
-			return ret;
-		}
+		if (ret)
+			return dev_err_probe(&pdev->dev, ret, "clock_lookup create failed\n");
 	}
 
 	return ret;
@@ -1348,23 +1331,18 @@ static int k230_clk_init_plls(struct platform_device *pdev)
 
 static int k230_clk_init_sysclk(struct platform_device *pdev)
 {
-	struct k230_sysclk *ksc = &clksrc;
-	int ret = 0;
+	int ret;
+	struct k230_sysclk *ksc = platform_get_drvdata(pdev);
 
 	spin_lock_init(&ksc->clk_lock);
 
 	ksc->regs = devm_platform_ioremap_resource(pdev, 1);
-	if (!ksc->regs) {
-		dev_err(&pdev->dev, "failed to map registers\n");
-		ret = PTR_ERR(ksc->regs);
-		return ret;
-	}
+	if (!ksc->regs)
+		return dev_err_probe(&pdev->dev, PTR_ERR(ksc->regs), "failed to map registers\n");
 
 	ret = k230_register_clks(pdev, ksc);
-	if (ret) {
-		dev_err(&pdev->dev, "register clock provider failed %d\n", ret);
-		return ret;
-	}
+	if (ret)
+		return dev_err_probe(&pdev->dev, ret, "register clock provider failed\n");
 
 	ret = devm_of_clk_add_hw_provider(&pdev->dev, k230_clk_hw_onecell_get, ksc);
 	if (ret)
@@ -1375,28 +1353,23 @@ static int k230_clk_init_sysclk(struct platform_device *pdev)
 
 static int k230_clk_probe(struct platform_device *pdev)
 {
-	struct k230_sysclk *ksc = &clksrc;
-	int ret = 0;
+	int ret;
+	struct k230_sysclk *ksc;
+
+	ksc = devm_kmalloc(&pdev->dev, sizeof(struct k230_sysclk), GFP_KERNEL);
+	if (!ksc)
+		return -ENOMEM;
 
 	ksc->pdev = pdev;
-
-	if (!pdev) {
-		dev_err(&pdev->dev, "platform device pointer is NULL\n");
-		ret = -EINVAL;
-		return ret;
-	}
+	platform_set_drvdata(pdev, ksc);
 
 	ret = k230_clk_init_plls(pdev);
-	if (ret) {
-		dev_err(&pdev->dev, "init plls failed with %d\n", ret);
-		return ret;
-	}
+	if (ret)
+		return dev_err_probe(&pdev->dev, ret, "init plls failed\n");
 
 	ret = k230_clk_init_sysclk(pdev);
-	if (ret) {
-		dev_err(&pdev->dev, "init clks failed with %d\n", ret);
-		return ret;
-	}
+	if (ret)
+		return dev_err_probe(&pdev->dev, ret, "init clks failed\n");
 
 	return ret;
 }
