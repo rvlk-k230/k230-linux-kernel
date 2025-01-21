@@ -254,9 +254,9 @@ struct k230_sysclk {
 	struct platform_device *pdev;
 	void __iomem			*pll_regs, *regs;
 	spinlock_t			pll_lock, clk_lock;
-	struct k230_pll			plls[K230_PLL_NUM];
-	struct k230_clk			clks[K230_NUM_CLKS];
-	struct k230_pll_div		dclks[K230_PLL_DIV_NUM];
+	struct k230_pll			*plls;
+	struct k230_clk			*clks;
+	struct k230_pll_div		*dclks;
 };
 
 static const struct k230_pll_cfg k230_pll_cfgs[] = {
@@ -417,7 +417,7 @@ static struct k230_clk_cfg k230_clk_cfgs[] = {
 	},
 };
 
-#define K230_NUM_CLKS ARRAY_SIZE(k230_clk_cfgs)
+#define K230_CLK_NUM ARRAY_SIZE(k230_clk_cfgs)
 
 static void k230_init_pll(void __iomem *regs, enum k230_pll_id pll_id,
 			  struct k230_pll *pll)
@@ -1185,7 +1185,7 @@ static int k230_register_clks(struct platform_device *pdev, struct k230_sysclk *
 	 *  Mux clock:
 	 *  hs_ospi_src parents: pll0_div2, pll2_div4
 	 */
-	for (i = 0; i < K230_NUM_CLKS; i++) {
+	for (i = 0; i < K230_CLK_NUM; i++) {
 		cfg = &k230_clk_cfgs[i];
 		if (!cfg->status)
 			continue;
@@ -1258,7 +1258,7 @@ static struct clk_hw *k230_clk_hw_onecell_get(struct of_phandle_args *clkspec, v
 		return ERR_PTR(-EINVAL);
 
 	idx = clkspec->args[0];
-	if (idx >= K230_NUM_CLKS)
+	if (idx >= K230_CLK_NUM)
 		return ERR_PTR(-EINVAL);
 
 	if (!data)
@@ -1302,7 +1302,7 @@ static int k230_clk_init_plls(struct platform_device *pdev)
 	return ret;
 }
 
-static int k230_clk_init_sysclk(struct platform_device *pdev)
+static int k230_clk_init_clks(struct platform_device *pdev)
 {
 	int ret;
 	struct k230_sysclk *ksc = platform_get_drvdata(pdev);
@@ -1329,8 +1329,23 @@ static int k230_clk_probe(struct platform_device *pdev)
 	int ret;
 	struct k230_sysclk *ksc;
 
-	ksc = devm_kmalloc(&pdev->dev, sizeof(struct k230_sysclk), GFP_KERNEL);
+	ksc = devm_kzalloc(&pdev->dev, sizeof(struct k230_sysclk), GFP_KERNEL);
 	if (!ksc)
+		return -ENOMEM;
+
+	ksc->plls = devm_kmalloc_array(&pdev->dev, K230_PLL_NUM,
+				       sizeof(struct k230_pll), GFP_KERNEL);
+	if (!ksc->plls)
+		return -ENOMEM;
+
+	ksc->dclks = devm_kmalloc_array(&pdev->dev, K230_PLL_DIV_NUM,
+					sizeof(struct k230_pll_div), GFP_KERNEL);
+	if (!ksc->dclks)
+		return -ENOMEM;
+
+	ksc->clks = devm_kmalloc_array(&pdev->dev, K230_CLK_NUM,
+				       sizeof(struct k230_clk), GFP_KERNEL);
+	if (!ksc->clks)
 		return -ENOMEM;
 
 	ksc->pdev = pdev;
@@ -1340,11 +1355,11 @@ static int k230_clk_probe(struct platform_device *pdev)
 	if (ret)
 		return dev_err_probe(&pdev->dev, ret, "init plls failed\n");
 
-	ret = k230_clk_init_sysclk(pdev);
+	ret = k230_clk_init_clks(pdev);
 	if (ret)
 		return dev_err_probe(&pdev->dev, ret, "init clks failed\n");
 
-	return ret;
+	return 0;
 }
 
 static const struct of_device_id k230_clk_ids[] = {
