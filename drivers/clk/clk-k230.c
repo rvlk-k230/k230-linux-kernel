@@ -16,61 +16,61 @@
 #include <linux/spinlock.h>
 
 /* PLL control register bits. */
-#define K230_PLL_BYPASS_ENABLE				BIT(19)
-#define K230_PLL_GATE_ENABLE				BIT(2)
-#define K230_PLL_GATE_WRITE_ENABLE			BIT(18)
-#define K230_PLL_OD_SHIFT				24
-#define K230_PLL_OD_MASK				0xF
-#define K230_PLL_R_SHIFT				16
-#define K230_PLL_R_MASK					0x3F
-#define K230_PLL_F_SHIFT				0
-#define K230_PLL_F_MASK					0x1FFFF
-#define K230_PLL0_OFFSET_BASE				0x00
-#define K230_PLL1_OFFSET_BASE				0x10
-#define K230_PLL2_OFFSET_BASE				0x20
-#define K230_PLL3_OFFSET_BASE				0x30
-#define K230_PLL_DIV_REG_OFFSET				0x00
-#define K230_PLL_BYPASS_REG_OFFSET			0x04
-#define K230_PLL_GATE_REG_OFFSET			0x08
-#define K230_PLL_LOCK_REG_OFFSET			0x0C
+#define K230_PLL_BYPASS_ENABLE			BIT(19)
+#define K230_PLL_GATE_ENABLE			BIT(2)
+#define K230_PLL_GATE_WRITE_ENABLE		BIT(18)
+#define K230_PLL_OD_SHIFT			24
+#define K230_PLL_OD_MASK			0xF
+#define K230_PLL_R_SHIFT			16
+#define K230_PLL_R_MASK				0x3F
+#define K230_PLL_F_SHIFT			0
+#define K230_PLL_F_MASK				0x1FFFF
+#define K230_PLL0_OFFSET_BASE			0x00
+#define K230_PLL1_OFFSET_BASE			0x10
+#define K230_PLL2_OFFSET_BASE			0x20
+#define K230_PLL3_OFFSET_BASE			0x30
+#define K230_PLL_DIV_REG_OFFSET			0x00
+#define K230_PLL_BYPASS_REG_OFFSET		0x04
+#define K230_PLL_GATE_REG_OFFSET		0x08
+#define K230_PLL_LOCK_REG_OFFSET		0x0C
 
 /* PLL lock register bits.  */
-#define K230_PLL_STATUS_MASK				BIT(0)
+#define K230_PLL_STATUS_MASK			BIT(0)
 
 /* K230 CLK registers offset */
-#define K230_CLK_AUDIO_CLKDIV_OFFSET			0x34
-#define K230_CLK_PDM_CLKDIV_OFFSET			0x40
-#define K230_CLK_CODEC_ADC_MCLKDIV_OFFSET		0x38
-#define K230_CLK_CODEC_DAC_MCLKDIV_OFFSET		0x3c
+#define K230_CLK_AUDIO_CLKDIV_OFFSET		0x34
+#define K230_CLK_PDM_CLKDIV_OFFSET		0x40
+#define K230_CLK_CODEC_ADC_MCLKDIV_OFFSET	0x38
+#define K230_CLK_CODEC_DAC_MCLKDIV_OFFSET	0x3c
 
 /* K230 CLK OPS. */
-#define K230_CLK_OPS_GATE				\
-	.enable		= k230_clk_enable,		\
-	.disable	= k230_clk_disable,		\
+#define K230_CLK_OPS_GATE			\
+	.enable		= k230_clk_enable,	\
+	.disable	= k230_clk_disable,	\
 	.is_enabled	= k230_clk_is_enabled
 
-#define K230_CLK_OPS_RATE				\
-	.set_rate	= k230_clk_set_rate,		\
-	.round_rate	= k230_clk_round_rate,		\
+#define K230_CLK_OPS_RATE			\
+	.set_rate	= k230_clk_set_rate,	\
+	.round_rate	= k230_clk_round_rate,	\
 	.recalc_rate	= k230_clk_get_rate
 
-#define K230_CLK_OPS_MUX				\
-	.set_parent	= k230_clk_set_parent,		\
-	.get_parent	= k230_clk_get_parent,		\
+#define K230_CLK_OPS_MUX			\
+	.set_parent	= k230_clk_set_parent,	\
+	.get_parent	= k230_clk_get_parent,	\
 	.determine_rate	= clk_hw_determine_rate_no_reparent
 
-#define K230_CLK_OPS_ID_NONE				0
-#define K230_CLK_OPS_ID_GATE_ONLY			1
-#define K230_CLK_OPS_ID_RATE_ONLY			2
-#define K230_CLK_OPS_ID_RATE_GATE			3
-#define K230_CLK_OPS_ID_MUX_ONLY			4
-#define K230_CLK_OPS_ID_MUX_GATE			5
-#define K230_CLK_OPS_ID_MUX_RATE			6
-#define K230_CLK_OPS_ID_ALL				7
-#define K230_CLK_OPS_ID_NUM				8
+#define K230_CLK_OPS_ID_NONE			0
+#define K230_CLK_OPS_ID_GATE_ONLY		1
+#define K230_CLK_OPS_ID_RATE_ONLY		2
+#define K230_CLK_OPS_ID_RATE_GATE		3
+#define K230_CLK_OPS_ID_MUX_ONLY		4
+#define K230_CLK_OPS_ID_MUX_GATE		5
+#define K230_CLK_OPS_ID_MUX_RATE		6
+#define K230_CLK_OPS_ID_ALL			7
+#define K230_CLK_OPS_ID_NUM			8
 
 /* K230 CLK MACROS */
-#define K230_CLK_MAX_PARENT_NUM				6
+#define K230_CLK_MAX_PARENT_NUM			6
 
 #define K230_GATE_FORMAT(_reg, _bit, _reverse, _have_gate)			\
 	.gate_reg_off = (_reg),							\
