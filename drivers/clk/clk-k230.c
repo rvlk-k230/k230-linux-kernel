@@ -1198,8 +1198,6 @@ static int k230_register_clks(struct platform_device *pdev, struct k230_sysclk *
 
 			ret = k230_register_mux_clk(pdev, ksc, parent_data,
 						    cfg->num_parent, i);
-			if (ret)
-				return ret;
 		} else {
 			pclk = cfg->parent;
 			switch (pclk->type) {
