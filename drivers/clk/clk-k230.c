@@ -1149,6 +1149,7 @@ static int _k230_clk_mux_get_parent_data(struct k230_sysclk *ksc,
 		WARN_ON_ONCE(true);
 		return -EPERM;
 	}
+
 	return 0;
 }
 
