@@ -417,7 +417,7 @@ static struct k230_clk_cfg k230_clk_cfgs[] = {
 	},
 };
 
-#define K230_CLK_NUM ARRAY_SIZE(k230_clk_cfgs)
+#define K230_CLK_NUM	ARRAY_SIZE(k230_clk_cfgs)
 
 static void k230_init_pll(void __iomem *regs, enum k230_pll_id pll_id,
 			  struct k230_pll *pll)
