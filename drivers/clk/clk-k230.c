@@ -72,45 +72,45 @@
 /* K230 CLK MACROS */
 #define K230_CLK_MAX_PARENT_NUM				6
 
-#define K230_GATE_FORMAT(_reg, _bit, _reverse, _have_gate)                      \
-	.gate_reg_off = (_reg),                                                 \
-	.gate_bit_enable = (_bit),                                              \
-	.gate_bit_reverse = (_reverse),                                         \
+#define K230_GATE_FORMAT(_reg, _bit, _reverse, _have_gate)			\
+	.gate_reg_off = (_reg),							\
+	.gate_bit_enable = (_bit),						\
+	.gate_bit_reverse = (_reverse),						\
 	.have_gate = (_have_gate)
 
-#define K230_RATE_FORMAT(_mul_min, _mul_max, _mul_shift, _mul_mask,             \
+#define K230_RATE_FORMAT(_mul_min, _mul_max, _mul_shift, _mul_mask,		\
 			_div_min, _div_max, _div_shift, _div_mask,		\
 			_reg, _bit, _method, _reg_c, _bit_c,			\
-			_mul_min_c, _mul_max_c, _mul_shift_c, _mul_mask_c,      \
-			_have_rate, _have_rate_c)                               \
-	.rate_mul_min = (_mul_min),                                             \
-	.rate_mul_max = (_mul_max),                                             \
-	.rate_mul_shift = (_mul_shift),                                         \
-	.rate_mul_mask = (_mul_mask),                                           \
-	.rate_mul_min_c = (_mul_min_c),                                         \
-	.rate_mul_max_c = (_mul_max_c),                                         \
-	.rate_mul_shift_c = (_mul_shift_c),                                     \
-	.rate_mul_mask_c = (_mul_mask_c),                                       \
-	.rate_div_min = (_div_min),                                             \
-	.rate_div_max = (_div_max),                                             \
-	.rate_div_shift = (_div_shift),                                         \
-	.rate_div_mask = (_div_mask),                                           \
-	.rate_reg_off = (_reg),                                                 \
-	.rate_reg_off_c = (_reg_c),                                             \
-	.rate_write_enable_bit = (_bit),                                        \
-	.rate_write_enable_bit_c = (_bit_c),                                    \
-	.method = (_method),                                                    \
-	.have_rate = (_have_rate),                                              \
+			_mul_min_c, _mul_max_c, _mul_shift_c, _mul_mask_c,	\
+			_have_rate, _have_rate_c)				\
+	.rate_mul_min = (_mul_min),						\
+	.rate_mul_max = (_mul_max),						\
+	.rate_mul_shift = (_mul_shift),						\
+	.rate_mul_mask = (_mul_mask),						\
+	.rate_mul_min_c = (_mul_min_c),						\
+	.rate_mul_max_c = (_mul_max_c),						\
+	.rate_mul_shift_c = (_mul_shift_c),					\
+	.rate_mul_mask_c = (_mul_mask_c),					\
+	.rate_div_min = (_div_min),						\
+	.rate_div_max = (_div_max),						\
+	.rate_div_shift = (_div_shift),						\
+	.rate_div_mask = (_div_mask),						\
+	.rate_reg_off = (_reg),							\
+	.rate_reg_off_c = (_reg_c),						\
+	.rate_write_enable_bit = (_bit),					\
+	.rate_write_enable_bit_c = (_bit_c),					\
+	.method = (_method),							\
+	.have_rate = (_have_rate),						\
 	.have_rate_c = (_have_rate_c)
 
-#define K230_MUX_FORMAT(_reg, _shift, _mask, _have_mux)                         \
-	.mux_reg_off = (_reg),                                                  \
-	.mux_reg_shift = (_shift),                                              \
-	.mux_reg_mask = (_mask),                                                \
+#define K230_MUX_FORMAT(_reg, _shift, _mask, _have_mux)				\
+	.mux_reg_off = (_reg),							\
+	.mux_reg_shift = (_shift),						\
+	.mux_reg_mask = (_mask),						\
 	.have_mux = (_have_mux)
 
 #define K230_GATE_FORMAT_ZERO K230_GATE_FORMAT(0, 0, 0, false)
-#define K230_RATE_FORMAT_ZERO K230_RATE_FORMAT(0, 0, 0, 0, 0, 0,                \
+#define K230_RATE_FORMAT_ZERO K230_RATE_FORMAT(0, 0, 0, 0, 0, 0,		\
 						0, 0, 0, 0, 0, 0,		\
 						0, 0, 0, 0, 0, false, false)
 #define K230_MUX_FORMAT_ZERO K230_MUX_FORMAT(0, 0, 0, false)
