@@ -252,11 +252,11 @@ struct k230_clk_cfg {
 /* K230 SYSCLK. */
 struct k230_sysclk {
 	struct platform_device *pdev;
-	void __iomem			*pll_regs, *regs;
-	spinlock_t			pll_lock, clk_lock;
-	struct k230_pll			*plls;
-	struct k230_clk			*clks;
-	struct k230_pll_div		*dclks;
+	void __iomem	       *pll_regs, *regs;
+	spinlock_t	       pll_lock, clk_lock;
+	struct k230_pll	       *plls;
+	struct k230_clk	       *clks;
+	struct k230_pll_div    *dclks;
 };
 
 static const struct k230_pll_cfg k230_pll_cfgs[] = {
