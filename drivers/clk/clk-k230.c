@@ -109,11 +109,11 @@
 	.mux_reg_mask = (_mask),						\
 	.have_mux = (_have_mux)
 
-#define K230_GATE_FORMAT_ZERO K230_GATE_FORMAT(0, 0, 0, false)
-#define K230_RATE_FORMAT_ZERO K230_RATE_FORMAT(0, 0, 0, 0, 0, 0,		\
+#define K230_GATE_FORMAT_ZERO	K230_GATE_FORMAT(0, 0, 0, false)
+#define K230_RATE_FORMAT_ZERO	K230_RATE_FORMAT(0, 0, 0, 0, 0, 0,		\
 						0, 0, 0, 0, 0, 0,		\
 						0, 0, 0, 0, 0, false, false)
-#define K230_MUX_FORMAT_ZERO K230_MUX_FORMAT(0, 0, 0, false)
+#define K230_MUX_FORMAT_ZERO	K230_MUX_FORMAT(0, 0, 0, false)
 
 struct k230_sysclk;
 
