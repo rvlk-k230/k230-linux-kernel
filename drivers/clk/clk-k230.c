@@ -437,17 +437,11 @@ static int k230_pll_prepare(struct clk_hw *hw)
 	struct k230_pll *pll = to_k230_pll(hw);
 	struct k230_sysclk *ksc = pll->ksc;
 	u32 reg;
-	int ret;
 
 	/* wait for PLL lock until it reachs lock status */
-	ret = readl_poll_timeout(pll->lock, reg,
-				 (reg & K230_PLL_STATUS_MASK) == K230_PLL_STATUS_MASK,
-				 400, 0);
-	/* this will not happen actually */
-	if (ret)
-		return dev_err_probe(&ksc->pdev->dev, ret, "PLL timeout!\n");
-
-	return 0;
+	return readl_poll_timeout(pll->lock, reg,
+				  (reg & K230_PLL_STATUS_MASK) == K230_PLL_STATUS_MASK,
+				  400, 0);
 }
 
 static bool k230_pll_hw_is_enabled(struct k230_pll *pll)
