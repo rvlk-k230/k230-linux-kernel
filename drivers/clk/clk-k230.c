@@ -1222,26 +1222,6 @@ static int k230_register_clks(struct platform_device *pdev, struct k230_sysclk *
 	return 0;
 }
 
-static struct clk_hw *k230_clk_hw_pll_divs_onecell_get(struct of_phandle_args *clkspec, void *data)
-{
-	struct k230_sysclk *ksc;
-	unsigned int idx;
-
-	if (clkspec->args_count != 1)
-		return ERR_PTR(-EINVAL);
-
-	idx = clkspec->args[0];
-	if (idx >= K230_PLL_DIV_NUM)
-		return ERR_PTR(-EINVAL);
-
-	if (!data)
-		return ERR_PTR(-EINVAL);
-
-	ksc = (struct k230_sysclk *)data;
-
-	return ksc->dclks[idx].hw;
-}
-
 static struct clk_hw *k230_clk_hw_onecell_get(struct of_phandle_args *clkspec, void *data)
 {
 	struct k230_sysclk *ksc;
@@ -1280,10 +1260,6 @@ static int k230_clk_init_plls(struct platform_device *pdev)
 	ret = k230_register_pll_divs(pdev, ksc);
 	if (ret)
 		return dev_err_probe(&pdev->dev, ret, "register pll_divs failed\n");
-
-	ret = devm_of_clk_add_hw_provider(&pdev->dev, k230_clk_hw_pll_divs_onecell_get, ksc);
-	if (ret)
-		return dev_err_probe(&pdev->dev, ret, "add plls provider failed\n");
 
 	for (int i = 0; i < K230_PLL_DIV_NUM; i++) {
 		ret = devm_clk_hw_register_clkdev(&pdev->dev, ksc->dclks[i].hw,
