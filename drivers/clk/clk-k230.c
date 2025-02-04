@@ -435,7 +435,6 @@ static void k230_init_pll(void __iomem *regs, enum k230_pll_id pll_id,
 static int k230_pll_prepare(struct clk_hw *hw)
 {
 	struct k230_pll *pll = to_k230_pll(hw);
-	struct k230_sysclk *ksc = pll->ksc;
 	u32 reg;
 
 	/* wait for PLL lock until it reachs lock status */
