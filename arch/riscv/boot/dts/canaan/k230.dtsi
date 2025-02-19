@@ -97,9 +97,18 @@
 			interrupts-extended = <&cpu0_intc 3>, <&cpu0_intc 7>;
 		};
 
+		sysclk: clock-controller@91102000 {
+			compatible = "canaan,k230-clk";
+			reg = <0x0 0x91102000 0x0 0x1000>,
+			      <0x0 0x91100000 0x0 0x1000>;
+			clocks = <&osc24m>;
+			#clock-cells = <1>;
+		};
+
 		uart0: serial@91400000 {
 			compatible = "snps,dw-apb-uart";
 			reg = <0x0 0x91400000 0x0 0x1000>;
+			//clocks = <&sysclk K230_LS_UART0_APB>;
 			clocks = <&apb_clk>;
 			interrupts = <16 IRQ_TYPE_LEVEL_HIGH>;
 			reg-io-width = <4>;
@@ -110,6 +119,7 @@
 		uart1: serial@91401000 {
 			compatible = "snps,dw-apb-uart";
 			reg = <0x0 0x91401000 0x0 0x1000>;
+			//clocks = <&sysclk K230_LS_UART1_APB>;
 			clocks = <&apb_clk>;
 			interrupts = <17 IRQ_TYPE_LEVEL_HIGH>;
 			reg-io-width = <4>;
@@ -120,6 +130,7 @@
 		uart2: serial@91402000 {
 			compatible = "snps,dw-apb-uart";
 			reg = <0x0 0x91402000 0x0 0x1000>;
+			//clocks = <&sysclk K230_LS_UART2_APB>;
 			clocks = <&apb_clk>;
 			interrupts = <18 IRQ_TYPE_LEVEL_HIGH>;
 			reg-io-width = <4>;
@@ -130,6 +141,7 @@
 		uart3: serial@91403000 {
 			compatible = "snps,dw-apb-uart";
 			reg = <0x0 0x91403000 0x0 0x1000>;
+			//clocks = <&sysclk K230_LS_UART3_APB>;
 			clocks = <&apb_clk>;
 			interrupts = <19 IRQ_TYPE_LEVEL_HIGH>;
 			reg-io-width = <4>;
@@ -140,35 +152,12 @@
 		uart4: serial@91404000 {
 			compatible = "snps,dw-apb-uart";
 			reg = <0x0 0x91404000 0x0 0x1000>;
+			//clocks = <&sysclk K230_LS_UART4_APB>;
 			clocks = <&apb_clk>;
 			interrupts = <20 IRQ_TYPE_LEVEL_HIGH>;
 			reg-io-width = <4>;
 			reg-shift = <2>;
 			status = "disabled";
-		};
-
-		sysclk: clock-controller@91102000 {
-			compatible = "canaan,k230-clk";
-			reg = <0x0 0x91102000 0x0 0x1000>,
-			      <0x0 0x91100000 0x0 0x1000>;
-			clocks = <&osc24m>;
-			clock-output-names = "CPU0_ACLK", "CPU0_PLIC", "CPU0_NOC_DDRCP4",
-					     "CPU0_PCLK", "PMU_PCLK", "HS_HCLK_HIGH_SRC",
-					     "HS_HCLK_HIGH_GATE", "HS_HCLK_SRC",
-					     "HS_SD0_HS_AHB_GAT", "HS_SD1_HS_AHB_GAT",
-					     "HS_SSI1_HS_AHB_GA", "HS_SSI2_HS_AHB_GA",
-					     "HS_USB0_HS_AHB_GA", "HS_USB1_HS_AHB_GA",
-					     "HS_SSI0_AXI", "HS_SSI1", "HS_SSI2",
-					     "HS_QSPI_AXI_SRC", "HS_SSI1_ACLK_GATE",
-					     "HS_SSI2_ACLK_GATE", "HS_SD_CARD_SRC",
-					     "HS_SD0_CARD_TX", "HS_SD1_CARD_TX",
-					     "HS_SD_AXI_SRC", "HS_SD0_AXI_GATE",
-					     "HS_SD1_AXI_GATE", "HS_SD0_BASE_GATE",
-					     "HS_SD1_BASE_GATE", "HS_OSPI_SRC",
-					     "HS_USB_REF_51M", "HS_SD_TIMER_SRC",
-					     "HS_SD0_TIMER_GATE", "HS_SD1_TIMER_GATE",
-					     "HS_USB0_REFERENCE", "HS_USB1_REFERENCE";
-			#clock-cells = <1>;
 		};
 	};
 };

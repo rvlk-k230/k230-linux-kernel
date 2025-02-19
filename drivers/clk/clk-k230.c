@@ -6,14 +6,13 @@
  * Author: Troy Mitchell <troymitchell988@gmail.com>
  */
 
-#include <dt-bindings/clock/canaan,k230-clk.h>
 #include <linux/clk.h>
 #include <linux/clkdev.h>
 #include <linux/clk-provider.h>
 #include <linux/iopoll.h>
-#include <linux/module.h>
 #include <linux/platform_device.h>
 #include <linux/spinlock.h>
+#include <dt-bindings/clock/canaan,k230-clk.h>
 
 /* PLL control register bits. */
 #define K230_PLL_BYPASS_ENABLE				BIT(19)
@@ -133,7 +132,6 @@ struct k230_pll {
 
 struct k230_pll_cfg {
 	u32 reg;
-	enum k230_pll_id pll_id;
 	const char *name;
 };
 
@@ -262,22 +260,18 @@ struct k230_sysclk {
 static const struct k230_pll_cfg k230_pll_cfgs[] = {
 	[K230_PLL0] = {
 		.reg = K230_PLL0_OFFSET_BASE,
-		.pll_id = K230_PLL0,
 		.name = "pll0",
 	},
 	[K230_PLL1] = {
 		.reg = K230_PLL1_OFFSET_BASE,
-		.pll_id = K230_PLL1,
 		.name = "pll1",
 	},
 	[K230_PLL2] = {
 		.reg = K230_PLL2_OFFSET_BASE,
-		.pll_id = K230_PLL2,
 		.name = "pll2",
 	},
 	[K230_PLL3] = {
 		.reg = K230_PLL3_OFFSET_BASE,
-		.pll_id = K230_PLL3,
 		.name = "pll3",
 	},
 };
@@ -415,6 +409,96 @@ static struct k230_clk_cfg k230_clk_cfgs[] = {
 		K230_GATE_FORMAT(0x18, 24, 0, true),
 		K230_MUX_FORMAT(0x20, 18, 0x1, true),
 	},
+	/*
+	[K230_LS_APB_SRC] = {
+		.name = "ls_apb_src",
+		.read_only = false,
+		.flags = 0,
+		.status = true,
+		.num_parent = 1,
+		.parent[0] = {
+			.type = K230_PLL_DIV,
+			.pll_div_id = K230_PLL0_DIV4,
+		},
+		K230_RATE_FORMAT(1, 1, 0, 0,
+				 1, 8, 0, 0x7,
+				 0x30, 31, K230_DIV, 0, 0,
+				 0, 0, 0, 0,
+				 true, false),
+		K230_GATE_FORMAT(0x24, 0, 0, true),
+		K230_MUX_FORMAT_ZERO,
+	},
+	[K230_LS_UART0_APB] = {
+		.name = "ls_uart0_apb",
+		.read_only = false,
+		.flags = 0,
+		.status = true,
+		.num_parent = 1,
+		.parent[0] = {
+			.type = K230_CLK_COMPOSITE,
+			.clk_id = K230_LS_APB_SRC,
+		},
+		K230_RATE_FORMAT_ZERO,
+		K230_GATE_FORMAT(0x24, 1, 0, true),
+		K230_MUX_FORMAT_ZERO,
+	},
+	[K230_LS_UART1_APB] = {
+		.name = "ls_uart0_apb",
+		.read_only = false,
+		.flags = 0,
+		.status = true,
+		.num_parent = 1,
+		.parent[0] = {
+			.type = K230_CLK_COMPOSITE,
+			.clk_id = K230_LS_APB_SRC,
+		},
+		K230_RATE_FORMAT_ZERO,
+		K230_GATE_FORMAT(0x24, 2, 0, true),
+		K230_MUX_FORMAT_ZERO,
+	},
+	[K230_LS_UART2_APB] = {
+		.name = "ls_uart0_apb",
+		.read_only = false,
+		.flags = 0,
+		.status = true,
+		.num_parent = 1,
+		.parent[0] = {
+			.type = K230_CLK_COMPOSITE,
+			.clk_id = K230_LS_APB_SRC,
+		},
+		K230_RATE_FORMAT_ZERO,
+		K230_GATE_FORMAT(0x24, 3, 0, true),
+		K230_MUX_FORMAT_ZERO,
+	},
+	[K230_LS_UART3_APB] = {
+		.name = "ls_uart0_apb",
+		.read_only = false,
+		.flags = 0,
+		.status = true,
+		.num_parent = 1,
+		.parent[0] = {
+			.type = K230_CLK_COMPOSITE,
+			.clk_id = K230_LS_APB_SRC,
+		},
+		K230_RATE_FORMAT_ZERO,
+		K230_GATE_FORMAT(0x24, 4, 0, true),
+		K230_MUX_FORMAT_ZERO,
+	},
+	[K230_LS_UART4_APB] = {
+		.name = "ls_uart0_apb",
+		.read_only = false,
+		.flags = 0,
+		.status = true,
+		.num_parent = 1,
+		.parent[0] = {
+			.type = K230_CLK_COMPOSITE,
+			.clk_id = K230_LS_APB_SRC,
+		},
+		K230_RATE_FORMAT_ZERO,
+		K230_GATE_FORMAT(0x24, 5, 0, true),
+		K230_MUX_FORMAT_ZERO,
+	},
+	*/
 };
 
 #define K230_CLK_NUM	ARRAY_SIZE(k230_clk_cfgs)
@@ -574,8 +658,7 @@ static int k230_register_plls(struct platform_device *pdev, struct k230_sysclk *
 
 		k230_init_pll(ksc->pll_regs, i, &ksc->plls[i]);
 
-		ret = k230_register_pll(pdev, ksc, cfg->pll_id, cfg->name, 1,
-					&k230_pll_ops);
+		ret = k230_register_pll(pdev, ksc, i, cfg->name, 1, &k230_pll_ops);
 		if (ret)
 			return dev_err_probe(&pdev->dev, ret,
 					     "register %s failed\n", cfg->name);
