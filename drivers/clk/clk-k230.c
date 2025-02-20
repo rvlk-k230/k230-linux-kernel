@@ -10,6 +10,7 @@
 #include <linux/clkdev.h>
 #include <linux/clk-provider.h>
 #include <linux/iopoll.h>
+#include <linux/mod_devicetable.h>
 #include <linux/platform_device.h>
 #include <linux/spinlock.h>
 #include <dt-bindings/clock/canaan,k230-clk.h>
@@ -825,8 +826,6 @@ static unsigned long k230_clk_get_rate(struct clk_hw *hw,
 				& cfg->rate_div_mask;
 		}
 		break;
-	default:
-		return 0;
 	}
 
 	return div_u64((u64)parent_rate * mul, div);
@@ -977,9 +976,6 @@ static int k230_clk_find_approximate(struct k230_clk *clk,
 			return -EINVAL;
 		}
 		break;
-	default:
-		WARN_ON_ONCE(true);
-		return -EPERM;
 	}
 	return 0;
 }
@@ -1221,9 +1217,6 @@ static int _k230_clk_mux_get_parent_data(struct k230_sysclk *ksc,
 	case K230_CLK_COMPOSITE:
 		parent_data->hw = &ksc->clks[pclk->clk_id].hw;
 		break;
-	default:
-		WARN_ON_ONCE(true);
-		return -EPERM;
 	}
 
 	return 0;
@@ -1294,8 +1287,6 @@ static int k230_register_clks(struct platform_device *pdev, struct k230_sysclk *
 				ret = k230_register_clk_child(pdev, ksc, i,
 							      pclk->clk_id);
 				break;
-			default:
-				return dev_err_probe(&pdev->dev, -EINVAL, "Invalid type\n");
 			}
 		}
 		if (ret)
@@ -1416,7 +1407,7 @@ static int k230_clk_probe(struct platform_device *pdev)
 
 static const struct of_device_id k230_clk_ids[] = {
 	{ .compatible = "canaan,k230-clk" },
-	{ /* Sentinel */ },
+	{ /* Sentinel */ }
 };
 MODULE_DEVICE_TABLE(of, k230_clk_ids);
 

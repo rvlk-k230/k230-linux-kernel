@@ -466,7 +466,7 @@ config COMMON_CLK_K210
 
 config COMMON_CLK_K230
 	bool "Clock driver for the Canaan Kendryte K230 SoC"
-	depends on OF && (ARCH_CANAAN || COMPILE_TEST)
+	depends on ARCH_CANAAN || COMPILE_TEST
         help
           Support for the Canaan Kendryte K230 RISC-V SoC clocks.
 
