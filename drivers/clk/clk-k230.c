@@ -1103,12 +1103,12 @@ static int k230_register_clk(struct platform_device *pdev,
 	int ret;
 
 	if (cfg->have_rate) {
-		cfg->rate_reg = (ksc->regs + cfg->rate_reg_off);
+		cfg->rate_reg = ksc->regs + cfg->rate_reg_off;
 		clk_id += K230_CLK_OPS_ID_RATE_ONLY;
 	}
 
 	if (cfg->have_mux) {
-		cfg->mux_reg = (ksc->regs + cfg->mux_reg_off);
+		cfg->mux_reg = ksc->regs + cfg->mux_reg_off;
 		clk_id += K230_CLK_OPS_ID_MUX_ONLY;
 
 		/* mux clock doesn't match the case that num_parents less than 2 */
@@ -1117,12 +1117,12 @@ static int k230_register_clk(struct platform_device *pdev,
 	}
 
 	if (cfg->have_gate) {
-		cfg->gate_reg = (ksc->regs + cfg->gate_reg_off);
+		cfg->gate_reg = ksc->regs + cfg->gate_reg_off;
 		clk_id += K230_CLK_OPS_ID_GATE_ONLY;
 	}
 
 	if (cfg->have_rate_c)
-		cfg->rate_reg_c = (ksc->regs + cfg->rate_reg_off_c);
+		cfg->rate_reg_c = ksc->regs + cfg->rate_reg_off_c;
 
 	init.name = k230_clk_cfgs[id].name;
 	init.flags = flags;
@@ -1150,9 +1150,7 @@ static int k230_register_mux_clk(struct platform_device *pdev,
 				 int num_parent,
 				 int id)
 {
-	return k230_register_clk(pdev, ksc, id,
-				(const struct clk_parent_data *)parent_data,
-				num_parent, 0);
+	return k230_register_clk(pdev, ksc, id, parent_data, num_parent, 0);
 }
 
 static int k230_register_osc24m_child(struct platform_device *pdev,
@@ -1311,7 +1309,7 @@ static struct clk_hw *k230_clk_hw_onecell_get(struct of_phandle_args *clkspec, v
 	if (!data)
 		return ERR_PTR(-EINVAL);
 
-	ksc = (struct k230_sysclk *)data;
+	ksc = data;
 
 	return &ksc->clks[idx].hw;
 }
