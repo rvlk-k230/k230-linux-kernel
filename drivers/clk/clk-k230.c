@@ -693,9 +693,6 @@ static int k230_clk_enable(struct clk_hw *hw)
 	struct k230_clk_cfg *cfg = &k230_clk_cfgs[clk->id];
 	u32 reg;
 
-	if (!cfg->have_gate)
-		return dev_err_probe(&ksc->pdev->dev, -EINVAL, "This clock doesn't have gate\n");
-
 	guard(spinlock)(&ksc->clk_lock);
 	reg = readl(cfg->gate_reg);
 	if (cfg->gate_bit_reverse)
@@ -713,11 +710,6 @@ static void k230_clk_disable(struct clk_hw *hw)
 	struct k230_sysclk *ksc = clk->ksc;
 	struct k230_clk_cfg *cfg = &k230_clk_cfgs[clk->id];
 	u32 reg;
-
-	if (!cfg->have_gate) {
-		dev_err(&ksc->pdev->dev, "This clock doesn't have gate\n");
-		return;
-	}
 
 	guard(spinlock)(&ksc->clk_lock);
 	reg = readl(cfg->gate_reg);
@@ -737,11 +729,6 @@ static int k230_clk_is_enabled(struct clk_hw *hw)
 	struct k230_clk_cfg *cfg = &k230_clk_cfgs[clk->id];
 	u32 reg;
 
-	if (!cfg->have_gate) {
-		dev_err(&ksc->pdev->dev, "This clock doesn't have gate\n");
-		return -EINVAL;
-	}
-
 	guard(spinlock)(&ksc->clk_lock);
 	reg = readl(cfg->gate_reg);
 
@@ -759,11 +746,6 @@ static int k230_clk_set_parent(struct clk_hw *hw, u8 index)
 	struct k230_clk_cfg *cfg = &k230_clk_cfgs[clk->id];
 	u8 reg;
 
-	if (!cfg->have_mux) {
-		dev_err(&ksc->pdev->dev, "This clock doesn't have mux\n");
-		return -EINVAL;
-	}
-
 	guard(spinlock)(&ksc->clk_lock);
 	reg = (cfg->mux_reg_mask & index) << cfg->mux_reg_shift;
 	writeb(reg, cfg->mux_reg);
@@ -777,11 +759,6 @@ static u8 k230_clk_get_parent(struct clk_hw *hw)
 	struct k230_sysclk *ksc = clk->ksc;
 	struct k230_clk_cfg *cfg = &k230_clk_cfgs[clk->id];
 	u8 reg;
-
-	if (!cfg->have_mux) {
-		dev_err(&ksc->pdev->dev, "This clock doesn't have mux\n");
-		return -EINVAL;
-	}
 
 	guard(spinlock)(&ksc->clk_lock);
 	reg = readb(cfg->mux_reg);
@@ -983,6 +960,7 @@ static int k230_clk_find_approximate(struct k230_clk *clk,
 		}
 		break;
 	}
+
 	return 0;
 }
 
@@ -1014,11 +992,6 @@ static int k230_clk_set_rate(struct clk_hw *hw, unsigned long rate,
 	struct k230_sysclk *ksc = clk->ksc;
 	struct k230_clk_cfg *cfg = &k230_clk_cfgs[clk->id];
 	u32 div = 0, mul = 0, reg = 0, reg_c;
-
-	if (!cfg->have_rate || !cfg->rate_reg) {
-		dev_err(&ksc->pdev->dev, "This clock may have no rate\n");
-		return -EINVAL;
-	}
 
 	if (rate > parent_rate || rate == 0 || parent_rate == 0) {
 		dev_err(&ksc->pdev->dev, "rate or parent_rate error\n");
