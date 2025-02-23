@@ -1310,7 +1310,7 @@ static int k230_clk_init_plls(struct platform_device *pdev)
 	spin_lock_init(&ksc->pll_lock);
 
 	ksc->pll_regs = devm_platform_ioremap_resource(pdev, 0);
-	if (!ksc->pll_regs)
+	if (IS_ERR(ksc->pll_regs))
 		return dev_err_probe(&pdev->dev, PTR_ERR(ksc->pll_regs), "map registers failed\n");
 
 	ret = k230_register_plls(pdev, ksc);
@@ -1339,7 +1339,7 @@ static int k230_clk_init_clks(struct platform_device *pdev)
 	spin_lock_init(&ksc->clk_lock);
 
 	ksc->regs = devm_platform_ioremap_resource(pdev, 1);
-	if (!ksc->regs)
+	if (IS_ERR(ksc->regs))
 		return dev_err_probe(&pdev->dev, PTR_ERR(ksc->regs), "failed to map registers\n");
 
 	ret = k230_register_clks(pdev, ksc);
@@ -1362,17 +1362,17 @@ static int k230_clk_probe(struct platform_device *pdev)
 	if (!ksc)
 		return -ENOMEM;
 
-	ksc->plls = devm_kmalloc_array(&pdev->dev, K230_PLL_NUM,
+	ksc->plls = devm_kcalloc(&pdev->dev, K230_PLL_NUM,
 				       sizeof(struct k230_pll), GFP_KERNEL);
 	if (!ksc->plls)
 		return -ENOMEM;
 
-	ksc->dclks = devm_kmalloc_array(&pdev->dev, K230_PLL_DIV_NUM,
+	ksc->dclks = devm_kcalloc(&pdev->dev, K230_PLL_DIV_NUM,
 					sizeof(struct k230_pll_div), GFP_KERNEL);
 	if (!ksc->dclks)
 		return -ENOMEM;
 
-	ksc->clks = devm_kmalloc_array(&pdev->dev, K230_CLK_NUM,
+	ksc->clks = devm_kcalloc(&pdev->dev, K230_CLK_NUM,
 				       sizeof(struct k230_clk), GFP_KERNEL);
 	if (!ksc->clks)
 		return -ENOMEM;
