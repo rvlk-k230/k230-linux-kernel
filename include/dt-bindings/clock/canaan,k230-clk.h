@@ -51,5 +51,23 @@
 #define K230_LS_UART2_APB		39
 #define K230_LS_UART3_APB		40
 #define K230_LS_UART4_APB		41
+#define K230_LS_I2C0_APB		42
+#define K230_LS_I2C1_APB		43
+#define K230_LS_I2C2_APB		44
+#define K230_LS_I2C3_APB		45
+#define K230_LS_GPIO_APB		46
+#define K230_LS_PWM_APB			47
+#define K230_LS_JAMLINK0_APB		48
+#define K230_LS_JAMLINK1_APB		49
+#define K230_LS_JAMLINK2_APB		50
+#define K230_LS_JAMLINK3_APB		51
+#define K230_LS_AUDIO_APB		52
+#define K230_LS_ADC_APB			53
+#define K230_LS_CODEC_APB		54
+#define K230_LS_UART0			55
+#define K230_LS_UART1			56
+#define K230_LS_UART2			57
+#define K230_LS_UART3			58
+#define K230_LS_UART4			59
 
 #endif /* CLOCK_K230_CLK_H */
