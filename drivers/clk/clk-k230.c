@@ -879,7 +879,7 @@ static int k230_register_pll(struct platform_device *pdev,
 
 	ret = devm_clk_hw_register(dev, &pll->hw);
 	if (ret)
-		return dev_err_probe(dev, ret, "failed to register pll\n");
+		return ret;
 
 	k230_pll_cfgs[pll_id].pll = pll;
 
@@ -898,8 +898,7 @@ static int k230_register_plls(struct platform_device *pdev, struct k230_sysclk *
 
 		ret = k230_register_pll(pdev, ksc, i, cfg->name, 1, &k230_pll_ops);
 		if (ret)
-			return dev_err_probe(&pdev->dev, ret,
-					     "register %s failed\n", cfg->name);
+			return ret;
 	}
 
 	return 0;
@@ -1378,10 +1377,7 @@ static int k230_register_clk(struct platform_device *pdev,
 
 	ret = devm_clk_hw_register(&pdev->dev, &clk->hw);
 	if (ret)
-		return dev_err_probe(&pdev->dev,
-				     ret,
-				     "register clock %s failed\n",
-				     k230_clk_cfgs[id]->name);
+		return ret;
 
 	k230_clk_cfgs[id]->clk = clk;
 
@@ -1530,7 +1526,7 @@ static int k230_register_clks(struct platform_device *pdev, struct k230_sysclk *
 			}
 		}
 		if (ret)
-			return dev_err_probe(&pdev->dev, ret, "register child id %d failed\n", i);
+			return ret;
 	}
 
 	return 0;
