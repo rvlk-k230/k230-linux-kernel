@@ -264,7 +264,7 @@ struct k230_clk_cfg {
 	struct k230_clk *clk;
 	int flags;
 
-	/* info */
+	/* cfgs */
 	struct k230_clk_rate_cfg	*rate_cfg;
 	struct k230_clk_rate_cfg_c	*rate_cfg_c;
 	struct k230_clk_gate_cfg	*gate_cfg;
