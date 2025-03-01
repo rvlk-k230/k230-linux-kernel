@@ -1058,7 +1058,7 @@ static unsigned long k230_clk_get_rate(struct clk_hw *hw,
 		break;
 	}
 
-	return div_u64((u64)parent_rate * mul, div);
+	return mul_u64_u32_div(parent_rate, mul, div);
 }
 
 static int k230_clk_find_approximate(struct k230_clk *clk,
@@ -1231,7 +1231,7 @@ static long k230_clk_round_rate(struct clk_hw *hw, unsigned long rate, unsigned 
 		return 0;
 	}
 
-	return div_u64((u64)(*parent_rate) * mul, div);
+	return mul_u64_u32_div(*parent_rate, mul, div);
 }
 
 static int k230_clk_set_rate(struct clk_hw *hw, unsigned long rate,
