@@ -442,6 +442,18 @@ static struct k230_clk_gate_cfg k230_ls_uart4_gate = {
 	K230_GATE_FORMAT(0x24, 20, false)
 };
 
+static struct k230_clk_gate_cfg k230_shrm_axi_src_gate = {
+	K230_GATE_FORMAT(0x5C, 12, false)
+};
+
+static struct k230_clk_gate_cfg k230_shrm_sdma_axi_gate = {
+	K230_GATE_FORMAT(0x5C, 5, false)
+};
+
+static struct k230_clk_gate_cfg k230_shrm_pdma_axi_gate = {
+	K230_GATE_FORMAT(0x5C, 3, false)
+};
+
 static struct k230_clk_cfg k230_cpu0_src = {
 	.name = "cpu0_src",
 	.read_only = false,
@@ -716,25 +728,73 @@ static struct k230_clk_cfg k230_ls_uart4 = {
 		.mux_cfg = NULL,
 };
 
+static struct k230_clk_cfg k230_shrm_axi_src = {
+		.name = "shrm_axi_src",
+		.read_only = false,
+		.flags = 0,
+		.num_parent = 1,
+		.parent[0] = {
+			.type = K230_PLL_DIV,
+			.pll_div_cfg = &k230_pll_div_cfgs[K230_PLL0_DIV4],
+		},
+		.rate_cfg = NULL,
+		.rate_cfg_c = NULL,
+		.gate_cfg = &k230_shrm_axi_src_gate,
+		.mux_cfg = NULL,
+};
+
+static struct k230_clk_cfg k230_shrm_sdma_axi = {
+		.name = "shrm_sdma_axi",
+		.read_only = false,
+		.flags = 0,
+		.num_parent = 1,
+		.parent[0] = {
+			.type = K230_CLK_COMPOSITE,
+			.clk_cfg = &k230_shrm_axi_src,
+		},
+		.rate_cfg = NULL,
+		.rate_cfg_c = NULL,
+		.gate_cfg = &k230_shrm_sdma_axi_gate,
+		.mux_cfg = NULL,
+};
+
+static struct k230_clk_cfg k230_shrm_pdma_axi = {
+		.name = "shrm_pdma_axi",
+		.read_only = false,
+		.flags = 0,
+		.num_parent = 1,
+		.parent[0] = {
+			.type = K230_CLK_COMPOSITE,
+			.clk_cfg = &k230_shrm_axi_src,
+		},
+		.rate_cfg = NULL,
+		.rate_cfg_c = NULL,
+		.gate_cfg = &k230_shrm_pdma_axi_gate,
+		.mux_cfg = NULL,
+};
+
 static struct k230_clk_cfg *k230_clk_cfgs[] = {
-	[K230_CPU0_SRC]		=	&k230_cpu0_src,
-	[K230_CPU0_ACLK]	=	&k230_cpu0_aclk,
-	[K230_CPU0_PLIC]	=	&k230_cpu0_plic,
-	[K230_CPU0_NOC_DDRCP4]	=	&k230_cpu0_noc_ddrcp4,
-	[K230_CPU0_PCLK]	=	&k230_cpu0_pclk,
-	[K230_PMU_PCLK]		=	&k230_pmu_pclk,
-	[K230_HS_OSPI_SRC]	=	&k230_hs_ospi_src,
-	[K230_LS_APB_SRC]	=	&k230_ls_apb_src,
-	[K230_LS_UART0_APB]	=	&k230_ls_uart0_apb,
-	[K230_LS_UART1_APB]	=	&k230_ls_uart1_apb,
-	[K230_LS_UART2_APB]	=	&k230_ls_uart2_apb,
-	[K230_LS_UART3_APB]	=	&k230_ls_uart3_apb,
-	[K230_LS_UART4_APB]	=	&k230_ls_uart4_apb,
-	[K230_LS_UART0]		=	&k230_ls_uart0,
-	[K230_LS_UART1]		=	&k230_ls_uart1,
-	[K230_LS_UART2]		=	&k230_ls_uart2,
-	[K230_LS_UART3]		=	&k230_ls_uart3,
-	[K230_LS_UART4]		=	&k230_ls_uart4,
+	[K230_CPU0_SRC]			=	&k230_cpu0_src,
+	[K230_CPU0_ACLK]		=	&k230_cpu0_aclk,
+	[K230_CPU0_PLIC]		=	&k230_cpu0_plic,
+	[K230_CPU0_NOC_DDRCP4]		=	&k230_cpu0_noc_ddrcp4,
+	[K230_CPU0_PCLK]		=	&k230_cpu0_pclk,
+	[K230_PMU_PCLK]			=	&k230_pmu_pclk,
+	[K230_HS_OSPI_SRC]		=	&k230_hs_ospi_src,
+	[K230_LS_APB_SRC]		=	&k230_ls_apb_src,
+	[K230_LS_UART0_APB]		=	&k230_ls_uart0_apb,
+	[K230_LS_UART1_APB]		=	&k230_ls_uart1_apb,
+	[K230_LS_UART2_APB]		=	&k230_ls_uart2_apb,
+	[K230_LS_UART3_APB]		=	&k230_ls_uart3_apb,
+	[K230_LS_UART4_APB]		=	&k230_ls_uart4_apb,
+	[K230_LS_UART0]			=	&k230_ls_uart0,
+	[K230_LS_UART1]			=	&k230_ls_uart1,
+	[K230_LS_UART2]			=	&k230_ls_uart2,
+	[K230_LS_UART3]			=	&k230_ls_uart3,
+	[K230_LS_UART4]			=	&k230_ls_uart4,
+	[K230_SHRM_AXI_SRC]		=	&k230_shrm_axi_src,
+	[K230_SHRM_SDMA_AXI_GATE]	=	&k230_shrm_sdma_axi,
+	[K230_SHRM_PDMA_AXI_GATE]	=	&k230_shrm_pdma_axi,
 };
 
 #define K230_CLK_NUM	ARRAY_SIZE(k230_clk_cfgs)
