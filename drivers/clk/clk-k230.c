@@ -1284,10 +1284,6 @@ static long k230_clk_round_rate(struct clk_hw *hw, unsigned long rate, unsigned 
 				      rate_cfg->rate_mul_min, rate_cfg->rate_mul_max,
 				      rate_cfg->rate_div_min, rate_cfg->rate_div_max,
 				      rate_cfg->method, rate, *parent_rate, &div, &mul)) {
-		dev_err(&ksc->pdev->dev,
-			"[%s]: clk %s round rate error!\n",
-			__func__,
-			clk_hw_get_name(hw));
 		return 0;
 	}
 
@@ -1318,7 +1314,6 @@ static int k230_clk_set_rate(struct clk_hw *hw, unsigned long rate,
 				      rate_cfg->rate_mul_min, rate_cfg->rate_mul_max,
 				      rate_cfg->rate_div_min, rate_cfg->rate_div_max,
 				      rate_cfg->method, rate, parent_rate, &div, &mul)) {
-		dev_err(&ksc->pdev->dev, "clk %s set rate error!\n", clk_hw_get_name(hw));
 		return -EINVAL;
 	}
 
@@ -1558,8 +1553,7 @@ static int k230_register_clks(struct platform_device *pdev, struct k230_sysclk *
 		if (cfg->mux_cfg) {
 			ret = k230_clk_mux_get_parent_data(cfg, parent_data);
 			if (ret)
-				return dev_err_probe(&pdev->dev, ret,
-						     "Failed to get parent data\n");
+				return ret;
 
 			ret = k230_register_mux_clk(pdev, ksc, parent_data,
 						    cfg->num_parent, i);
