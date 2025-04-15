@@ -108,7 +108,6 @@
 
 struct k230_sysclk;
 
-/* K230 PLLs. */
 enum k230_pll_id {
 	K230_PLL0,
 	K230_PLL1,
@@ -132,7 +131,6 @@ struct k230_pll_cfg {
 	struct k230_pll *pll;
 };
 
-/* K230 PLL_DIVS. */
 struct k230_pll_div {
 	struct k230_sysclk *ksc;
 	struct clk_hw *hw;
@@ -167,7 +165,6 @@ enum k230_clk_div_type {
 	K230_MUL_DIV,
 };
 
-/* K230 CLKS. */
 struct k230_clk {
 	int id;
 	struct k230_sysclk *ksc;
@@ -176,7 +173,6 @@ struct k230_clk {
 
 #define to_k230_clk(_hw)	container_of(_hw, struct k230_clk, hw)
 
-/* K230 SYSCLK. */
 struct k230_sysclk {
 	struct platform_device *pdev;
 	void __iomem	       *pll_regs, *regs;
@@ -209,8 +205,10 @@ struct k230_clk_rate_cfg_c {
 	/* rate_c reg */
 	u32 rate_reg_off_c;
 	void __iomem *rate_reg_c;
+
 	/* rate_c info */
 	u32 rate_write_enable_bit_c;
+
 	/* rate mul-changable */
 	u32 rate_mul_min_c;
 	u32 rate_mul_max_c;
@@ -222,6 +220,7 @@ struct k230_clk_gate_cfg {
 	/* gate reg */
 	u32 gate_reg_off;
 	void __iomem *gate_reg;
+
 	/* gate info*/
 	u32 gate_bit_enable;
 	bool gate_bit_reverse;
@@ -231,6 +230,7 @@ struct k230_clk_mux_cfg {
 	/* mux reg */
 	u32 mux_reg_off;
 	void __iomem *mux_reg;
+
 	/* mux info */
 	u32 mux_reg_shift;
 	u32 mux_reg_mask;
@@ -257,6 +257,7 @@ struct k230_clk_parent {
 struct k230_clk_cfg {
 	/* attr */
 	const char *name;
+
 	/* 0-read & write; 1-read only */
 	bool read_only;
 	int num_parent;
@@ -860,10 +861,8 @@ static void k230_pll_disable(struct clk_hw *hw)
 
 	guard(spinlock)(&ksc->pll_lock);
 	reg = readl(pll->gate);
-
 	reg &= ~(K230_PLL_GATE_ENABLE);
 	reg |= (K230_PLL_GATE_WRITE_ENABLE);
-
 	writel(reg, pll->gate);
 }
 
@@ -892,7 +891,7 @@ static unsigned long k230_pll_get_rate(struct clk_hw *hw, unsigned long parent_r
 		return parent_rate;
 
 	reg = readl(pll->lock);
-	if (!(reg & (K230_PLL_STATUS_MASK))) { /* unlocked */
+	if (!(reg & (K230_PLL_STATUS_MASK))) {
 		dev_err(&ksc->pdev->dev, "%s is unlock.\n", clk_hw_get_name(hw));
 		return 0;
 	}
@@ -1662,22 +1661,22 @@ static int k230_clk_probe(struct platform_device *pdev)
 	int ret;
 	struct k230_sysclk *ksc;
 
-	ksc = devm_kzalloc(&pdev->dev, sizeof(struct k230_sysclk), GFP_KERNEL);
+	ksc = devm_kzalloc(&pdev->dev, sizeof(*ksc), GFP_KERNEL);
 	if (!ksc)
 		return -ENOMEM;
 
 	ksc->plls = devm_kcalloc(&pdev->dev, K230_PLL_NUM,
-				 sizeof(struct k230_pll), GFP_KERNEL);
+				 sizeof(*(ksc->plls)), GFP_KERNEL);
 	if (!ksc->plls)
 		return -ENOMEM;
 
 	ksc->dclks = devm_kcalloc(&pdev->dev, K230_PLL_DIV_NUM,
-				  sizeof(struct k230_pll_div), GFP_KERNEL);
+				  sizeof(*(ksc->dclks)), GFP_KERNEL);
 	if (!ksc->dclks)
 		return -ENOMEM;
 
 	ksc->clks = devm_kcalloc(&pdev->dev, K230_CLK_NUM,
-				 sizeof(struct k230_clk), GFP_KERNEL);
+				 sizeof(*(ksc->clks)), GFP_KERNEL);
 	if (!ksc->clks)
 		return -ENOMEM;
 
