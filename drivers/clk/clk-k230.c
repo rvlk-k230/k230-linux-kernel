@@ -1666,17 +1666,17 @@ static int k230_clk_probe(struct platform_device *pdev)
 		return -ENOMEM;
 
 	ksc->plls = devm_kcalloc(&pdev->dev, K230_PLL_NUM,
-				 sizeof(*(ksc->plls)), GFP_KERNEL);
+				 sizeof(*ksc->plls), GFP_KERNEL);
 	if (!ksc->plls)
 		return -ENOMEM;
 
 	ksc->dclks = devm_kcalloc(&pdev->dev, K230_PLL_DIV_NUM,
-				  sizeof(*(ksc->dclks)), GFP_KERNEL);
+				  sizeof(*ksc->dclks), GFP_KERNEL);
 	if (!ksc->dclks)
 		return -ENOMEM;
 
 	ksc->clks = devm_kcalloc(&pdev->dev, K230_CLK_NUM,
-				 sizeof(*(ksc->clks)), GFP_KERNEL);
+				 sizeof(*ksc->clks), GFP_KERNEL);
 	if (!ksc->clks)
 		return -ENOMEM;
 
