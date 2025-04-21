@@ -1188,8 +1188,11 @@ static int k230_clk_find_approximate(struct k230_clk *clk,
 		{3125, 384}
 	};
 
+	if (!rate || !parent_rate || !mul_min || !mul_max)
+		return -EINVAL;
+
 	switch (method) {
-	/* only mul can be changeable 1/12,2/12,3/12...*/
+	/* Only mul can be changed: 1/12, 2/12, 3/12, ... */
 	case K230_MUL:
 		perfect_divide = (long)((parent_rate * 1000) / rate);
 		abs_min = abs(perfect_divide -
@@ -1207,7 +1210,7 @@ static int k230_clk_find_approximate(struct k230_clk *clk,
 
 		*div = div_max;
 		break;
-	/* only div can be changeable, 1/1,1/2,1/3...*/
+	/* Only div can be changeable: 1/1, 1/2, 1/3, ... */
 	case K230_DIV:
 		perfect_divide = (long)((parent_rate * 1000) / rate);
 		abs_min = abs(perfect_divide -
@@ -1225,7 +1228,7 @@ static int k230_clk_find_approximate(struct k230_clk *clk,
 
 		*mul = mul_max;
 		break;
-	/* mul and div can be changeable. */
+	/* mul and div can be changed */
 	case K230_MUL_DIV:
 		if (rate_cfg->rate_reg_off == K230_CLK_CODEC_ADC_MCLKDIV_OFFSET ||
 		    rate_cfg->rate_reg_off == K230_CLK_CODEC_DAC_MCLKDIV_OFFSET) {
@@ -1252,7 +1255,8 @@ static int k230_clk_find_approximate(struct k230_clk *clk,
 	return 0;
 }
 
-static long k230_clk_round_rate(struct clk_hw *hw, unsigned long rate, unsigned long *parent_rate)
+static long k230_clk_round_rate(struct clk_hw *hw, unsigned long rate,
+				unsigned long *parent_rate)
 {
 	struct k230_clk *clk = to_k230_clk(hw);
 	struct k230_sysclk *ksc = clk->ksc;
@@ -1277,10 +1281,10 @@ static int k230_clk_set_rate(struct clk_hw *hw, unsigned long rate,
 	struct k230_clk_cfg *cfg = k230_clk_cfgs[clk->id];
 	struct k230_clk_rate_cfg *rate_cfg = cfg->rate_cfg;
 	struct k230_clk_rate_cfg_c *rate_cfg_c = cfg->rate_cfg_c;
-	u32 div = 0, mul = 0, reg = 0, reg_c;
+	u32 div, mul, reg, reg_c;
 
-	if (rate > parent_rate || rate == 0 || parent_rate == 0) {
-		dev_err(&ksc->pdev->dev, "rate or parent_rate error\n");
+	if (rate > parent_rate) {
+		dev_err(&ksc->pdev->dev, "rate should be smaller than parent rate\n");
 		return -EINVAL;
 	}
 
@@ -1292,9 +1296,8 @@ static int k230_clk_set_rate(struct clk_hw *hw, unsigned long rate,
 	if (k230_clk_find_approximate(clk,
 				      rate_cfg->rate_mul_min, rate_cfg->rate_mul_max,
 				      rate_cfg->rate_div_min, rate_cfg->rate_div_max,
-				      rate_cfg->method, rate, parent_rate, &div, &mul)) {
+				      rate_cfg->method, rate, parent_rate, &div, &mul))
 		return -EINVAL;
-	}
 
 	guard(spinlock)(&ksc->clk_lock);
 
@@ -1519,13 +1522,13 @@ static int k230_register_clks(struct platform_device *pdev, struct k230_sysclk *
 	int ret, i;
 
 	/*
-	 *  Single parent clock:
-	 *  pll0_div2 sons: cpu0_src
-	 *  pll0_div4 sons: cpu0_pclk
-	 *  cpu0_src sons: cpu0_aclk, cpu0_plic, cpu0_noc_ddrcp4, pmu_pclk
+	 * Single parent clock:
+	 * pll0_div2 childs: cpu0_src
+	 * pll0_div4 childs: cpu0_pclk
+	 * cpu0_src childs: cpu0_aclk, cpu0_plic, cpu0_noc_ddrcp4, pmu_pclk
 	 *
-	 *  Mux clock:
-	 *  hs_ospi_src parents: pll0_div2, pll2_div4
+	 * Mux clock:
+	 * hs_ospi_src parents: pll0_div2, pll2_div4
 	 */
 	for (i = 0; i < K230_CLK_NUM; i++) {
 		cfg = k230_clk_cfgs[i];
@@ -1686,7 +1689,7 @@ MODULE_DEVICE_TABLE(of, k230_clk_ids);
 
 static struct platform_driver k230_clk_driver = {
 	.driver = {
-		.name  = "k230_clock_controller",
+		.name = "k230_clock_controller",
 		.of_match_table = k230_clk_ids,
 	},
 	.probe = k230_clk_probe,
