@@ -121,6 +121,18 @@
 	.div = _div,								\
 }
 
+#define K230_CLK_CFG_FORMAT(_name, _read_only, _flags, _id,			\
+			    _rate_cfg, _rate_cfg_c,				\
+			    _gate_cfg, _mux_cfg)				\
+	.name = (_name),							\
+	.read_only = (_read_only),						\
+	.flags = (_flags),							\
+	.id = (_id),								\
+	.rate_cfg = (_rate_cfg),						\
+	.rate_cfg_c = (_rate_cfg_c),						\
+	.gate_cfg = (_gate_cfg),						\
+	.mux_cfg = (_mux_cfg)
+
 struct k230_sysclk;
 
 enum k230_pll_id {
@@ -247,7 +259,6 @@ struct k230_sysclk {
 	spinlock_t		pll_lock, clk_lock;
 };
 
-#if 0
 
 static struct k230_pll k230_plls[] = {
 	[K230_PLL0] = { .name = "pll0", .id = K230_PLL0},
@@ -415,18 +426,6 @@ static struct k230_clk_gate_cfg k230_shrm_sdma_axi_gate = {
 static struct k230_clk_gate_cfg k230_shrm_pdma_axi_gate = {
 	K230_GATE_FORMAT(0x5C, 3, false)
 };
-
-#define K230_CLK_CFG_FORMAT(_name, _read_only, _flags, _id,			\
-			    _rate_cfg, _rate_cfg_c,				\
-			    _gate_cfg, _mux_cfg)				\
-	.name = _name,								\
-	.read_only = _read_only,						\
-	.flags = _flags,							\
-	.id = _id,								\
-	.rate_cfg = _rate_cfg,							\
-	.rate_cfg_c = _rate_cfg_c,						\
-	.gate_cfg = _gate_cfg,							\
-	.mux_cfg = _mux_cfg
 
 static struct k230_clk k230_cpu0_src = {
 	.num_parent = 1,
@@ -665,13 +664,13 @@ static struct k230_clk k230_shrm_pdma_axi = {
 
 static struct k230_clk *k230_clks[] = {
 	[K230_CPU0_SRC]			=	&k230_cpu0_src,
-/*
 	[K230_CPU0_ACLK]		=	&k230_cpu0_aclk,
 	[K230_CPU0_PLIC]		=	&k230_cpu0_plic,
 	[K230_CPU0_NOC_DDRCP4]		=	&k230_cpu0_noc_ddrcp4,
 	[K230_CPU0_PCLK]		=	&k230_cpu0_pclk,
 	[K230_PMU_PCLK]			=	&k230_pmu_pclk,
 	[K230_HS_OSPI_SRC]		=	&k230_hs_ospi_src,
+#if 0
 	[K230_LS_APB_SRC]		=	&k230_ls_apb_src,
 	[K230_LS_UART0_APB]		=	&k230_ls_uart0_apb,
 	[K230_LS_UART1_APB]		=	&k230_ls_uart1_apb,
@@ -686,7 +685,7 @@ static struct k230_clk *k230_clks[] = {
 	[K230_SHRM_AXI_SRC]		=	&k230_shrm_axi_src,
 	[K230_SHRM_SDMA_AXI_GATE]	=	&k230_shrm_sdma_axi,
 	[K230_SHRM_PDMA_AXI_GATE]	=	&k230_shrm_pdma_axi,
-	*/
+#endif
 };
 
 #define K230_CLK_NUM	ARRAY_SIZE(k230_clks)
@@ -1372,7 +1371,7 @@ static int k230_clk_get_parent_data(struct k230_clk_parent *pclk,
 		break;
 	}
 
-	return 0;
+	return parent_data->hw ? 0 : -EINVAL;
 }
 
 static int k230_clk_mux_get_parent_data(struct k230_clk *clk,
@@ -1411,7 +1410,7 @@ static int k230_register_clks(struct platform_device *pdev, struct k230_sysclk *
 		if (!clk)
 			continue;
 
-		if (clk->mux_cfg) {
+		if (clk->num_parent >= 2) {
 			ret = k230_clk_mux_get_parent_data(clk, parent_data);
 			if (ret)
 				return ret;
@@ -1500,7 +1499,6 @@ static int k230_clk_init_clks(struct platform_device *pdev, struct k230_sysclk *
 
 	return 0;
 }
-#endif
 
 static int k230_clk_probe(struct platform_device *pdev)
 {
@@ -1516,7 +1514,6 @@ static int k230_clk_probe(struct platform_device *pdev)
 	if (!hw_data)
 		return -ENOMEM;
 
-#if 0
 	ksc->pdev = pdev;
 	platform_set_drvdata(pdev, hw_data);
 
@@ -1528,7 +1525,6 @@ static int k230_clk_probe(struct platform_device *pdev)
 	if (ret)
 		return dev_err_probe(&pdev->dev, ret, "init clks failed\n");
 
-#endif
 	return 0;
 }
 
