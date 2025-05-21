@@ -335,6 +335,12 @@ static struct k230_clk_mux_cfg k230_hs_ospi_src_mux = {
 	K230_MUX_FORMAT(0x20, 18, 0x1)
 };
 
+static struct k230_clk_rate_cfg k230_hs_usb_ref_50m_rate = {
+	K230_RATE_FORMAT(1, 1, 0, 0,
+			 1, 8, 15, 0x7,
+			 0x20, 31, K230_DIV)
+};
+
 static struct k230_clk_rate_cfg k230_ls_apb_src_rate = {
 	K230_RATE_FORMAT(1, 1, 0, 0,
 			 1, 8, 0, 0x7,
@@ -508,6 +514,17 @@ static struct k230_clk k230_hs_ospi_src = {
 			    &k230_hs_ospi_src_gate, &k230_hs_ospi_src_mux),
 };
 
+static struct k230_clk k230_hs_usb_ref_50m = {
+	.num_parent = 1,
+	.parent[0] = {
+		.type = K230_PLL_DIV,
+		.pll_div = &k230_pll_divs[K230_PLL0_DIV16],
+	},
+	K230_CLK_CFG_FORMAT("hs_usb_ref_50m", false, 0, K230_HS_USB_REF_50M,
+			    &k230_hs_usb_ref_50m_rate, NULL,
+			    NULL, NULL),
+};
+
 static struct k230_clk k230_ls_apb_src = {
 	.num_parent = 1,
 	.parent[0] = {
@@ -646,7 +663,7 @@ static struct k230_clk k230_shrm_sdma_axi = {
 		.type = K230_CLK_COMPOSITE,
 		.clk = &k230_shrm_axi_src,
 	},
-	K230_CLK_CFG_FORMAT("shrm_axi_src", false, 0, K230_SHRM_SDMA_AXI_GATE,
+	K230_CLK_CFG_FORMAT("shrm_sdma_src", false, 0, K230_SHRM_SDMA_AXI_GATE,
 			    NULL, NULL,
 			    &k230_shrm_sdma_axi_gate, NULL),
 };
@@ -670,7 +687,7 @@ static struct k230_clk *k230_clks[] = {
 	[K230_CPU0_PCLK]		=	&k230_cpu0_pclk,
 	[K230_PMU_PCLK]			=	&k230_pmu_pclk,
 	[K230_HS_OSPI_SRC]		=	&k230_hs_ospi_src,
-#if 0
+	[K230_HS_USB_REF_50M]		=	&k230_hs_usb_ref_50m,
 	[K230_LS_APB_SRC]		=	&k230_ls_apb_src,
 	[K230_LS_UART0_APB]		=	&k230_ls_uart0_apb,
 	[K230_LS_UART1_APB]		=	&k230_ls_uart1_apb,
@@ -685,7 +702,6 @@ static struct k230_clk *k230_clks[] = {
 	[K230_SHRM_AXI_SRC]		=	&k230_shrm_axi_src,
 	[K230_SHRM_SDMA_AXI_GATE]	=	&k230_shrm_sdma_axi,
 	[K230_SHRM_PDMA_AXI_GATE]	=	&k230_shrm_pdma_axi,
-#endif
 };
 
 #define K230_CLK_NUM	ARRAY_SIZE(k230_clks)
@@ -1410,7 +1426,7 @@ static int k230_register_clks(struct platform_device *pdev, struct k230_sysclk *
 		if (!clk)
 			continue;
 
-		if (clk->num_parent >= 2) {
+		if (clk->mux_cfg) {
 			ret = k230_clk_mux_get_parent_data(clk, parent_data);
 			if (ret)
 				return ret;
