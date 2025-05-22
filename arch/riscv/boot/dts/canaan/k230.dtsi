@@ -66,13 +66,6 @@
 		#clock-cells = <0>;
 	};
 
-	apb_clk: apb-clk-clock {
-	        compatible = "fixed-clock";
-	        clock-frequency = <50000000>;
-	        clock-output-names = "apb_clk";
-	        #clock-cells = <0>;
-	};
-
 	soc {
 		compatible = "simple-bus";
 		interrupt-parent = <&plic>;
@@ -108,8 +101,7 @@
 		uart0: serial@91400000 {
 			compatible = "snps,dw-apb-uart";
 			reg = <0x0 0x91400000 0x0 0x1000>;
-			//clocks = <&sysclk K230_LS_UART0>;
-			clocks = <&apb_clk>;
+			clocks = <&sysclk K230_LS_UART0>;
 			interrupts = <16 IRQ_TYPE_LEVEL_HIGH>;
 			reg-io-width = <4>;
 			reg-shift = <2>;
