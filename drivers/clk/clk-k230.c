@@ -663,7 +663,7 @@ static struct k230_clk k230_shrm_sdma_axi = {
 		.type = K230_CLK_COMPOSITE,
 		.clk = &k230_shrm_axi_src,
 	},
-	K230_CLK_CFG_FORMAT("shrm_sdma_src", false, 0, K230_SHRM_SDMA_AXI_GATE,
+	K230_CLK_CFG_FORMAT("shrm_sdma_src", false, 0, K230_SHRM_SDMA_AXI,
 			    NULL, NULL,
 			    &k230_shrm_sdma_axi_gate, NULL),
 };
@@ -674,7 +674,7 @@ static struct k230_clk k230_shrm_pdma_axi = {
 		.type = K230_CLK_COMPOSITE,
 		.clk = &k230_shrm_axi_src,
 	},
-	K230_CLK_CFG_FORMAT("shrm_pdma_axi", false, 0, K230_SHRM_PDMA_AXI_GATE,
+	K230_CLK_CFG_FORMAT("shrm_pdma_axi", false, 0, K230_SHRM_PDMA_AXI,
 			    NULL, NULL,
 			    &k230_shrm_pdma_axi_gate, NULL),
 };
@@ -700,8 +700,8 @@ static struct k230_clk *k230_clks[] = {
 	[K230_LS_UART3]			=	&k230_ls_uart3,
 	[K230_LS_UART4]			=	&k230_ls_uart4,
 	[K230_SHRM_AXI_SRC]		=	&k230_shrm_axi_src,
-	[K230_SHRM_SDMA_AXI_GATE]	=	&k230_shrm_sdma_axi,
-	[K230_SHRM_PDMA_AXI_GATE]	=	&k230_shrm_pdma_axi,
+	[K230_SHRM_SDMA_AXI]		=	&k230_shrm_sdma_axi,
+	[K230_SHRM_PDMA_AXI]		=	&k230_shrm_pdma_axi,
 };
 
 #define K230_CLK_NUM	ARRAY_SIZE(k230_clks)
