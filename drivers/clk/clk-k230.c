@@ -78,7 +78,7 @@
 #define K230_CLK_OPS_ID_ALL				7
 #define K230_CLK_OPS_ID_NUM				8
 
-#define K230_CLK_MAX_PARENT_NUM				6
+#define K230_CLK_MAX_PARENT_NUM				4
 
 #define K230_GATE_FORMAT(_reg, _bit, _reverse)					\
 	.gate_reg_off = (_reg),							\
@@ -239,19 +239,6 @@
 		.num_parent = 1,						\
 	}
 
-#define K230_CLK_MUX_FORMAT(_var,						\
-			    mreg, _mux_shift, _mask,				\
-			    _read_only, _flags, _id,				\
-			    count, ...)						\
-	static struct k230_clk_mux_cfg _var##_mux = {				\
-		K230_MUX_FORMAT(mreg, _mux_shift, _mask)			\
-	};									\
-	static struct k230_clk _var = {						\
-		K230_CLK_CFG_FORMAT(#_var, _read_only, _flags, _id,		\
-				    NULL, NULL,					\
-				    NULL, &_var##_mux),				\
-	}
-
 #define K230_CLK_RATE_GATE_FORMAT(_var,						\
 				  _mul_min, _mul_max, _mul_shift, _mul_mask,	\
 				  _div_min, _div_max, _div_shift, _div_mask,	\
@@ -284,7 +271,22 @@
 				 _reg, _bit, _method,				\
 				 mreg, _mux_shift, _mask,			\
 				 _read_only, _flags, _id,			\
-				 ...)						\
+				 count, ...)					\
+	_K230_CLK_RATE_MUX_FORMAT(_var,						\
+				 _mul_min, _mul_max, _mul_shift, _mul_mask,	\
+				 _div_min, _div_max, _div_shift, _div_mask,	\
+				 _reg, _bit, _method,				\
+				 mreg, _mux_shift, _mask,			\
+				 _read_only, _flags, _id,			\
+		 		 count, __VA_ARGS__)
+
+#define _K230_CLK_RATE_MUX_FORMAT2(_var,					\
+				   _mul_min, _mul_max, _mul_shift, _mul_mask,	\
+				   _div_min, _div_max, _div_shift, _div_mask,	\
+				   _reg, _bit, _method,				\
+				   mreg, _mux_shift, _mask,			\
+				   _read_only, _flags, _id,			\
+				   type0, clk0, type1, clk1)			\
 	static struct k230_clk_rate_cfg _var##_rate = {				\
 		K230_RATE_FORMAT(_mul_min, _mul_max, _mul_shift, _mul_mask,	\
 				 _div_min, _div_max, _div_shift, _div_mask,	\
@@ -297,6 +299,49 @@
 		K230_CLK_CFG_FORMAT(#_var, _read_only, _flags, _id,		\
 				    &_var##_rate, NULL,				\
 				    NULL, &_var##_mux),				\
+		.num_parent = 2,						\
+		.parent[0] = {							\
+			.type = type0,						\
+			.ptr = &clk0,						\
+		},								\
+		.parent[1] = {							\
+			.type = type1,						\
+			.ptr = &clk1,						\
+		},								\
+	}
+
+#define _K230_CLK_RATE_MUX_FORMAT3(_var,					\
+				   _mul_min, _mul_max, _mul_shift, _mul_mask,	\
+				   _div_min, _div_max, _div_shift, _div_mask,	\
+				   _reg, _bit, _method,				\
+				   mreg, _mux_shift, _mask,			\
+				   _read_only, _flags, _id,			\
+				   type0, clk0, type1, clk1, type2, clk2)	\
+	static struct k230_clk_rate_cfg _var##_rate = {				\
+		K230_RATE_FORMAT(_mul_min, _mul_max, _mul_shift, _mul_mask,	\
+				 _div_min, _div_max, _div_shift, _div_mask,	\
+				 _reg, _bit, _method)				\
+	};									\
+	static struct k230_clk_mux_cfg _var##_mux = {				\
+		K230_MUX_FORMAT(mreg, _mux_shift, _mask)			\
+	};									\
+	static struct k230_clk _var = {						\
+		K230_CLK_CFG_FORMAT(#_var, _read_only, _flags, _id,		\
+				    &_var##_rate, NULL,				\
+				    NULL, &_var##_mux),				\
+		.num_parent = 2,						\
+		.parent[0] = {							\
+			.type = type0,						\
+			.ptr = &clk0,						\
+		},								\
+		.parent[1] = {							\
+			.type = type1,						\
+			.ptr = &clk1,						\
+		},								\
+		.parent[2] = {							\
+			.type = type2,						\
+			.ptr = &clk2,						\
+		},								\
 	}
 
 #define K230_CLK_GATE_MUX_FORMAT(_var,						\
@@ -333,6 +378,36 @@
 		.parent[1] = {							\
 			.type = type1,						\
 			.ptr = &clk1,						\
+		},								\
+	}
+
+#define _K230_CLK_GATE_MUX_FORMAT3(_var,					\
+				   greg, gbit, _reverse,			\
+				   mreg, _mux_shift, _mask,			\
+				   _read_only, _flags, _id,			\
+				   type0, clk0, type1, clk1)			\
+	static struct k230_clk_gate_cfg _var##_gate = {				\
+		K230_GATE_FORMAT(greg, gbit, _reverse)				\
+	};									\
+	static struct k230_clk_mux_cfg _var##_mux = {				\
+		K230_MUX_FORMAT(mreg, _mux_shift, _mask)			\
+	};									\
+	static struct k230_clk _var = {						\
+		K230_CLK_CFG_FORMAT(#_var, _read_only, _flags, _id,		\
+				    NULL, NULL,					\
+				    &_var##_gate, &_var##_mux),			\
+		.num_parent = 3,						\
+		.parent[0] = {							\
+			.type = type0,						\
+			.ptr = &clk0,						\
+		},								\
+		.parent[1] = {							\
+			.type = type1,						\
+			.ptr = &clk1,						\
+		},								\
+		.parent[2] = {							\
+			.type = type2,						\
+			.ptr = &clk2,						\
 		},								\
 	}
 
