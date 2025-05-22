@@ -133,6 +133,192 @@
 	.gate_cfg = (_gate_cfg),						\
 	.mux_cfg = (_mux_cfg)
 
+#define K230_CLK_FORMAT_C(_var,							\
+			  _mul_min, _mul_max, _mul_shift, _mul_mask,		\
+			  _div_min, _div_max, _div_shift, _div_mask,		\
+			  _reg, _bit, _method,					\
+			  cmul_min, cmul_max, cmul_shift, cmul_mask,		\
+			  _creg, _cbit,						\
+			  greg, gbit, _reverse,					\
+			  mreg, _mux_shift, _mask,				\
+			  _read_only, _flags, _id,				\
+			  _type, _clk)					\
+	static struct k230_clk_rate_cfg _var##_rate = {				\
+		K230_RATE_FORMAT(_mul_min, _mul_max, _mul_shift, _mul_mask,	\
+				 _div_min, _div_max, _div_shift, _div_mask,	\
+				 _reg, _bit, _method)				\
+	};									\
+	static struct k230_clk_rate_cfg _var##_rate_c = {			\
+		K230_GATE_C_FORMAT(cmul_min, cmul_max, cmul_shift, cmul_mask,	\
+				   _creg, _cbit)				\
+	};									\
+	static struct k230_clk_gate_cfg _var##_gate = {				\
+		K230_GATE_FORMAT(greg, gbit, _reverse)				\
+	};									\
+	static struct k230_clk_mux_cfg _var##_mux = {				\
+		K230_MUX_FORMAT(mreg, _mux_shift, _mask)			\
+	};									\
+	static struct k230_clk _var = {						\
+		K230_CLK_CFG_FORMAT(#_var, _read_only, _flags, _id,		\
+				    &_var##_rate, &_var##_rate_c,		\
+				    &_var##_gate, &_var##_mux),			\
+		.parent[0] = {							\
+			.type= _type,						\
+			.clk = _clk,						\
+		},								\
+		.num_parent = 1,						\
+	};
+
+#define K230_CLK_FORMAT(_var,							\
+			_mul_min, _mul_max, _mul_shift, _mul_mask,		\
+			_div_min, _div_max, _div_shift, _div_mask,		\
+			_reg, _bit, _method,					\
+			greg, gbit, _reverse,					\
+			mreg, _mux_shift, _mask,				\
+			_read_only, _flags, _id,				\
+			_type, _clk)					\
+	static struct k230_clk_rate_cfg _var##_rate = {				\
+		K230_RATE_FORMAT(_mul_min, _mul_max, _mul_shift, _mul_mask,	\
+				 _div_min, _div_max, _div_shift, _div_mask,	\
+				 _reg, _bit, _method)				\
+	};									\
+	static struct k230_clk_gate_cfg _var##_gate = {				\
+		K230_GATE_FORMAT(greg, gbit, _reverse)				\
+	};									\
+	static struct k230_clk_mux_cfg _var##_mux = {				\
+		K230_MUX_FORMAT(mreg, _mux_shift, _mask)			\
+	};									\
+	static struct k230_clk _var = {						\
+		K230_CLK_CFG_FORMAT(#_var, _read_only, _flags, _id,		\
+				    &_var##_rate, NULL,				\
+				    &_var##_gate, &_var##_mux),			\
+		.parent[0] = {							\
+			.type= _type,						\
+			.clk = _clk,						\
+		},								\
+		.num_parent = 1,						\
+	};
+
+#define K230_CLK_RATE_FORMAT(_var,						\
+			     _mul_min, _mul_max, _mul_shift, _mul_mask,		\
+			     _div_min, _div_max, _div_shift, _div_mask,		\
+			     _reg, _bit, _method,				\
+			     _read_only, _flags, _id,				\
+			     _type, _clk)					\
+	static struct k230_clk_rate_cfg _var##_rate = {				\
+		K230_RATE_FORMAT(_mul_min, _mul_max, _mul_shift, _mul_mask,	\
+				 _div_min, _div_max, _div_shift, _div_mask,	\
+				 _reg, _bit, _method)				\
+	};									\
+	static struct k230_clk _var = {						\
+		K230_CLK_CFG_FORMAT(#_var, _read_only, _flags, _id,		\
+				    &_var##_rate, NULL,				\
+				    NULL, NULL),				\
+		.parent[0] = {							\
+			.type= _type,						\
+			.clk = _clk,						\
+		},								\
+		.num_parent = 1,						\
+	};
+
+#define K230_CLK_GATE_FORMAT(_var,						\
+			     greg, gbit, _reverse,				\
+			     _read_only, _flags, _id,				\
+			     _type, _clk)					\
+	static struct k230_clk_gate_cfg _var##_gate = {				\
+		K230_GATE_FORMAT(greg, gbit, _reverse)				\
+	};									\
+	static struct k230_clk _var = {						\
+		K230_CLK_CFG_FORMAT(#_var, _read_only, _flags, _id,		\
+				    &_var##_rate, NULL,				\
+				    NULL, NULL),				\
+		.parent[0] = {							\
+			.type= _type,						\
+			.clk = _clk,						\
+		},								\
+		.num_parent = 1,						\
+	};
+
+#define K230_CLK_MUX_FORMAT(_var,						\
+			    mreg, _mux_shift, _mask,				\
+			    _read_only, _flags, _id,				\
+			    ...)						\
+	static struct k230_clk_mux_cfg _var##_mux = {				\
+		K230_MUX_FORMAT(mreg, _mux_shift, _mask)			\
+	};									\
+	static struct k230_clk _var = {						\
+		K230_CLK_CFG_FORMAT(#_var, _read_only, _flags, _id,		\
+				    NULL, NULL,					\
+				    NULL, &_var##_mux),				\
+		__VA_ARGS_							\
+	};
+
+#define K230_CLK_RATE_GATE_FORMAT(_var,						\
+				  _mul_min, _mul_max, _mul_shift, _mul_mask,	\
+				  _div_min, _div_max, _div_shift, _div_mask,	\
+				  _reg, _bit, _method,				\
+				  greg, gbit, _reverse,				\
+				  _read_only, _flags, _id,			\
+			     	  _type, _clk)					\
+	static struct k230_clk_rate_cfg _var##_rate = {				\
+		K230_RATE_FORMAT(_mul_min, _mul_max, _mul_shift, _mul_mask,	\
+				 _div_min, _div_max, _div_shift, _div_mask,	\
+				 _reg, _bit, _method)				\
+	};									\
+	static struct k230_clk_gate_cfg _var##_gate = {				\
+		K230_GATE_FORMAT(greg, gbit, _reverse)				\
+	};									\
+	static struct k230_clk _var = {						\
+		K230_CLK_CFG_FORMAT(#_var, _read_only, _flags, _id,		\
+				    &_var##_rate, NULL,				\
+				    &_var##_gate, NULL),			\
+		.parent[0] = {							\
+			.type= _type,						\
+			.clk = _clk,						\
+		},								\
+		.num_parent = 1,						\
+	};
+
+#define K230_CLK_RATE_MUX_FORMAT(_var,						\
+			_mul_min, _mul_max, _mul_shift, _mul_mask,		\
+			_div_min, _div_max, _div_shift, _div_mask,		\
+			_reg, _bit, _method,					\
+			mreg, _mux_shift, _mask,				\
+			_read_only, _flags, _id,				\
+			...)							\
+	static struct k230_clk_rate_cfg _var##_rate = {				\
+		K230_RATE_FORMAT(_mul_min, _mul_max, _mul_shift, _mul_mask,	\
+				 _div_min, _div_max, _div_shift, _div_mask,	\
+				 _reg, _bit, _method)				\
+	};									\
+	static struct k230_clk_mux_cfg _var##_mux = {				\
+		K230_MUX_FORMAT(mreg, _mux_shift, _mask)			\
+	};									\
+	static struct k230_clk _var = {						\
+		K230_CLK_CFG_FORMAT(#_var, _read_only, _flags, _id,		\
+				    &_var##_rate, NULL,				\
+				    NULL, &_var##_mux),				\
+		__VA_ARGS_							\
+	};
+
+#define K230_CLK_GATE_MUX_FORMAT(_var,						\
+			greg, gbit, _reverse,					\
+			mreg, _mux_shift, _mask,				\
+			_read_only, _flags, _id,				\
+			...)							\
+	static struct k230_clk_gate_cfg _var##_gate = {				\
+		K230_GATE_FORMAT(greg, gbit, _reverse)				\
+	};									\
+	static struct k230_clk_mux_cfg _var##_mux = {				\
+		K230_MUX_FORMAT(mreg, _mux_shift, _mask)			\
+	};									\
+	static struct k230_clk _var = {						\
+		K230_CLK_CFG_FORMAT(#_var, _read_only, _flags, _id,		\
+				    NULL, NULL,					\
+				    &_var##_gate, &_var##_mux),			\
+		__VA_ARGS_							\
+	};
+
 struct k230_sysclk;
 
 enum k230_pll_id {
@@ -293,11 +479,13 @@ static struct k230_clk_gate_cfg k230_cpu0_src_gate = {
 	K230_GATE_FORMAT(0, 0, false)
 };
 
+#if 0
 static struct k230_clk_rate_cfg k230_cpu0_aclk_rate = {
 	K230_RATE_FORMAT(1, 1, 0, 0,
 			 1, 8, 6, 0x7,
 			 0x0, 31, K230_DIV)
 };
+#endif
 
 static struct k230_clk_rate_cfg k230_cpu0_plic_rate = {
 	K230_RATE_FORMAT(1, 1, 0, 0,
@@ -614,6 +802,7 @@ static struct k230_clk k230_cpu0_src = {
 			    &k230_cpu0_src_gate, NULL),
 };
 
+#if 0
 static struct k230_clk k230_cpu0_aclk = {
 	.num_parent = 1,
 	.parent[0] = {
@@ -624,6 +813,14 @@ static struct k230_clk k230_cpu0_aclk = {
 			    &k230_cpu0_aclk_rate, NULL,
 			    NULL, NULL),
 };
+#endif
+
+K230_CLK_RATE_FORMAT(k230_cpu0_aclk,
+		     1, 1, 0, 0,
+		     1, 8, 6, 0x7,
+		     0x0, 31, K230_DIV,
+		     false, 0, K230_CPU0_ACLK,
+		     K230_CLK_COMPOSITE, &k230_cpu0_src)
 
 static struct k230_clk k230_cpu0_plic = {
 	.num_parent = 1,
