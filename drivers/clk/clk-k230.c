@@ -167,7 +167,7 @@
 			.clk = _clk,						\
 		},								\
 		.num_parent = 1,						\
-	};
+	}
 
 #define K230_CLK_FORMAT(_var,							\
 			_mul_min, _mul_max, _mul_shift, _mul_mask,		\
@@ -197,7 +197,7 @@
 			.clk = _clk,						\
 		},								\
 		.num_parent = 1,						\
-	};
+	}
 
 #define K230_CLK_RATE_FORMAT(_var,						\
 			     _mul_min, _mul_max, _mul_shift, _mul_mask,		\
@@ -219,7 +219,7 @@
 			.clk = _clk,						\
 		},								\
 		.num_parent = 1,						\
-	};
+	}
 
 #define K230_CLK_GATE_FORMAT(_var,						\
 			     greg, gbit, _reverse,				\
@@ -237,7 +237,7 @@
 			.clk = _clk,						\
 		},								\
 		.num_parent = 1,						\
-	};
+	}
 
 #define K230_CLK_MUX_FORMAT(_var,						\
 			    mreg, _mux_shift, _mask,				\
@@ -250,7 +250,7 @@
 		K230_CLK_CFG_FORMAT(#_var, _read_only, _flags, _id,		\
 				    NULL, NULL,					\
 				    NULL, &_var##_mux),				\
-	};
+	}
 
 #define K230_CLK_RATE_GATE_FORMAT(_var,						\
 				  _mul_min, _mul_max, _mul_shift, _mul_mask,	\
@@ -276,7 +276,7 @@
 			.clk = _clk,						\
 		},								\
 		.num_parent = 1,						\
-	};
+	}
 
 #define K230_CLK_RATE_MUX_FORMAT(_var,						\
 				 _mul_min, _mul_max, _mul_shift, _mul_mask,	\
@@ -297,7 +297,7 @@
 		K230_CLK_CFG_FORMAT(#_var, _read_only, _flags, _id,		\
 				    &_var##_rate, NULL,				\
 				    NULL, &_var##_mux),				\
-	};
+	}
 
 #define K230_CLK_GATE_MUX_FORMAT(_var,						\
 			greg, gbit, _reverse,					\
@@ -334,7 +334,7 @@
 			.type = type1,						\
 			.ptr = &clk1,						\
 		},								\
-	};
+	}
 
 struct k230_sysclk;
 
@@ -842,7 +842,7 @@ K230_CLK_RATE_FORMAT(k230_cpu0_aclk,
 		     1, 8, 6, 0x7,
 		     0x0, 31, K230_DIV,
 		     false, 0, K230_CPU0_ACLK,
-		     K230_CLK_COMPOSITE, &k230_cpu0_src)
+		     K230_CLK_COMPOSITE, &k230_cpu0_src);
 
 static struct k230_clk k230_cpu0_plic = {
 	.num_parent = 1,
@@ -1164,7 +1164,7 @@ K230_CLK_GATE_MUX_FORMAT(k230_hs_ospi_src,
 			 false, 0, K230_HS_OSPI_SRC,
 			 2,
 			 K230_PLL_DIV, k230_pll_divs[K230_PLL0_DIV2],
-			 K230_PLL_DIV, k230_pll_divs[K230_PLL2_DIV4])
+			 K230_PLL_DIV, k230_pll_divs[K230_PLL2_DIV4]);
 
 static struct k230_clk k230_hs_usb_ref_50m = {
 	.num_parent = 1,
