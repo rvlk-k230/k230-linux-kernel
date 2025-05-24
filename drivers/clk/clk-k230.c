@@ -495,6 +495,8 @@ struct k230_clk_mux_cfg {
 
 enum k230_clk_parent_type {
 	K230_OSC24M,
+	K230_SYSCTL_APB_SRC,
+	K230_TIMERX_PULSE,
 	K230_PLL,
 	K230_PLL_DIV,
 	K230_CLK_COMPOSITE,
@@ -1760,12 +1762,13 @@ static inline int k230_register_mux_clk(struct platform_device *pdev,
 	return k230_register_clk(pdev, ksc, id, parent_data, num_parent, 0);
 }
 
-static inline int k230_register_osc24m_child(struct platform_device *pdev,
-					     struct k230_sysclk *ksc,
-					     int id)
+static inline int k230_register_fixed_child(struct platform_device *pdev,
+					    struct k230_sysclk *ksc,
+					    enum k230_clk_parent_type clk_type,
+					    int id)
 {
 	const struct clk_parent_data parent_data = {
-		.index = 0,
+		.index = clk_type,
 	};
 
 	return k230_register_clk(pdev, ksc, id, &parent_data, 1, 0);
@@ -1813,18 +1816,17 @@ static int k230_clk_get_parent_data(struct k230_clk_parent *pclk,
 				    struct clk_parent_data *parent_data)
 {
 	switch (pclk->type) {
-	case K230_OSC24M:
-		parent_data->index = 0;
-		break;
 	case K230_PLL:
-		parent_data->hw = &pclk->pll->hw;
+		parent_data->hw = &pclk->pll->hw ? &pclk->pll->hw : NULL;
 		break;
 	case K230_PLL_DIV:
-		parent_data->hw = pclk->pll_div->hw;
+		parent_data->hw = pclk->pll_div->hw ? pclk->pll_div->hw : NULL;
 		break;
 	case K230_CLK_COMPOSITE:
-		parent_data->hw = &pclk->clk->hw;
+		parent_data->hw = &pclk->clk->hw ? &pclk->clk->hw : NULL;
 		break;
+	default:
+		parent_data->index = pclk->type;
 	}
 
 	return parent_data->hw ? 0 : -EINVAL;
@@ -1877,9 +1879,6 @@ static int k230_register_clks(struct platform_device *pdev, struct k230_sysclk *
 			pclk = clk->parent;
 
 			switch (pclk->type) {
-			case K230_OSC24M:
-				ret = k230_register_osc24m_child(pdev, ksc, i);
-				break;
 			case K230_PLL:
 				ret = k230_register_pll_child(pdev, ksc, i,
 							      &pclk->pll->hw,
@@ -1894,6 +1893,9 @@ static int k230_register_clks(struct platform_device *pdev, struct k230_sysclk *
 				ret = k230_register_clk_child(pdev, ksc, i,
 							      &pclk->clk->hw);
 				break;
+			default:
+				ret = k230_register_fixed_child(pdev, ksc,
+								pclk->type, i);
 			}
 		}
 		if (ret)
