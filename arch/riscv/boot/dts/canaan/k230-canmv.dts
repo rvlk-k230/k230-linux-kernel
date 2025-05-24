@@ -30,5 +30,5 @@
 };
 
 &sysclk {
-	clocks = <&osc24m>, <&sysctl_apb>, <&timerx_pulse_in>;
+	clocks = <&osc24m>, <&sysctl_apb>, <&shrm_src_div2>, <&timerx_pulse_in>;
 };
