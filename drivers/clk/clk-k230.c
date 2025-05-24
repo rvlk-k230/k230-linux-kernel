@@ -51,7 +51,7 @@
 
 #define K230_CLK_MAX_PARENT_NUM			4
 
-#define K230_NAME(_var)				k230_##_var
+#define K230_FMT(_var)				k230_##_var
 
 #define K230_PLLX_OFFSET(idx)			(idx * 0x10)
 #define K230_PLLX_BASE(base, idx)		(base + K230_PLLX_OFFSET(idx))
@@ -571,7 +571,7 @@ K230_CLK_RATE_FORMAT(cpu0_aclk,
 		     1, 8, 6, 0x7,
 		     0x0, 31, K230_DIV,
 		     false, 0,
-		     K230_CLK_COMPOSITE, &k230_cpu0_src);
+		     K230_CLK_COMPOSITE, &K230_FMT(cpu0_src));
 
 K230_CLK_RATE_GATE_FORMAT(cpu0_plic,
 			  1, 1, 0, 0,
@@ -579,12 +579,12 @@ K230_CLK_RATE_GATE_FORMAT(cpu0_plic,
 			  0x0, 31, K230_DIV,
 			  0x0, 9, false,
 			  false, 0,
-			  K230_CLK_COMPOSITE, &k230_cpu0_src);
+			  K230_CLK_COMPOSITE, &K230_FMT(cpu0_src));
 
 K230_CLK_GATE_FORMAT(cpu0_noc_ddrcp4,
 		     0x60, 7, false,
 		     false, 0,
-		     K230_CLK_COMPOSITE, &k230_cpu0_src);
+		     K230_CLK_COMPOSITE, &K230_FMT(cpu0_src));
 
 K230_CLK_RATE_GATE_FORMAT(cpu0_pclk,
 			  1, 1, 0, 0,
@@ -609,7 +609,7 @@ K230_CLK_RATE_FORMAT(hs_hclk_high_src,
 K230_CLK_GATE_FORMAT(hs_hclk_high,
 		     0x18, 1, false,
 		     false, 0,
-		     K230_CLK_COMPOSITE, &k230_hs_hclk_high_src);
+		     K230_CLK_COMPOSITE, &K230_FMT(hs_hclk_high_src));
 
 K230_CLK_RATE_GATE_FORMAT(hs_hclk_src,
 			  1, 1, 0, 0,
@@ -617,37 +617,37 @@ K230_CLK_RATE_GATE_FORMAT(hs_hclk_src,
 			  0x1C, 31, K230_DIV,
 			  0x18, 1, false,
 			  false, 0,
-			  K230_CLK_COMPOSITE, &k230_hs_hclk_high_src);
+			  K230_CLK_COMPOSITE, &K230_FMT(hs_hclk_high_src));
 
 K230_CLK_GATE_FORMAT(hs_sd0_ahb,
 		     0x18, 2, false,
 		     false, 0,
-		     K230_CLK_COMPOSITE, &k230_hs_hclk_src);
+		     K230_CLK_COMPOSITE, &K230_FMT(hs_hclk_src));
 
 K230_CLK_GATE_FORMAT(hs_sd1_ahb,
 		     0x18, 3, false,
 		     false, 0,
-		     K230_CLK_COMPOSITE, &k230_hs_hclk_src);
+		     K230_CLK_COMPOSITE, &K230_FMT(hs_hclk_src));
 
 K230_CLK_GATE_FORMAT(hs_ssi1_ahb,
 		     0x18, 7, false,
 		     false, 0,
-		     K230_CLK_COMPOSITE, &k230_hs_hclk_src);
+		     K230_CLK_COMPOSITE, &K230_FMT(hs_hclk_src));
 
 K230_CLK_GATE_FORMAT(hs_ssi2_ahb,
 		     0x18, 8, false,
 		     false, 0,
-		     K230_CLK_COMPOSITE, &k230_hs_hclk_src);
+		     K230_CLK_COMPOSITE, &K230_FMT(hs_hclk_src));
 
 K230_CLK_GATE_FORMAT(hs_usb0_ahb,
 		     0x18, 4, false,
 		     false, 0,
-		     K230_CLK_COMPOSITE, &k230_hs_hclk_src);
+		     K230_CLK_COMPOSITE, &K230_FMT(hs_hclk_src));
 
 K230_CLK_GATE_FORMAT(hs_usb1_ahb,
 		     0x18, 5, false,
 		     false, 0,
-		     K230_CLK_COMPOSITE, &k230_hs_hclk_src);
+		     K230_CLK_COMPOSITE, &K230_FMT(hs_hclk_src));
 
 K230_CLK_RATE_GATE_FORMAT(hs_ssi0_axi,
 			  1, 1, 0, 0,
@@ -684,12 +684,12 @@ K230_CLK_RATE_GATE_FORMAT(hs_qspi_axi_src,
 K230_CLK_GATE_FORMAT(hs_ssi1_aclk,
 		     0x18, 29, false,
 		     false, 0,
-		     K230_CLK_COMPOSITE, &k230_hs_qspi_axi_src);
+		     K230_CLK_COMPOSITE, &K230_FMT(hs_qspi_axi_src));
 
 K230_CLK_GATE_FORMAT(hs_ssi2_aclk,
 		     0x18, 30, false,
 		     false, 0,
-		     K230_CLK_COMPOSITE, &k230_hs_qspi_axi_src);
+		     K230_CLK_COMPOSITE, &K230_FMT(hs_qspi_axi_src));
 
 K230_CLK_RATE_GATE_FORMAT(hs_sd_card_src,
 			  1, 1, 0, 0,
@@ -702,12 +702,12 @@ K230_CLK_RATE_GATE_FORMAT(hs_sd_card_src,
 K230_CLK_GATE_FORMAT(hs_sd0_card,
 		     0x18, 15, false,
 		     false, 0,
-		     K230_CLK_COMPOSITE, &k230_hs_sd_card_src);
+		     K230_CLK_COMPOSITE, &K230_FMT(hs_sd_card_src));
 
 K230_CLK_GATE_FORMAT(hs_sd1_card,
 		     0x18, 19, false,
 		     false, 0,
-		     K230_CLK_COMPOSITE, &k230_hs_sd_card_src);
+		     K230_CLK_COMPOSITE, &K230_FMT(hs_sd_card_src));
 
 K230_CLK_RATE_GATE_FORMAT(hs_sd_axi_src,
 			  1, 1, 0, 0,
@@ -720,22 +720,22 @@ K230_CLK_RATE_GATE_FORMAT(hs_sd_axi_src,
 K230_CLK_GATE_FORMAT(hs_sd0_axi,
 		     0x18, 13, false,
 		     false, 0,
-		     K230_CLK_COMPOSITE, &k230_hs_sd_axi_src);
+		     K230_CLK_COMPOSITE, &K230_FMT(hs_sd_axi_src));
 
 K230_CLK_GATE_FORMAT(hs_sd1_axi,
 		     0x18, 17, false,
 		     false, 0,
-		     K230_CLK_COMPOSITE, &k230_hs_sd_axi_src);
+		     K230_CLK_COMPOSITE, &K230_FMT(hs_sd_axi_src));
 
 K230_CLK_GATE_FORMAT(hs_sd0_base,
 		     0x18, 14, false,
 		     false, 0,
-		     K230_CLK_COMPOSITE, &k230_hs_sd_axi_src);
+		     K230_CLK_COMPOSITE, &K230_FMT(hs_sd_axi_src));
 
 K230_CLK_GATE_FORMAT(hs_sd1_base,
 		     0x18, 18, false,
 		     false, 0,
-		     K230_CLK_COMPOSITE, &k230_hs_sd_axi_src);
+		     K230_CLK_COMPOSITE, &K230_FMT(hs_sd_axi_src));
 
 K230_CLK_GATE_MUX_FORMAT(hs_ospi_src,
 			 0x18, 24, false,
@@ -763,12 +763,12 @@ K230_CLK_RATE_GATE_FORMAT(hs_sd_timer_src,
 K230_CLK_GATE_FORMAT(hs_sd0_timer,
 		     0x18, 16, false,
 		     false, 0,
-		     K230_CLK_COMPOSITE, &k230_hs_sd_timer_src);
+		     K230_CLK_COMPOSITE, &K230_FMT(hs_sd_timer_src));
 
 K230_CLK_GATE_FORMAT(hs_sd1_timer,
 		     0x18, 20, false,
 		     false, 0,
-		     K230_CLK_COMPOSITE, &k230_hs_sd_timer_src);
+		     K230_CLK_COMPOSITE, &K230_FMT(hs_sd_timer_src));
 
 K230_CLK_GATE_MUX_FORMAT(hs_usb0_ref,
 			 0x18, 21, false,
@@ -776,7 +776,7 @@ K230_CLK_GATE_MUX_FORMAT(hs_usb0_ref,
 			 false, 0,
 			 2,
 			 K230_OSC24M, NULL,
-			 K230_CLK_COMPOSITE, &k230_hs_usb_ref_50m);
+			 K230_CLK_COMPOSITE, &K230_FMT(hs_usb_ref_50m));
 
 K230_CLK_GATE_MUX_FORMAT(hs_usb1_ref,
 			 0x18, 22, false,
@@ -784,7 +784,7 @@ K230_CLK_GATE_MUX_FORMAT(hs_usb1_ref,
 			 false, 0,
 			 2,
 			 K230_OSC24M, NULL,
-			 K230_CLK_COMPOSITE, &k230_hs_usb_ref_50m);
+			 K230_CLK_COMPOSITE, &K230_FMT(hs_usb_ref_50m));
 
 K230_CLK_RATE_GATE_FORMAT(ls_apb_src,
 			  1, 1, 0, 0,
@@ -797,92 +797,92 @@ K230_CLK_RATE_GATE_FORMAT(ls_apb_src,
 K230_CLK_GATE_FORMAT(ls_uart0_apb,
 		     0x24, 1, false,
 		     false, 0,
-		     K230_CLK_COMPOSITE, &k230_ls_apb_src);
+		     K230_CLK_COMPOSITE, &K230_FMT(ls_apb_src));
 
 K230_CLK_GATE_FORMAT(ls_uart1_apb,
 		     0x24, 2, false,
 		     false, 0,
-		     K230_CLK_COMPOSITE, &k230_ls_apb_src);
+		     K230_CLK_COMPOSITE, &K230_FMT(ls_apb_src));
 
 K230_CLK_GATE_FORMAT(ls_uart2_apb,
 		     0x24, 3, false,
 		     false, 0,
-		     K230_CLK_COMPOSITE, &k230_ls_apb_src);
+		     K230_CLK_COMPOSITE, &K230_FMT(ls_apb_src));
 
 K230_CLK_GATE_FORMAT(ls_uart3_apb,
 		     0x24, 4, false,
 		     false, 0,
-		     K230_CLK_COMPOSITE, &k230_ls_apb_src);
+		     K230_CLK_COMPOSITE, &K230_FMT(ls_apb_src));
 
 K230_CLK_GATE_FORMAT(ls_uart4_apb,
 		     0x24, 5, false,
 		     false, 0,
-		     K230_CLK_COMPOSITE, &k230_ls_apb_src);
+		     K230_CLK_COMPOSITE, &K230_FMT(ls_apb_src));
 
 K230_CLK_GATE_FORMAT(ls_i2c0_apb,
 		     0x24, 6, false,
 		     false, 0,
-		     K230_CLK_COMPOSITE, &k230_ls_apb_src);
+		     K230_CLK_COMPOSITE, &K230_FMT(ls_apb_src));
 
 K230_CLK_GATE_FORMAT(ls_i2c1_apb,
 		     0x24, 7, false,
 		     false, 0,
-		     K230_CLK_COMPOSITE, &k230_ls_apb_src);
+		     K230_CLK_COMPOSITE, &K230_FMT(ls_apb_src));
 
 K230_CLK_GATE_FORMAT(ls_i2c2_apb,
 		     0x24, 8, false,
 		     false, 0,
-		     K230_CLK_COMPOSITE, &k230_ls_apb_src);
+		     K230_CLK_COMPOSITE, &K230_FMT(ls_apb_src));
 
 K230_CLK_GATE_FORMAT(ls_i2c3_apb,
 		     0x24, 9, false,
 		     false, 0,
-		     K230_CLK_COMPOSITE, &k230_ls_apb_src);
+		     K230_CLK_COMPOSITE, &K230_FMT(ls_apb_src));
 
 K230_CLK_GATE_FORMAT(ls_i2c4_apb,
 		     0x24, 10, false,
 		     false, 0,
-		     K230_CLK_COMPOSITE, &k230_ls_apb_src);
+		     K230_CLK_COMPOSITE, &K230_FMT(ls_apb_src));
 
 K230_CLK_GATE_FORMAT(ls_gpio_apb,
 		     0x24, 11, false,
 		     false, 0,
-		     K230_CLK_COMPOSITE, &k230_ls_apb_src);
+		     K230_CLK_COMPOSITE, &K230_FMT(ls_apb_src));
 
 K230_CLK_GATE_FORMAT(ls_pwm_apb,
 		     0x24, 12, false,
 		     false, 0,
-		     K230_CLK_COMPOSITE, &k230_ls_apb_src);
+		     K230_CLK_COMPOSITE, &K230_FMT(ls_apb_src));
 
 K230_CLK_GATE_FORMAT(ls_jamlink0_apb,
 		     0x28, 4, false,
 		     false, 0,
-		     K230_CLK_COMPOSITE, &k230_ls_apb_src);
+		     K230_CLK_COMPOSITE, &K230_FMT(ls_apb_src));
 
 K230_CLK_GATE_FORMAT(ls_jamlink1_apb,
 		     0x28, 5, false,
 		     false, 0,
-		     K230_CLK_COMPOSITE, &k230_ls_apb_src);
+		     K230_CLK_COMPOSITE, &K230_FMT(ls_apb_src));
 
 K230_CLK_GATE_FORMAT(ls_jamlink2_apb,
 		     0x28, 6, false,
 		     false, 0,
-		     K230_CLK_COMPOSITE, &k230_ls_apb_src);
+		     K230_CLK_COMPOSITE, &K230_FMT(ls_apb_src));
 
 K230_CLK_GATE_FORMAT(ls_jamlink3_apb,
 		     0x28, 7, false,
 		     false, 0,
-		     K230_CLK_COMPOSITE, &k230_ls_apb_src);
+		     K230_CLK_COMPOSITE, &K230_FMT(ls_apb_src));
 
 K230_CLK_GATE_FORMAT(ls_audio_apb,
 		     0x24, 13, false,
 		     false, 0,
-		     K230_CLK_COMPOSITE, &k230_ls_apb_src);
+		     K230_CLK_COMPOSITE, &K230_FMT(ls_apb_src));
 
 K230_CLK_GATE_FORMAT(ls_adc_apb,
 		     0x24, 15, false,
 		     false, 0,
-		     K230_CLK_COMPOSITE, &k230_ls_apb_src);
+		     K230_CLK_COMPOSITE, &K230_FMT(ls_apb_src));
 
 K230_CLK_GATE_FORMAT(ls_codec_apb,
 		     0x24, 14, false,
@@ -1021,22 +1021,22 @@ K230_CLK_RATE_FORMAT(ls_jamlinkco_div_src,
 K230_CLK_GATE_FORMAT(ls_jamlink0co,
 		     0x28, 0, false,
 		     false, 0,
-		     K230_CLK_COMPOSITE, &k230_ls_jamlinkco_div_src);
+		     K230_CLK_COMPOSITE, &K230_FMT(ls_jamlinkco_div_src));
 
 K230_CLK_GATE_FORMAT(ls_jamlink1co,
 		     0x28, 1, false,
 		     false, 0,
-		     K230_CLK_COMPOSITE, &k230_ls_jamlinkco_div_src);
+		     K230_CLK_COMPOSITE, &K230_FMT(ls_jamlinkco_div_src));
 
 K230_CLK_GATE_FORMAT(ls_jamlink2co,
 		     0x28, 2, false,
 		     false, 0,
-		     K230_CLK_COMPOSITE, &k230_ls_jamlinkco_div_src);
+		     K230_CLK_COMPOSITE, &K230_FMT(ls_jamlinkco_div_src));
 
 K230_CLK_GATE_FORMAT(ls_jamlink3co,
 		     0x28, 3, false,
 		     false, 0,
-		     K230_CLK_COMPOSITE, &k230_ls_jamlinkco_div_src);
+		     K230_CLK_COMPOSITE, &K230_FMT(ls_jamlinkco_div_src));
 
 K230_CLK_RATE_GATE_FORMAT(ls_gpio_debounce,
 			  1, 1, 0, 0,
@@ -1054,94 +1054,94 @@ K230_CLK_GATE_FORMAT(shrm_axi_src,
 K230_CLK_GATE_FORMAT(shrm_sdma_axi,
 		     0x5C, 5, false,
 		     false, 0,
-		     K230_CLK_COMPOSITE, &k230_shrm_axi_src);
+		     K230_CLK_COMPOSITE, &K230_FMT(shrm_axi_src));
 
 K230_CLK_GATE_FORMAT(shrm_pdma_axi,
 		     0x5C, 3, false,
 		     false, 0,
-		     K230_CLK_COMPOSITE, &k230_shrm_axi_src);
+		     K230_CLK_COMPOSITE, &K230_FMT(shrm_axi_src));
 
 static struct k230_clk *k230_clks[] = {
-	[K230_CPU0_SRC]			=	&K230_NAME(cpu0_src),
-	[K230_CPU0_ACLK]		=	&K230_NAME(cpu0_aclk),
-	[K230_CPU0_PLIC]		=	&K230_NAME(cpu0_plic),
-	[K230_CPU0_NOC_DDRCP4]		=	&K230_NAME(cpu0_noc_ddrcp4),
-	[K230_CPU0_PCLK]		=	&K230_NAME(cpu0_pclk),
-	[K230_PMU_PCLK]			=	&K230_NAME(pmu_pclk),
-	[K230_HS_HCLK_HIGH_SRC]		=	&K230_NAME(hs_hclk_high_src),
-	[K230_HS_HCLK_HIGH]		=	&K230_NAME(hs_hclk_high),
-	[K230_HS_HCLK_SRC]		=	&K230_NAME(hs_hclk_src),
-	[K230_HS_SD0_AHB]		=	&K230_NAME(hs_sd0_ahb),
-	[K230_HS_SD1_AHB]		=	&K230_NAME(hs_sd1_ahb),
-	[K230_HS_SSI1_AHB]		=	&K230_NAME(hs_ssi1_ahb),
-	[K230_HS_SSI2_AHB]		=	&K230_NAME(hs_ssi2_ahb),
-	[K230_HS_USB0_AHB]		=	&K230_NAME(hs_usb0_ahb),
-	[K230_HS_USB1_AHB]		=	&K230_NAME(hs_usb1_ahb),
-	[K230_HS_SSI0_AXI]		=	&K230_NAME(hs_ssi0_axi),
-	[K230_HS_SSI1]			=	&K230_NAME(hs_ssi1),
-	[K230_HS_SSI2]			=	&K230_NAME(hs_ssi2),
-	[K230_HS_QSPI_AXI_SRC]		=	&K230_NAME(hs_qspi_axi_src),
-	[K230_HS_SSI1_ACLK]		=	&K230_NAME(hs_ssi1_aclk),
-	[K230_HS_SSI2_ACLK]		=	&K230_NAME(hs_ssi2_aclk),
-	[K230_HS_SD_CARD_SRC]		=	&K230_NAME(hs_sd_card_src),
-	[K230_HS_SD0_CARD_TX]		=	&K230_NAME(hs_sd0_card),
-	[K230_HS_SD1_CARD_TX]		=	&K230_NAME(hs_sd1_card),
-	[K230_HS_SD_AXI_SRC]		=	&K230_NAME(hs_sd_axi_src),
-	[K230_HS_SD0_AXI]		=	&K230_NAME(hs_sd0_axi),
-	[K230_HS_SD1_AXI]		=	&K230_NAME(hs_sd1_axi),
-	[K230_HS_SD0_BASE]		=	&K230_NAME(hs_sd0_base),
-	[K230_HS_SD1_BASE]		=	&K230_NAME(hs_sd1_base),
-	[K230_HS_OSPI_SRC]		=	&K230_NAME(hs_ospi_src),
-	[K230_HS_USB_REF_50M]		=	&K230_NAME(hs_usb_ref_50m),
-	[K230_HS_SD_TIMER_SRC]		=	&K230_NAME(hs_sd_timer_src),
-	[K230_HS_SD0_TIMER]		=	&K230_NAME(hs_sd0_timer),
-	[K230_HS_SD1_TIMER]		=	&K230_NAME(hs_sd1_timer),
-	[K230_HS_USB0_REFERENCE]	=	&K230_NAME(hs_usb0_ref),
-	[K230_HS_USB1_REFERENCE]	=	&K230_NAME(hs_usb1_ref),
-	[K230_LS_APB_SRC]		=	&K230_NAME(ls_apb_src),
-	[K230_LS_UART0_APB]		=	&K230_NAME(ls_uart0_apb),
-	[K230_LS_UART1_APB]		=	&K230_NAME(ls_uart1_apb),
-	[K230_LS_UART2_APB]		=	&K230_NAME(ls_uart2_apb),
-	[K230_LS_UART3_APB]		=	&K230_NAME(ls_uart3_apb),
-	[K230_LS_UART4_APB]		=	&K230_NAME(ls_uart4_apb),
-	[K230_LS_I2C0_APB]		=	&K230_NAME(ls_i2c0_apb),
-	[K230_LS_I2C1_APB]		=	&K230_NAME(ls_i2c1_apb),
-	[K230_LS_I2C2_APB]		=	&K230_NAME(ls_i2c2_apb),
-	[K230_LS_I2C3_APB]		=	&K230_NAME(ls_i2c3_apb),
-	[K230_LS_I2C4_APB]		=	&K230_NAME(ls_i2c4_apb),
-	[K230_LS_GPIO_APB]		=	&K230_NAME(ls_gpio_apb),
-	[K230_LS_PWM_APB]		=	&K230_NAME(ls_pwm_apb),
-	[K230_LS_JAMLINK0_APB]		=	&K230_NAME(ls_jamlink0_apb),
-	[K230_LS_JAMLINK1_APB]		=	&K230_NAME(ls_jamlink1_apb),
-	[K230_LS_JAMLINK2_APB]		=	&K230_NAME(ls_jamlink2_apb),
-	[K230_LS_JAMLINK3_APB]		=	&K230_NAME(ls_jamlink3_apb),
-	[K230_LS_AUDIO_APB]		=	&K230_NAME(ls_audio_apb),
-	[K230_LS_ADC_APB]		=	&K230_NAME(ls_adc_apb),
-	[K230_LS_CODEC_APB]		=	&K230_NAME(ls_codec_apb),
-	[K230_LS_I2C0]			=	&K230_NAME(ls_i2c0),
-	[K230_LS_I2C1]			=	&K230_NAME(ls_i2c1),
-	[K230_LS_I2C2]			=	&K230_NAME(ls_i2c2),
-	[K230_LS_I2C3]			=	&K230_NAME(ls_i2c3),
-	[K230_LS_I2C4]			=	&K230_NAME(ls_i2c4),
-	[K230_LS_CODEC_ADC]		=	&K230_NAME(ls_codec_adc),
-	[K230_LS_CODEC_DAC]		=	&K230_NAME(ls_codec_dac),
-	[K230_LS_AUDIO_DEV]		=	&K230_NAME(ls_audio_dev),
-	[K230_LS_PDM]			=	&K230_NAME(ls_pdm),
-	[K230_LS_ADC]			=	&K230_NAME(ls_adc),
-	[K230_LS_UART0]			=	&K230_NAME(ls_uart0),
-	[K230_LS_UART1]			=	&K230_NAME(ls_uart1),
-	[K230_LS_UART2]			=	&K230_NAME(ls_uart2),
-	[K230_LS_UART3]			=	&K230_NAME(ls_uart3),
-	[K230_LS_UART4]			=	&K230_NAME(ls_uart4),
-	[K230_LS_JAMLINKCO_DIV_SRC]	=	&K230_NAME(ls_jamlinkco_div_src),
-	[K230_LS_JAMLINK0CO]		=	&K230_NAME(ls_jamlink0co),
-	[K230_LS_JAMLINK1CO]		=	&K230_NAME(ls_jamlink1co),
-	[K230_LS_JAMLINK2CO]		=	&K230_NAME(ls_jamlink2co),
-	[K230_LS_JAMLINK3CO]		=	&K230_NAME(ls_jamlink3co),
-	[K230_LS_GPIO_DEBOUNCE]		=	&K230_NAME(ls_gpio_debounce),
-	[K230_SHRM_AXI_SRC]		=	&K230_NAME(shrm_axi_src),
-	[K230_SHRM_SDMA_AXI]		=	&K230_NAME(shrm_sdma_axi),
-	[K230_SHRM_PDMA_AXI]		=	&K230_NAME(shrm_pdma_axi),
+	[K230_CPU0_SRC]			=	&K230_FMT(cpu0_src),
+	[K230_CPU0_ACLK]		=	&K230_FMT(cpu0_aclk),
+	[K230_CPU0_PLIC]		=	&K230_FMT(cpu0_plic),
+	[K230_CPU0_NOC_DDRCP4]		=	&K230_FMT(cpu0_noc_ddrcp4),
+	[K230_CPU0_PCLK]		=	&K230_FMT(cpu0_pclk),
+	[K230_PMU_PCLK]			=	&K230_FMT(pmu_pclk),
+	[K230_HS_HCLK_HIGH_SRC]		=	&K230_FMT(hs_hclk_high_src),
+	[K230_HS_HCLK_HIGH]		=	&K230_FMT(hs_hclk_high),
+	[K230_HS_HCLK_SRC]		=	&K230_FMT(hs_hclk_src),
+	[K230_HS_SD0_AHB]		=	&K230_FMT(hs_sd0_ahb),
+	[K230_HS_SD1_AHB]		=	&K230_FMT(hs_sd1_ahb),
+	[K230_HS_SSI1_AHB]		=	&K230_FMT(hs_ssi1_ahb),
+	[K230_HS_SSI2_AHB]		=	&K230_FMT(hs_ssi2_ahb),
+	[K230_HS_USB0_AHB]		=	&K230_FMT(hs_usb0_ahb),
+	[K230_HS_USB1_AHB]		=	&K230_FMT(hs_usb1_ahb),
+	[K230_HS_SSI0_AXI]		=	&K230_FMT(hs_ssi0_axi),
+	[K230_HS_SSI1]			=	&K230_FMT(hs_ssi1),
+	[K230_HS_SSI2]			=	&K230_FMT(hs_ssi2),
+	[K230_HS_QSPI_AXI_SRC]		=	&K230_FMT(hs_qspi_axi_src),
+	[K230_HS_SSI1_ACLK]		=	&K230_FMT(hs_ssi1_aclk),
+	[K230_HS_SSI2_ACLK]		=	&K230_FMT(hs_ssi2_aclk),
+	[K230_HS_SD_CARD_SRC]		=	&K230_FMT(hs_sd_card_src),
+	[K230_HS_SD0_CARD_TX]		=	&K230_FMT(hs_sd0_card),
+	[K230_HS_SD1_CARD_TX]		=	&K230_FMT(hs_sd1_card),
+	[K230_HS_SD_AXI_SRC]		=	&K230_FMT(hs_sd_axi_src),
+	[K230_HS_SD0_AXI]		=	&K230_FMT(hs_sd0_axi),
+	[K230_HS_SD1_AXI]		=	&K230_FMT(hs_sd1_axi),
+	[K230_HS_SD0_BASE]		=	&K230_FMT(hs_sd0_base),
+	[K230_HS_SD1_BASE]		=	&K230_FMT(hs_sd1_base),
+	[K230_HS_OSPI_SRC]		=	&K230_FMT(hs_ospi_src),
+	[K230_HS_USB_REF_50M]		=	&K230_FMT(hs_usb_ref_50m),
+	[K230_HS_SD_TIMER_SRC]		=	&K230_FMT(hs_sd_timer_src),
+	[K230_HS_SD0_TIMER]		=	&K230_FMT(hs_sd0_timer),
+	[K230_HS_SD1_TIMER]		=	&K230_FMT(hs_sd1_timer),
+	[K230_HS_USB0_REFERENCE]	=	&K230_FMT(hs_usb0_ref),
+	[K230_HS_USB1_REFERENCE]	=	&K230_FMT(hs_usb1_ref),
+	[K230_LS_APB_SRC]		=	&K230_FMT(ls_apb_src),
+	[K230_LS_UART0_APB]		=	&K230_FMT(ls_uart0_apb),
+	[K230_LS_UART1_APB]		=	&K230_FMT(ls_uart1_apb),
+	[K230_LS_UART2_APB]		=	&K230_FMT(ls_uart2_apb),
+	[K230_LS_UART3_APB]		=	&K230_FMT(ls_uart3_apb),
+	[K230_LS_UART4_APB]		=	&K230_FMT(ls_uart4_apb),
+	[K230_LS_I2C0_APB]		=	&K230_FMT(ls_i2c0_apb),
+	[K230_LS_I2C1_APB]		=	&K230_FMT(ls_i2c1_apb),
+	[K230_LS_I2C2_APB]		=	&K230_FMT(ls_i2c2_apb),
+	[K230_LS_I2C3_APB]		=	&K230_FMT(ls_i2c3_apb),
+	[K230_LS_I2C4_APB]		=	&K230_FMT(ls_i2c4_apb),
+	[K230_LS_GPIO_APB]		=	&K230_FMT(ls_gpio_apb),
+	[K230_LS_PWM_APB]		=	&K230_FMT(ls_pwm_apb),
+	[K230_LS_JAMLINK0_APB]		=	&K230_FMT(ls_jamlink0_apb),
+	[K230_LS_JAMLINK1_APB]		=	&K230_FMT(ls_jamlink1_apb),
+	[K230_LS_JAMLINK2_APB]		=	&K230_FMT(ls_jamlink2_apb),
+	[K230_LS_JAMLINK3_APB]		=	&K230_FMT(ls_jamlink3_apb),
+	[K230_LS_AUDIO_APB]		=	&K230_FMT(ls_audio_apb),
+	[K230_LS_ADC_APB]		=	&K230_FMT(ls_adc_apb),
+	[K230_LS_CODEC_APB]		=	&K230_FMT(ls_codec_apb),
+	[K230_LS_I2C0]			=	&K230_FMT(ls_i2c0),
+	[K230_LS_I2C1]			=	&K230_FMT(ls_i2c1),
+	[K230_LS_I2C2]			=	&K230_FMT(ls_i2c2),
+	[K230_LS_I2C3]			=	&K230_FMT(ls_i2c3),
+	[K230_LS_I2C4]			=	&K230_FMT(ls_i2c4),
+	[K230_LS_CODEC_ADC]		=	&K230_FMT(ls_codec_adc),
+	[K230_LS_CODEC_DAC]		=	&K230_FMT(ls_codec_dac),
+	[K230_LS_AUDIO_DEV]		=	&K230_FMT(ls_audio_dev),
+	[K230_LS_PDM]			=	&K230_FMT(ls_pdm),
+	[K230_LS_ADC]			=	&K230_FMT(ls_adc),
+	[K230_LS_UART0]			=	&K230_FMT(ls_uart0),
+	[K230_LS_UART1]			=	&K230_FMT(ls_uart1),
+	[K230_LS_UART2]			=	&K230_FMT(ls_uart2),
+	[K230_LS_UART3]			=	&K230_FMT(ls_uart3),
+	[K230_LS_UART4]			=	&K230_FMT(ls_uart4),
+	[K230_LS_JAMLINKCO_DIV_SRC]	=	&K230_FMT(ls_jamlinkco_div_src),
+	[K230_LS_JAMLINK0CO]		=	&K230_FMT(ls_jamlink0co),
+	[K230_LS_JAMLINK1CO]		=	&K230_FMT(ls_jamlink1co),
+	[K230_LS_JAMLINK2CO]		=	&K230_FMT(ls_jamlink2co),
+	[K230_LS_JAMLINK3CO]		=	&K230_FMT(ls_jamlink3co),
+	[K230_LS_GPIO_DEBOUNCE]		=	&K230_FMT(ls_gpio_debounce),
+	[K230_SHRM_AXI_SRC]		=	&K230_FMT(shrm_axi_src),
+	[K230_SHRM_SDMA_AXI]		=	&K230_FMT(shrm_sdma_axi),
+	[K230_SHRM_PDMA_AXI]		=	&K230_FMT(shrm_pdma_axi),
 };
 
 #define K230_CLK_NUM	ARRAY_SIZE(k230_clks)
