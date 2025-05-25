@@ -173,7 +173,24 @@
 			greg, gbit, _reverse,					\
 			mreg, _mux_shift, _mask,				\
 			_read_only, _flags,					\
-			_type, _clk)						\
+			count, ...)						\
+	_K230_CLK_FORMAT##count(_var,						\
+				_mul_min, _mul_max, _mul_shift, _mul_mask,	\
+				_div_min, _div_max, _div_shift, _div_mask,	\
+				_reg, _bit, _method,				\
+				greg, gbit, _reverse,				\
+				mreg, _mux_shift, _mask,			\
+				_read_only, _flags,				\
+				__VA_ARGS__)
+
+#define _K230_CLK_FORMAT3(_var,							\
+			  _mul_min, _mul_max, _mul_shift, _mul_mask,		\
+			  _div_min, _div_max, _div_shift, _div_mask,		\
+			  _reg, _bit, _method,					\
+			  greg, gbit, _reverse,					\
+			  mreg, _mux_shift, _mask,				\
+			  _read_only, _flags,					\
+			  type1, clk1, type2, clk2, type3, clk3)		\
 	static struct k230_clk_rate_cfg k230_##_var##_rate = {			\
 		K230_RATE_FORMAT(_mul_min, _mul_max, _mul_shift, _mul_mask,	\
 				 _div_min, _div_max, _div_shift, _div_mask,	\
@@ -189,11 +206,19 @@
 		K230_CLK_CFG_FORMAT(#_var, _read_only, _flags,			\
 				    &k230_##_var##_rate, NULL,			\
 				    &k230_##_var##_gate, &k230_##_var##_mux),	\
+		.num_parent = 3,						\
 		.parent[0] = {							\
-			.type= _type,						\
-			.ptr = _clk,						\
+			.type = type1,						\
+			.ptr = clk1,						\
 		},								\
-		.num_parent = 1,						\
+		.parent[0] = {							\
+			.type = type2,						\
+			.ptr = clk2,						\
+		},								\
+		.parent[0] = {							\
+			.type = type3,						\
+			.ptr = clk3,						\
+		},								\
 	}
 
 #define K230_CLK_RATE_FORMAT(_var,						\
@@ -212,7 +237,7 @@
 				    &k230_##_var##_rate, NULL,			\
 				    NULL, NULL),				\
 		.parent[0] = {							\
-			.type= _type,						\
+			.type = _type,						\
 			.ptr = _clk,						\
 		},								\
 		.num_parent = 1,						\
@@ -230,7 +255,7 @@
 				    NULL, NULL,					\
 				    &k230_##_var##_gate, NULL),			\
 		.parent[0] = {							\
-			.type= _type,						\
+			.type = _type,						\
 			.ptr = _clk,						\
 		},								\
 		.num_parent = 1,						\
@@ -256,7 +281,7 @@
 				    &k230_##_var##_rate, NULL,			\
 				    &k230_##_var##_gate, NULL),			\
 		.parent[0] = {							\
-			.type= _type,						\
+			.type = _type,						\
 			.ptr = _clk,						\
 		},								\
 		.num_parent = 1,						\
@@ -406,20 +431,6 @@
 			.type = type2,						\
 			.ptr = clk2,						\
 		},								\
-	}
-
-#define K230_CLK_NONE_FORMAT(_var,						\
-			     _read_only, _flags,				\
-		             _type, _clk)					\
-	static struct k230_clk k230_##_var = {					\
-		K230_CLK_CFG_FORMAT(#_var, _read_only, _flags,			\
-				    NULL, NULL,					\
-				    NULL, NULL),				\
-		.parent[0] = {							\
-			.type= _type,						\
-			.ptr = _clk,						\
-		},								\
-		.num_parent = 1,						\
 	}
 
 struct k230_sysclk;
@@ -1063,7 +1074,6 @@ K230_CLK_RATE_GATE_FORMAT(ls_gpio_debounce,
 			  false, 0,
 			  K230_OSC24M, NULL);
 
-#if 0
 K230_CLK_GATE_FORMAT(sysctl_wdt0_apb,
 		     0x50, 1, false,
 		     false, 0,
@@ -1217,7 +1227,6 @@ K230_CLK_GATE_MUX_FORMAT(timer5,
 			 2,
 			 K230_TIMERX_PULSE_IN, NULL,
 			 K230_CLK_COMPOSITE, &K230_FMT(timer5_src));
-#endif
 
 K230_CLK_GATE_MUX_FORMAT(shrm_src,
 			 0x5c, 10, false,
@@ -1226,7 +1235,6 @@ K230_CLK_GATE_MUX_FORMAT(shrm_src,
 			 2,
 			 K230_PLL_DIV, &k230_pll_divs[K230_PLL3_DIV2],
 			 K230_PLL_DIV, &k230_pll_divs[K230_PLL0_DIV2]);
-#if 0
 
 K230_CLK_GATE_FORMAT(shrm_axi_slave,
 		     0x5C, 11, false,
@@ -1245,7 +1253,6 @@ K230_CLK_RATE_GATE_FORMAT(shrm_apb,
 			  0x5C, 0, false,
 			  false, 0,
 			  K230_PLL_DIV, &k230_pll_divs[K230_PLL0_DIV4]);
-#endif
 
 K230_CLK_GATE_FORMAT(shrm_axi_src,
 		     0x5C, 12, false,
@@ -1261,6 +1268,86 @@ K230_CLK_GATE_FORMAT(shrm_pdma_axi,
 		     0x5C, 3, false,
 		     false, 0,
 		     K230_CLK_COMPOSITE, &K230_FMT(shrm_axi_src));
+
+K230_CLK_GATE_FORMAT(shrm_nonai2d_axi,
+		     0x5C, 9, false,
+		     false, 0,
+		     K230_CLK_COMPOSITE, &K230_FMT(shrm_axi_src));
+
+K230_CLK_FORMAT(ddrc_src,
+		1, 1, 0, 0,
+		1, 16, 10, 0xF,
+		0x60, 31, K230_DIV,
+		0x60, 2, false,
+		0x60, 0, 0x3,
+		false, 0,
+		3,
+		K230_PLL_DIV, &k230_pll_divs[K230_PLL0_DIV2],
+		K230_PLL_DIV, &k230_pll_divs[K230_PLL0_DIV3],
+		K230_PLL_DIV, &k230_pll_divs[K230_PLL2_DIV4]);
+
+K230_CLK_GATE_FORMAT(ddrc_bypass,
+		     0x60, 8, false,
+		     false, 0,
+		     K230_PLL_DIV, &k230_pll_divs[K230_PLL2_DIV4]);
+
+K230_CLK_RATE_GATE_FORMAT(ddrc_apb,
+			  1, 1, 0, 0,
+			  1, 16, 14, 0xF,
+			  0x60, 31, K230_DIV,
+			  0x60, 9, false,
+			  false, 0,
+			  K230_PLL_DIV, &k230_pll_divs[K230_PLL0_DIV4]);
+
+K230_CLK_RATE_GATE_FORMAT(display_ahb,
+			  1, 1, 0, 0,
+			  1, 8, 0, 0x7,
+			  0x78, 31, K230_DIV,
+			  0x74, 0, false,
+			  false, 0,
+			  K230_PLL_DIV, &k230_pll_divs[K230_PLL0_DIV4]);
+
+K230_CLK_GATE_FORMAT(display_axi,
+		     0x74, 1, false,
+		     false, 0,
+		     K230_PLL_DIV, &k230_pll_divs[K230_PLL0_DIV4]);
+
+K230_CLK_RATE_GATE_FORMAT(display_clkext,
+			  1, 1, 0, 0,
+			  1, 16, 16, 0xF,
+			  0x78, 31, K230_DIV,
+			  0x74, 5, false,
+			  false, 0,
+			  K230_PLL_DIV, &k230_pll_divs[K230_PLL0_DIV3]);
+
+K230_CLK_RATE_GATE_FORMAT(display_gpu,
+			  1, 1, 0, 0,
+			  1, 16, 20, 0xF,
+			  0x78, 31, K230_DIV,
+			  0x74, 6, false,
+			  false, 0,
+			  K230_PLL_DIV, &k230_pll_divs[K230_PLL0_DIV3]);
+
+K230_CLK_RATE_GATE_FORMAT(display_dpipclk,
+			  1, 1, 0, 0,
+			  1, 256, 3, 0xFF,
+			  0x78, 31, K230_DIV,
+			  0x74, 2, false,
+			  false, 0,
+			  K230_PLL_DIV, &k230_pll_divs[K230_PLL1_DIV4]);
+
+K230_CLK_RATE_GATE_FORMAT(display_cfgclk,
+			  1, 1, 0, 0,
+			  1, 32, 11, 0x1F,
+			  0x78, 31, K230_DIV,
+			  0x74, 4, false,
+			  false, 0,
+			  K230_PLL_DIV, &k230_pll_divs[K230_PLL1_DIV4]);
+
+K230_CLK_GATE_FORMAT(display_refclk,
+		     0x74, 3, false,
+		     false, 0,
+		     K230_OSC24M, NULL);
 
 static struct k230_clk *k230_clks[] = {
 	[K230_CPU0_SRC]			=	&K230_FMT(cpu0_src),
@@ -1340,7 +1427,6 @@ static struct k230_clk *k230_clks[] = {
 	[K230_LS_JAMLINK2CO]		=	&K230_FMT(ls_jamlink2co),
 	[K230_LS_JAMLINK3CO]		=	&K230_FMT(ls_jamlink3co),
 	[K230_LS_GPIO_DEBOUNCE]		=	&K230_FMT(ls_gpio_debounce),
-#if 0
 	[K230_SYSCTL_WDT0_APB]		=	&K230_FMT(sysctl_wdt0_apb),
 	[K230_SYSCTL_WDT1_APB]		=	&K230_FMT(sysctl_wdt1_apb),
 	[K230_SYSCTL_TIMER_APB]		=	&K230_FMT(sysctl_timer_apb),
@@ -1363,28 +1449,25 @@ static struct k230_clk *k230_clks[] = {
 	[K230_TIMER3]			=	&K230_FMT(timer3),
 	[K230_TIMER4]			=	&K230_FMT(timer4),
 	[K230_TIMER5]			=	&K230_FMT(timer5),
-#endif
 	[K230_SHRM_SRC]			=	&K230_FMT(shrm_src),
-#if 0
 	[K230_SHRM_AXI_SLAVE]		=	&K230_FMT(shrm_axi_slave),
 	[K230_SHRM_DECOMPRESS_AXI]	=	&K230_FMT(shrm_decompress_axi),
 	[K230_SHRM_APB]			=	&K230_FMT(shrm_apb),
-#endif
 	[K230_SHRM_AXI_SRC]		=	&K230_FMT(shrm_axi_src),
 	[K230_SHRM_SDMA_AXI]		=	&K230_FMT(shrm_sdma_axi),
 	[K230_SHRM_PDMA_AXI]		=	&K230_FMT(shrm_pdma_axi),
-#if 0
 	[K230_SHRM_NONAI2D_AXI]		=	&K230_FMT(shrm_nonai2d_axi),
 	[K230_DDRC_SRC]			=	&K230_FMT(ddrc_src),
 	[K230_DDRC_BYPASS]		=	&K230_FMT(ddrc_bypass),
 	[K230_DDRC_APB]			=	&K230_FMT(ddrc_apb),
 	[K230_DISPLAY_AHB]		=	&K230_FMT(display_ahb),
 	[K230_DISPLAY_AXI]		=	&K230_FMT(display_axi),
-	[K230_DISPLAY_CLKEXT]		=	&K230_FMT(display_clext),
+	[K230_DISPLAY_CLKEXT]		=	&K230_FMT(display_clkext),
 	[K230_DISPLAY_GPU]		=	&K230_FMT(display_gpu),
 	[K230_DISPLAY_DPIPCLK]		=	&K230_FMT(display_dpipclk),
 	[K230_DISPLAY_CFGCLK]		=	&K230_FMT(display_cfgclk),
 	[K230_DISPLAY_REFCLK]		=	&K230_FMT(display_refclk),
+#if 0
 	[K230_VPU_SRC]			=	&K230_FMT(vpu_src),
 	[K230_VPU_AXI_SRC]		=	&K230_FMT(vpu_axi_src),
 	[K230_VPU_AXI]			=	&K230_FMT(vpu_axi),
@@ -1480,6 +1563,8 @@ static unsigned long k230_pll_get_rate(struct clk_hw *hw, unsigned long parent_r
 	struct k230_sysclk *ksc = pll->ksc;
 	u32 reg;
 	u32 r, f, od;
+
+	guard(spinlock)(&ksc->pll_lock);
 
 	reg = readl(K230_PLLX_BYPASS_ADDR(ksc->pll_regs, pll->id));
 	if (reg & K230_PLL_BYPASS_ENABLE)
