@@ -10,7 +10,7 @@
 
 /* Kendryte K230 SoC clock identifiers (arbitrary values). */
 #define K230_CPU0_SRC			0
-#define K230_CPU0_ACLK			1
+#define K230_CPU0_AXI			1
 #define K230_CPU0_PLIC			2
 #define K230_CPU0_NOC_DDRCP4		3
 #define K230_CPU0_PCLK			4
@@ -28,8 +28,8 @@
 #define K230_HS_SSI1			16
 #define K230_HS_SSI2			17
 #define K230_HS_QSPI_AXI_SRC		18
-#define K230_HS_SSI1_ACLK		19
-#define K230_HS_SSI2_ACLK		20
+#define K230_HS_SSI1_AXI		19
+#define K230_HS_SSI2_AXI		20
 #define K230_HS_SD_CARD_SRC		21
 #define K230_HS_SD0_CARD_TX		22
 #define K230_HS_SD1_CARD_TX		23
@@ -123,9 +123,9 @@
 #define K230_DISPLAY_AXI		111
 #define K230_DISPLAY_CLKEXT		112
 #define K230_DISPLAY_GPU		113
-#define K230_DISPLAY_DPIPCLK		114
-#define K230_DISPLAY_CFGCLK		115
-#define K230_DISPLAY_REFCLK		116
+#define K230_DISPLAY_DPIP		114
+#define K230_DISPLAY_CFG		115
+#define K230_DISPLAY_REF		116
 #define K230_VPU_SRC			117
 #define K230_VPU_AXI_SRC		118
 #define K230_VPU_AXI			119
