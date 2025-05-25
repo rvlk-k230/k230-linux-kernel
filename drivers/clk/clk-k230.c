@@ -1350,6 +1350,95 @@ K230_CLK_GATE_FORMAT(display_ref,
 		     false, 0,
 		     K230_OSC24M, NULL);
 
+K230_CLK_RATE_GATE_FORMAT(vpu_src,
+			  1, 16, 0, 0,
+			  16, 16, 1, 0xF,
+			  0xC, 31, K230_MUL,
+			  0xC, 0, false,
+			  false, 0,
+			  K230_PLL_DIV, &k230_pll_divs[K230_PLL0_DIV2]);
+
+K230_CLK_RATE_FORMAT(vpu_axi_src,
+		     1, 1, 0, 0,
+		     1, 16, 6, 0xF,
+		     0xC, 31, K230_DIV,
+		     false, 0,
+		     K230_CLK_COMPOSITE, &K230_FMT(vpu_src));
+
+K230_CLK_GATE_FORMAT(vpu_axi,
+		     0xC, 5, false,
+		     false, 0,
+		     K230_CLK_COMPOSITE, &K230_FMT(vpu_axi_src));
+
+K230_CLK_GATE_FORMAT(vpu_ddrcp2,
+		     0x60, 5, false,
+		     false, 0,
+		     K230_CLK_COMPOSITE, &K230_FMT(vpu_axi_src));
+
+K230_CLK_RATE_GATE_FORMAT(vpu_cfg,
+			  1, 1, 0, 0,
+			  1, 16, 11, 0xF,
+			  0xC, 31, K230_DIV,
+			  0xC, 10, false,
+			  false, 0,
+			  K230_PLL_DIV, &k230_pll_divs[K230_PLL0_DIV4]);
+
+K230_CLK_RATE_GATE_FORMAT(sec_apb,
+			  1, 1, 0, 0,
+			  1, 8, 1, 0x7,
+			  0x80, 31, K230_DIV,
+			  0x80, 0, false,
+			  false, 0,
+			  K230_PLL_DIV, &k230_pll_divs[K230_PLL0_DIV4]);
+
+K230_CLK_RATE_GATE_FORMAT(sec_fix,
+			  1, 1, 0, 0,
+			  1, 32, 6, 0x1F,
+			  0x80, 31, K230_DIV,
+			  0x80, 5, false,
+			  false, 0,
+			  K230_PLL_DIV, &k230_pll_divs[K230_PLL1_DIV4]);
+
+K230_CLK_RATE_GATE_FORMAT(sec_axi,
+			  1, 1, 0, 0,
+			  1, 8, 11, 0x3,
+			  0x80, 31, K230_DIV,
+			  0x80, 4, false,
+			  false, 0,
+			  K230_PLL_DIV, &k230_pll_divs[K230_PLL1_DIV4]);
+
+K230_CLK_RATE_GATE_FORMAT(usb_480m,
+			  1, 1, 0, 0,
+			  1, 8, 1, 0x7,
+			  0x100, 31, K230_DIV,
+			  0x100, 0, false,
+			  false, 0,
+			  K230_PLL, &k230_plls[K230_PLL1]);
+
+K230_CLK_RATE_GATE_FORMAT(usb_100m,
+			  1, 1, 0, 0,
+			  1, 8, 4, 0x7,
+			  0x100, 31, K230_DIV,
+			  0x100, 0, false,
+			  false, 0,
+			  K230_PLL_DIV, &k230_pll_divs[K230_PLL0_DIV4]);
+
+K230_CLK_RATE_GATE_FORMAT(dphy_dft,
+			  1, 1, 0, 0,
+			  1, 16, 1, 0xF,
+			  0x104, 31, K230_DIV,
+			  0x100, 0, false,
+			  false, 0,
+			  K230_PLL, &k230_plls[K230_PLL0]);
+
+K230_CLK_RATE_GATE_FORMAT(spi2axi,
+			  1, 1, 0, 0,
+			  1, 8, 1, 0x7,
+			  0x108, 31, K230_DIV,
+			  0x108, 0, false,
+			  false, 0,
+			  K230_PLL_DIV, &k230_pll_divs[K230_PLL0_DIV4]);
+
 static struct k230_clk *k230_clks[] = {
 	[K230_CPU0_SRC]			=	&K230_FMT(cpu0_src),
 	[K230_CPU0_AXI]			=	&K230_FMT(cpu0_axi),
@@ -1468,7 +1557,6 @@ static struct k230_clk *k230_clks[] = {
 	[K230_DISPLAY_DPIP]		=	&K230_FMT(display_dpip),
 	[K230_DISPLAY_CFG]		=	&K230_FMT(display_cfg),
 	[K230_DISPLAY_REF]		=	&K230_FMT(display_ref),
-#if 0
 	[K230_VPU_SRC]			=	&K230_FMT(vpu_src),
 	[K230_VPU_AXI_SRC]		=	&K230_FMT(vpu_axi_src),
 	[K230_VPU_AXI]			=	&K230_FMT(vpu_axi),
@@ -1479,9 +1567,8 @@ static struct k230_clk *k230_clks[] = {
 	[K230_SEC_AXI]			=	&K230_FMT(sec_axi),
 	[K230_USB_480M]			=	&K230_FMT(usb_480m),
 	[K230_USB_100M]			=	&K230_FMT(usb_100m),
-	[K230_DHPY_DFT]			=	&K230_FMT(dhpy_dft),
+	[K230_DPHY_DFT]			=	&K230_FMT(dphy_dft),
 	[K230_SPI2AXI]			=	&K230_FMT(spi2axi),
-#endif
 };
 
 #define K230_CLK_NUM	ARRAY_SIZE(k230_clks)

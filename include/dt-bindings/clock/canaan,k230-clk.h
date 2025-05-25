@@ -136,7 +136,7 @@
 #define K230_SEC_AXI			124
 #define K230_USB_480M			125
 #define K230_USB_100M			126
-#define K230_DHPY_DFT			127
+#define K230_DPHY_DFT			127
 #define K230_SPI2AXI			128
 
 #endif /* CLOCK_K230_CLK_H */
