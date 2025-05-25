@@ -24,7 +24,7 @@
 #define K230_PLL_R_SHIFT			16
 #define K230_PLL_R_MASK				0x3F
 #define K230_PLL_F_SHIFT			0
-#define K230_PLL_F_MASK				0x1FFFF
+#define K230_PLL_F_MASK				0x1FFF
 #define K230_PLL_DIV_REG_OFFSET			0x00
 #define K230_PLL_BYPASS_REG_OFFSET		0x04
 #define K230_PLL_GATE_REG_OFFSET		0x08
@@ -55,6 +55,7 @@
 
 #define K230_PLLX_OFFSET(idx)			(idx * 0x10)
 #define K230_PLLX_BASE(base, idx)		(base + K230_PLLX_OFFSET(idx))
+
 #define K230_PLLX_DIV_ADDR(base, idx)						\
 	(K230_PLL_DIV_REG_OFFSET + K230_PLLX_BASE(base, idx))
 
@@ -594,7 +595,7 @@ K230_CLK_RATE_GATE_FORMAT(cpu0_src,
 			  false, 0,
 			  K230_PLL_DIV, &k230_pll_divs[K230_PLL0_DIV2]);
 
-K230_CLK_RATE_FORMAT(cpu0_aclk,
+K230_CLK_RATE_FORMAT(cpu0_axi,
 		     1, 1, 0, 0,
 		     1, 8, 6, 0x7,
 		     0x0, 31, K230_DIV,
@@ -709,12 +710,12 @@ K230_CLK_RATE_GATE_FORMAT(hs_qspi_axi_src,
 			  false, 0,
 			  K230_PLL_DIV, &k230_pll_divs[K230_PLL0_DIV4]);
 
-K230_CLK_GATE_FORMAT(hs_ssi1_aclk,
+K230_CLK_GATE_FORMAT(hs_ssi1_axi,
 		     0x18, 29, false,
 		     false, 0,
 		     K230_CLK_COMPOSITE, &K230_FMT(hs_qspi_axi_src));
 
-K230_CLK_GATE_FORMAT(hs_ssi2_aclk,
+K230_CLK_GATE_FORMAT(hs_ssi2_axi,
 		     0x18, 30, false,
 		     false, 0,
 		     K230_CLK_COMPOSITE, &K230_FMT(hs_qspi_axi_src));
@@ -1328,7 +1329,7 @@ K230_CLK_RATE_GATE_FORMAT(display_gpu,
 			  false, 0,
 			  K230_PLL_DIV, &k230_pll_divs[K230_PLL0_DIV3]);
 
-K230_CLK_RATE_GATE_FORMAT(display_dpipclk,
+K230_CLK_RATE_GATE_FORMAT(display_dpip,
 			  1, 1, 0, 0,
 			  1, 256, 3, 0xFF,
 			  0x78, 31, K230_DIV,
@@ -1336,7 +1337,7 @@ K230_CLK_RATE_GATE_FORMAT(display_dpipclk,
 			  false, 0,
 			  K230_PLL_DIV, &k230_pll_divs[K230_PLL1_DIV4]);
 
-K230_CLK_RATE_GATE_FORMAT(display_cfgclk,
+K230_CLK_RATE_GATE_FORMAT(display_cfg,
 			  1, 1, 0, 0,
 			  1, 32, 11, 0x1F,
 			  0x78, 31, K230_DIV,
@@ -1344,14 +1345,14 @@ K230_CLK_RATE_GATE_FORMAT(display_cfgclk,
 			  false, 0,
 			  K230_PLL_DIV, &k230_pll_divs[K230_PLL1_DIV4]);
 
-K230_CLK_GATE_FORMAT(display_refclk,
+K230_CLK_GATE_FORMAT(display_ref,
 		     0x74, 3, false,
 		     false, 0,
 		     K230_OSC24M, NULL);
 
 static struct k230_clk *k230_clks[] = {
 	[K230_CPU0_SRC]			=	&K230_FMT(cpu0_src),
-	[K230_CPU0_ACLK]		=	&K230_FMT(cpu0_aclk),
+	[K230_CPU0_AXI]			=	&K230_FMT(cpu0_axi),
 	[K230_CPU0_PLIC]		=	&K230_FMT(cpu0_plic),
 	[K230_CPU0_NOC_DDRCP4]		=	&K230_FMT(cpu0_noc_ddrcp4),
 	[K230_CPU0_PCLK]		=	&K230_FMT(cpu0_pclk),
@@ -1369,8 +1370,8 @@ static struct k230_clk *k230_clks[] = {
 	[K230_HS_SSI1]			=	&K230_FMT(hs_ssi1),
 	[K230_HS_SSI2]			=	&K230_FMT(hs_ssi2),
 	[K230_HS_QSPI_AXI_SRC]		=	&K230_FMT(hs_qspi_axi_src),
-	[K230_HS_SSI1_ACLK]		=	&K230_FMT(hs_ssi1_aclk),
-	[K230_HS_SSI2_ACLK]		=	&K230_FMT(hs_ssi2_aclk),
+	[K230_HS_SSI1_AXI]		=	&K230_FMT(hs_ssi1_axi),
+	[K230_HS_SSI2_AXI]		=	&K230_FMT(hs_ssi2_axi),
 	[K230_HS_SD_CARD_SRC]		=	&K230_FMT(hs_sd_card_src),
 	[K230_HS_SD0_CARD_TX]		=	&K230_FMT(hs_sd0_card),
 	[K230_HS_SD1_CARD_TX]		=	&K230_FMT(hs_sd1_card),
@@ -1464,9 +1465,9 @@ static struct k230_clk *k230_clks[] = {
 	[K230_DISPLAY_AXI]		=	&K230_FMT(display_axi),
 	[K230_DISPLAY_CLKEXT]		=	&K230_FMT(display_clkext),
 	[K230_DISPLAY_GPU]		=	&K230_FMT(display_gpu),
-	[K230_DISPLAY_DPIPCLK]		=	&K230_FMT(display_dpipclk),
-	[K230_DISPLAY_CFGCLK]		=	&K230_FMT(display_cfgclk),
-	[K230_DISPLAY_REFCLK]		=	&K230_FMT(display_refclk),
+	[K230_DISPLAY_DPIP]		=	&K230_FMT(display_dpip),
+	[K230_DISPLAY_CFG]		=	&K230_FMT(display_cfg),
+	[K230_DISPLAY_REF]		=	&K230_FMT(display_ref),
 #if 0
 	[K230_VPU_SRC]			=	&K230_FMT(vpu_src),
 	[K230_VPU_AXI_SRC]		=	&K230_FMT(vpu_axi_src),
@@ -1504,7 +1505,7 @@ static inline bool k230_pll_hw_is_enabled(struct k230_pll *pll)
 	return !!(readl(K230_PLLX_GATE_ADDR(ksc->pll_regs, pll->id)) & K230_PLL_GATE_ENABLE);
 }
 
-static void k230_pll_enable_hw(void __iomem *regs, struct k230_pll *pll)
+static void k230_pll_enable_hw(struct k230_pll *pll)
 {
 	struct k230_sysclk *ksc = pll->ksc;
 	u32 reg;
@@ -1525,7 +1526,7 @@ static int k230_pll_enable(struct clk_hw *hw)
 
 	guard(spinlock)(&ksc->pll_lock);
 
-	k230_pll_enable_hw(ksc->regs, pll);
+	k230_pll_enable_hw(pll);
 
 	return 0;
 }
@@ -2197,7 +2198,7 @@ static int k230_register_clks(struct platform_device *pdev, struct k230_sysclk *
 	 * Single parent clock:
 	 * pll0_div2 childs: cpu0_src
 	 * pll0_div4 childs: cpu0_pclk
-	 * cpu0_src childs: cpu0_aclk, cpu0_plic, cpu0_noc_ddrcp4, pmu_pclk
+	 * cpu0_src childs: cpu0_axi, cpu0_plic, cpu0_noc_ddrcp4, pmu_pclk
 	 *
 	 * Mux clock:
 	 * hs_ospi_src parents: pll0_div2, pll2_div4
