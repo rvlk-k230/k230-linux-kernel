@@ -53,8 +53,8 @@
 
 #define K230_FMT(_var)				k230_##_var
 
-#define K230_PLLX_OFFSET(idx)			(idx * 0x10)
-#define K230_PLLX_BASE(base, idx)		(base + K230_PLLX_OFFSET(idx))
+#define K230_PLLX_OFFSET(idx)			((idx) * 0x10)
+#define K230_PLLX_BASE(base, idx)		((base) + K230_PLLX_OFFSET(idx))
 
 #define K230_PLLX_DIV_ADDR(base, idx)						\
 	(K230_PLL_DIV_REG_OFFSET + K230_PLLX_BASE(base, idx))
@@ -161,7 +161,7 @@
 				    &k230_##_var##_rate, &k230_##_var##_rate_c,	\
 				    &k230_##_var##_gate, NULL),			\
 		.parent[0] = {							\
-			.type= _type,						\
+			.type = _type,						\
 			.ptr = _clk,						\
 		},								\
 		.num_parent = 1,						\
@@ -268,7 +268,7 @@
 				  _reg, _bit, _method,				\
 				  greg, gbit, _reverse,				\
 				  _read_only, _flags,				\
-			     	  _type, _clk)					\
+				  _type, _clk)					\
 	static struct k230_clk_rate_cfg k230_##_var##_rate = {			\
 		K230_RATE_FORMAT(_mul_min, _mul_max, _mul_shift, _mul_mask,	\
 				 _div_min, _div_max, _div_shift, _div_mask,	\
@@ -301,7 +301,7 @@
 				 _reg, _bit, _method,				\
 				 mreg, _mux_shift, _mask,			\
 				 _read_only, _flags,				\
-		 		 count, __VA_ARGS__)
+				 count, __VA_ARGS__)
 
 #define _K230_CLK_RATE_MUX_FORMAT2(_var,					\
 				   _mul_min, _mul_max, _mul_shift, _mul_mask,	\
@@ -537,7 +537,7 @@ struct k230_clk_parent {
 		struct k230_pll		*pll;
 		struct k230_pll_div	*pll_div;
 		struct k230_clk		*clk;
-		void 			*ptr;
+		void			*ptr;
 	};
 };
 
@@ -562,7 +562,6 @@ struct k230_sysclk {
 	void __iomem		*regs, *pll_regs;
 	spinlock_t		pll_lock, clk_lock;
 };
-
 
 static struct k230_pll k230_plls[] = {
 	[K230_PLL0] = { .name = "pll0", .id = K230_PLL0},
@@ -1041,11 +1040,11 @@ K230_CLK_RATE_GATE_FORMAT(ls_uart4,
 			  K230_PLL_DIV, &k230_pll_divs[K230_PLL0_DIV16]);
 
 K230_CLK_RATE_FORMAT(ls_jamlinkco_div_src,
-			  1, 1, 0, 0,
-			  2, 512, 23, 0xFF,
-			  0x30, 31, K230_DIV,
-			  false, 0,
-			  K230_PLL_DIV, &k230_pll_divs[K230_PLL0_DIV16]);
+		     1, 1, 0, 0,
+		     2, 512, 23, 0xFF,
+		     0x30, 31, K230_DIV,
+		     false, 0,
+		     K230_PLL_DIV, &k230_pll_divs[K230_PLL0_DIV16]);
 
 K230_CLK_GATE_FORMAT(ls_jamlink0co,
 		     0x28, 0, false,
@@ -1863,14 +1862,18 @@ static unsigned long k230_clk_get_rate(struct clk_hw *hw,
 		break;
 	case K230_MUL_DIV:
 		if (!rate_cfg_c) {
-			mul = (readl(ksc->regs + rate_cfg->rate_reg_off) >> rate_cfg->rate_mul_shift)
+			mul = (readl(ksc->regs + rate_cfg->rate_reg_off)
+				>> rate_cfg->rate_mul_shift)
 				& rate_cfg->rate_mul_mask;
-			div = (readl(ksc->regs + rate_cfg->rate_reg_off) >> rate_cfg->rate_div_shift)
+			div = (readl(ksc->regs + rate_cfg->rate_reg_off)
+				>> rate_cfg->rate_div_shift)
 				& rate_cfg->rate_div_mask;
 		} else {
-			mul = (readl(ksc->regs + rate_cfg_c->rate_reg_off_c) >> rate_cfg_c->rate_mul_shift_c)
+			mul = (readl(ksc->regs + rate_cfg_c->rate_reg_off_c)
+				>> rate_cfg_c->rate_mul_shift_c)
 				& rate_cfg_c->rate_mul_mask_c;
-			div = (readl(ksc->regs + rate_cfg->rate_reg_off) >> rate_cfg->rate_div_shift)
+			div = (readl(ksc->regs + rate_cfg->rate_reg_off)
+				>> rate_cfg->rate_div_shift)
 				& rate_cfg->rate_div_mask;
 		}
 		break;
@@ -2283,9 +2286,9 @@ static int k230_register_clks(struct platform_device *pdev, struct k230_sysclk *
 
 	/*
 	 * Single parent clock:
-	 * pll0_div2 childs: cpu0_src
-	 * pll0_div4 childs: cpu0_pclk
-	 * cpu0_src childs: cpu0_axi, cpu0_plic, cpu0_noc_ddrcp4, pmu_pclk
+	 * pll0_div2 child: cpu0_src
+	 * pll0_div4 child: cpu0_pclk
+	 * cpu0_src child: cpu0_axi, cpu0_plic, cpu0_noc_ddrcp4, pmu_pclk
 	 *
 	 * Mux clock:
 	 * hs_ospi_src parents: pll0_div2, pll2_div4
