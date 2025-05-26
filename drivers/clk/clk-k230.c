@@ -614,7 +614,7 @@ K230_CLK_GATE_FORMAT(cpu0_noc_ddrcp4,
 		     false, 0,
 		     K230_CLK_COMPOSITE, &K230_FMT(cpu0_src));
 
-K230_CLK_RATE_GATE_FORMAT(cpu0_pclk,
+K230_CLK_RATE_GATE_FORMAT(cpu0_apb,
 			  1, 1, 0, 0,
 			  1, 8, 15, 0x7,
 			  0x0, 31, K230_DIV,
@@ -622,7 +622,7 @@ K230_CLK_RATE_GATE_FORMAT(cpu0_pclk,
 			  false, 0,
 			  K230_PLL_DIV, &k230_pll_divs[K230_PLL0_DIV4]);
 
-K230_CLK_GATE_FORMAT(pmu_pclk,
+K230_CLK_GATE_FORMAT(pmu_apb,
 		     0x10, 0, false,
 		     false, 0,
 		     K230_OSC24M, NULL);
@@ -1443,8 +1443,8 @@ static struct k230_clk *k230_clks[] = {
 	[K230_CPU0_AXI]			=	&K230_FMT(cpu0_axi),
 	[K230_CPU0_PLIC]		=	&K230_FMT(cpu0_plic),
 	[K230_CPU0_NOC_DDRCP4]		=	&K230_FMT(cpu0_noc_ddrcp4),
-	[K230_CPU0_PCLK]		=	&K230_FMT(cpu0_pclk),
-	[K230_PMU_PCLK]			=	&K230_FMT(pmu_pclk),
+	[K230_CPU0_PCLK]		=	&K230_FMT(cpu0_apb),
+	[K230_PMU_PCLK]			=	&K230_FMT(pmu_apb),
 	[K230_HS_HCLK_HIGH_SRC]		=	&K230_FMT(hs_hclk_high_src),
 	[K230_HS_HCLK_HIGH]		=	&K230_FMT(hs_hclk_high),
 	[K230_HS_HCLK_SRC]		=	&K230_FMT(hs_hclk_src),
