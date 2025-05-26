@@ -2257,6 +2257,7 @@ static int k230_clk_get_parent_data(struct k230_clk_parent *pclk,
 		break;
 	default:
 		parent_data->index = pclk->type;
+		return 0;
 	}
 
 	return parent_data->hw ? 0 : -EINVAL;
@@ -2269,6 +2270,7 @@ static int k230_clk_mux_get_parent_data(struct k230_clk *clk,
 	struct k230_clk_parent *pclk = clk->parent;
 
 	for (int i = 0; i < clk->num_parent; i++) {
+		memset(&parent_data[i], 0, sizeof(*parent_data));
 		ret = k230_clk_get_parent_data(&pclk[i], &parent_data[i]);
 		if (ret)
 			return ret;
