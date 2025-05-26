@@ -2396,8 +2396,8 @@ static int k230_clk_probe(struct platform_device *pdev)
 	if (!ksc)
 		return -ENOMEM;
 
-	hw_data = devm_kzalloc(&pdev->dev, sizeof(*hw_data) +
-			       sizeof(struct clk_hw *) * K230_CLK_NUM, GFP_KERNEL);
+	hw_data = devm_kzalloc(&pdev->dev, struct_size(hw_data, hws, K230_CLK_NUM),
+			       GFP_KERNEL);
 	if (!hw_data)
 		return -ENOMEM;
 
