@@ -622,6 +622,41 @@ K230_CLK_RATE_GATE_FORMAT(cpu0_apb,
 			  false, 0,
 			  K230_PLL_DIV, &k230_pll_divs[K230_PLL0_DIV4]);
 
+K230_CLK_FORMAT(cpu1_src,
+		1, 1, 0, 0,
+		1, 8, 3, 0x7,
+		0x4, 31, K230_DIV,
+		0x4, 0, false,
+		0x4, 1, 0x3,
+		false, 0,
+		3,
+		K230_PLL_DIV, &k230_pll_divs[K230_PLL0_DIV2],
+		K230_PLL, &k230_plls[K230_PLL3],
+		K230_PLL, &k230_plls[K230_PLL0]);
+
+K230_CLK_RATE_FORMAT(cpu1_axi,
+		     1, 1, 0, 0,
+		     1, 8, 12, 0x7,
+		     0x4, 31, K230_DIV,
+		     false, 0,
+		     K230_CLK_COMPOSITE, &K230_FMT(cpu1_src));
+
+K230_CLK_RATE_GATE_FORMAT(cpu1_plic,
+			  1, 1, 0, 0,
+			  1, 8, 16, 0x7,
+			  0x4, 31, K230_DIV,
+			  0x4, 15, false,
+			  false, 0,
+			  K230_CLK_COMPOSITE, &K230_FMT(cpu1_src));
+
+K230_CLK_RATE_GATE_FORMAT(cpu1_apb,
+			  1, 1, 0, 0,
+			  1, 8, 15, 0x7,
+			  0x0, 31, K230_DIV,
+			  0x4, 19, false,
+			  false, 0,
+			  K230_PLL_DIV, &k230_pll_divs[K230_PLL0_DIV4]);
+
 K230_CLK_GATE_FORMAT(pmu_apb,
 		     0x10, 0, false,
 		     false, 0,
@@ -1443,8 +1478,12 @@ static struct k230_clk *k230_clks[] = {
 	[K230_CPU0_AXI]			=	&K230_FMT(cpu0_axi),
 	[K230_CPU0_PLIC]		=	&K230_FMT(cpu0_plic),
 	[K230_CPU0_NOC_DDRCP4]		=	&K230_FMT(cpu0_noc_ddrcp4),
-	[K230_CPU0_PCLK]		=	&K230_FMT(cpu0_apb),
-	[K230_PMU_PCLK]			=	&K230_FMT(pmu_apb),
+	[K230_CPU0_APB]			=	&K230_FMT(cpu0_apb),
+	[K230_CPU1_SRC]			=	&K230_FMT(cpu1_src),
+	[K230_CPU1_AXI]			=	&K230_FMT(cpu1_axi),
+	[K230_CPU1_PLIC]		=	&K230_FMT(cpu1_plic),
+	[K230_CPU1_APB]			=	&K230_FMT(cpu1_apb),
+	[K230_PMU_APB]			=	&K230_FMT(pmu_apb),
 	[K230_HS_HCLK_HIGH_SRC]		=	&K230_FMT(hs_hclk_high_src),
 	[K230_HS_HCLK_HIGH]		=	&K230_FMT(hs_hclk_high),
 	[K230_HS_HCLK_SRC]		=	&K230_FMT(hs_hclk_src),
@@ -2289,8 +2328,8 @@ static int k230_register_clks(struct platform_device *pdev, struct k230_sysclk *
 	/*
 	 * Single parent clock:
 	 * pll0_div2 child: cpu0_src
-	 * pll0_div4 child: cpu0_pclk
-	 * cpu0_src child: cpu0_axi, cpu0_plic, cpu0_noc_ddrcp4, pmu_pclk
+	 * pll0_div4 child: cpu0_apb
+	 * cpu0_src child: cpu0_axi, cpu0_plic, cpu0_noc_ddrcp4, pmu_apb
 	 *
 	 * Mux clock:
 	 * hs_ospi_src parents: pll0_div2, pll2_div4
