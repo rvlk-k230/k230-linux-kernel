@@ -2418,12 +2418,40 @@ static int k230_register_clks(struct platform_device *pdev, struct k230_sysclk *
 
 	/*
 	 * Single parent clock:
-	 * pll0_div2 child: cpu0_src
-	 * pll0_div4 child: cpu0_apb
-	 * cpu0_src child: cpu0_axi, cpu0_plic, cpu0_noc_ddrcp4, pmu_apb
+	 * osc24m     child: pmu_apb, hs_sd_timer_src, ls_gpio_debounce,
+	 *                   sysctl_temp_sensor, sysctl_wdtX, display_ref
+	 * sysctl_apb_src child:
+	 *                   sysctl_wdtX_apb,sysctl_timer_apb, sysctl_iomux_apb,
+	 *                   sysctl_mailbox_apb
+	 * shrm_sram_div2 child:
+	 *                   shrm_axi_slave
+	 * pll0       child: dphy_dft
+	 * pll1       child: usb_480m
+	 * pll0_div2  child: cpu0_src, vpu_src 
+	 * pll0_div3  child: display_clkext, display_gpu
+	 * pll0_div4  child: cpu0_apb, cpu1_apb, hs_hclk_high_src, hs_ssi0_axi,
+	 *                   hs_ss1, hs_ssi2, hs_qspi_axi_src, hs_sd_card_src,
+	 *                   ls_apb_src, ls_codec_apb, ls_i2c0, ls_i2c1,
+	 *                   ls_i2c2, ls_i2c3, ls_i2c4, ls_codec_adc, ls_codec_dac,
+	 *                   ls_audio_dev, ls_pdm, ls_adc, sysctl_hdi, shrm_apb,
+	 *                   shrm_axi_src, ddrc_apb, display_ahb, display_axi,
+	 *                   vpu_cfg, sec_apb, usb_100m, spi2axi
+	 * pll0_div16 child: hs_usb_ref_50m, ls_uartX, ls_jamlinkco_div_src,
+	 *                   timerX_src,
+	 * pll1_div4  child: sysctl_time_stamp, display_dpip, display_cfg, sec_fix,
+	 *                   sec_axi
+	 * pll2_div4  child: hs_sd_axi_src, ddrc_bypass
+	 * cpu0_src   child: cpu0_axi, cpu0_plic, cpu0_noc_ddrcp4, pmu_apb
 	 *
 	 * Mux clock:
 	 * hs_ospi_src parents: pll0_div2, pll2_div4
+	 * hs_usbX_ref parents: osc24m, hs_usb_ref_50m
+	 * timerX      parents: timerX_pulse_in, timerX_src
+	 * shrm_sram   parents: pll3_div2, pll0_div2
+	 * cpu1_src    parents: pll0_div2, pll3, pll0
+	 * ddrc_src    parents: pll0_div2, pll0_div3, pll2_div4
+	 * ai_src      parents: pll0_div2, pll3_div2
+	 * cameraX     parents: pll1_div3, pll1_div4, pll0_div4
 	 */
 	for (i = 0; i < K230_CLK_NUM; i++) {
 		clk = k230_clks[i];
