@@ -71,11 +71,11 @@
 		clock-frequency = <100000000>;
 		#clock-cells = <0>;
 	};
-	shrm_src_div2: shrm_src_div2 {
+	shrm_sram_div2: shrm_sram_div2 {
 		compatible = "fixed-factor-clock";
 		clock-div = <2>;
 		clock-mult = <1>;
-		clocks = <&sysclk K230_SHRM_SRC>;
+		clocks = <&sysclk K230_SHRM_SRAM>;
 		#clock-cells = <0>;
 	};
 
@@ -107,7 +107,7 @@
 			compatible = "canaan,k230-clk";
 			reg = <0x0 0x91102000 0x0 0x40>,
 			      <0x0 0x91100000 0x0 0x108>;
-			clocks = <&osc24m>, <&sysctl_apb>, <&shrm_src_div2>;
+			clocks = <&osc24m>, <&sysctl_apb>, <&shrm_sram_div2>;
 			#clock-cells = <1>;
 		};
 
