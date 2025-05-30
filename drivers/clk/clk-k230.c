@@ -184,6 +184,40 @@
 				_read_only, _flags,				\
 				__VA_ARGS__)
 
+#define _K230_CLK_FORMAT2(_var,							\
+			  _mul_min, _mul_max, _mul_shift, _mul_mask,		\
+			  _div_min, _div_max, _div_shift, _div_mask,		\
+			  _reg, _bit, _method,					\
+			  greg, gbit, _reverse,					\
+			  mreg, _mux_shift, _mask,				\
+			  _read_only, _flags,					\
+			  type1, clk1, type2, clk2)				\
+	static struct k230_clk_rate_cfg k230_##_var##_rate = {			\
+		K230_RATE_FORMAT(_mul_min, _mul_max, _mul_shift, _mul_mask,	\
+				 _div_min, _div_max, _div_shift, _div_mask,	\
+				 _reg, _bit, _method)				\
+	};									\
+	static struct k230_clk_gate_cfg k230_##_var##_gate = {			\
+		K230_GATE_FORMAT(greg, gbit, _reverse)				\
+	};									\
+	static struct k230_clk_mux_cfg k230_##_var##_mux = {			\
+		K230_MUX_FORMAT(mreg, _mux_shift, _mask)			\
+	};									\
+	static struct k230_clk k230_##_var = {					\
+		K230_CLK_CFG_FORMAT(#_var, _read_only, _flags,			\
+				    &k230_##_var##_rate, NULL,			\
+				    &k230_##_var##_gate, &k230_##_var##_mux),	\
+		.num_parent = 2,						\
+		.parent[0] = {							\
+			.type = type1,						\
+			.ptr = clk1,						\
+		},								\
+		.parent[0] = {							\
+			.type = type2,						\
+			.ptr = clk2,						\
+		},								\
+	}
+
 #define _K230_CLK_FORMAT3(_var,							\
 			  _mul_min, _mul_max, _mul_shift, _mul_mask,		\
 			  _div_min, _div_max, _div_shift, _div_mask,		\
@@ -522,7 +556,7 @@ struct k230_clk_mux_cfg {
 enum k230_clk_parent_type {
 	K230_OSC24M,
 	K230_SYSCTL_APB_SRC,
-	K230_SHRM_SRC_DIV2,
+	K230_SHRM_SRAM_DIV2,
 	K230_TIMERX_PULSE_IN,
 	K230_PLL,
 	K230_PLL_DIV,
@@ -1263,24 +1297,6 @@ K230_CLK_GATE_MUX_FORMAT(timer5,
 			 K230_TIMERX_PULSE_IN, NULL,
 			 K230_CLK_COMPOSITE, &K230_FMT(timer5_src));
 
-K230_CLK_GATE_MUX_FORMAT(shrm_src,
-			 0x5c, 10, false,
-			 0x50, 14, 0x1,
-			 false, 0,
-			 2,
-			 K230_PLL_DIV, &k230_pll_divs[K230_PLL3_DIV2],
-			 K230_PLL_DIV, &k230_pll_divs[K230_PLL0_DIV2]);
-
-K230_CLK_GATE_FORMAT(shrm_axi_slave,
-		     0x5C, 11, false,
-		     false, 0,
-		     K230_SHRM_SRC_DIV2, NULL);
-
-K230_CLK_GATE_FORMAT(shrm_decompress_axi,
-		     0x5C, 7, false,
-		     false, 0,
-		     K230_CLK_COMPOSITE, &K230_FMT(shrm_src));
-
 K230_CLK_RATE_GATE_FORMAT(shrm_apb,
 			  1, 1, 0, 0,
 			  1, 8, 18, 0x7,
@@ -1294,6 +1310,29 @@ K230_CLK_GATE_FORMAT(shrm_axi_src,
 		     false, 0,
 		     K230_PLL_DIV, &k230_pll_divs[K230_PLL0_DIV4]);
 
+K230_CLK_GATE_FORMAT(shrm_axi_slave,
+		     0x5C, 11, false,
+		     false, 0,
+		     K230_SHRM_SRAM_DIV2, NULL);
+
+K230_CLK_GATE_FORMAT(shrm_nonai2d_axi,
+		     0x5C, 9, false,
+		     false, 0,
+		     K230_CLK_COMPOSITE, &K230_FMT(shrm_axi_src));
+
+K230_CLK_GATE_MUX_FORMAT(shrm_sram,
+			 0x5c, 10, false,
+			 0x50, 14, 0x1,
+			 false, 0,
+			 2,
+			 K230_PLL_DIV, &k230_pll_divs[K230_PLL3_DIV2],
+			 K230_PLL_DIV, &k230_pll_divs[K230_PLL0_DIV2]);
+
+K230_CLK_GATE_FORMAT(shrm_decompress_axi,
+		     0x5C, 7, false,
+		     false, 0,
+		     K230_CLK_COMPOSITE, &K230_FMT(shrm_sram));
+
 K230_CLK_GATE_FORMAT(shrm_sdma_axi,
 		     0x5C, 5, false,
 		     false, 0,
@@ -1301,11 +1340,6 @@ K230_CLK_GATE_FORMAT(shrm_sdma_axi,
 
 K230_CLK_GATE_FORMAT(shrm_pdma_axi,
 		     0x5C, 3, false,
-		     false, 0,
-		     K230_CLK_COMPOSITE, &K230_FMT(shrm_axi_src));
-
-K230_CLK_GATE_FORMAT(shrm_nonai2d_axi,
-		     0x5C, 9, false,
 		     false, 0,
 		     K230_CLK_COMPOSITE, &K230_FMT(shrm_axi_src));
 
@@ -1473,6 +1507,58 @@ K230_CLK_RATE_GATE_FORMAT(spi2axi,
 			  false, 0,
 			  K230_PLL_DIV, &k230_pll_divs[K230_PLL0_DIV4]);
 
+K230_CLK_FORMAT(ai_src,
+		1, 1, 0, 0,
+		1, 8, 3, 0x7,
+		0x8, 31, K230_DIV,
+		0x8, 0, false,
+		0x8, 2, 0x1,
+		false, 0,
+		2,
+		K230_PLL_DIV, &k230_pll_divs[K230_PLL0_DIV2],
+		K230_PLL_DIV, &k230_pll_divs[K230_PLL3_DIV2]);
+
+K230_CLK_GATE_FORMAT(ai_axi,
+		     0x8, 10, false,
+		     false, 0,
+		     K230_CLK_COMPOSITE, &K230_FMT(ai_src));
+
+K230_CLK_FORMAT(camera0,
+		1, 1, 0, 0,
+		1, 32, 5, 0x1f,
+		0x6C, 31, K230_DIV,
+		0x6C, 0, false,
+		0x6C, 3, 0x3,
+		false, 0,
+		3,
+		K230_PLL_DIV, &k230_pll_divs[K230_PLL1_DIV3],
+		K230_PLL_DIV, &k230_pll_divs[K230_PLL1_DIV4],
+		K230_PLL_DIV, &k230_pll_divs[K230_PLL0_DIV4]);
+
+K230_CLK_FORMAT(camera1,
+		1, 1, 0, 0,
+		1, 32, 12, 0x1f,
+		0x6C, 31, K230_DIV,
+		0x6C, 1, false,
+		0x6C, 10, 0x3,
+		false, 0,
+		3,
+		K230_PLL_DIV, &k230_pll_divs[K230_PLL1_DIV3],
+		K230_PLL_DIV, &k230_pll_divs[K230_PLL1_DIV4],
+		K230_PLL_DIV, &k230_pll_divs[K230_PLL0_DIV4]);
+
+K230_CLK_FORMAT(camera2,
+		1, 1, 0, 0,
+		1, 32, 19, 0x1f,
+		0x6C, 31, K230_DIV,
+		0x6C, 2, false,
+		0x6C, 17, 0x3,
+		false, 0,
+		3,
+		K230_PLL_DIV, &k230_pll_divs[K230_PLL1_DIV3],
+		K230_PLL_DIV, &k230_pll_divs[K230_PLL1_DIV4],
+		K230_PLL_DIV, &k230_pll_divs[K230_PLL0_DIV4]);
+
 static struct k230_clk *k230_clks[] = {
 	[K230_CPU0_SRC]			=	&K230_FMT(cpu0_src),
 	[K230_CPU0_AXI]			=	&K230_FMT(cpu0_axi),
@@ -1577,14 +1663,14 @@ static struct k230_clk *k230_clks[] = {
 	[K230_TIMER3]			=	&K230_FMT(timer3),
 	[K230_TIMER4]			=	&K230_FMT(timer4),
 	[K230_TIMER5]			=	&K230_FMT(timer5),
-	[K230_SHRM_SRC]			=	&K230_FMT(shrm_src),
-	[K230_SHRM_AXI_SLAVE]		=	&K230_FMT(shrm_axi_slave),
-	[K230_SHRM_DECOMPRESS_AXI]	=	&K230_FMT(shrm_decompress_axi),
 	[K230_SHRM_APB]			=	&K230_FMT(shrm_apb),
 	[K230_SHRM_AXI_SRC]		=	&K230_FMT(shrm_axi_src),
+	[K230_SHRM_AXI_SLAVE]		=	&K230_FMT(shrm_axi_slave),
+	[K230_SHRM_NONAI2D_AXI]		=	&K230_FMT(shrm_nonai2d_axi),
+	[K230_SHRM_SRAM]		=	&K230_FMT(shrm_sram),
+	[K230_SHRM_DECOMPRESS_AXI]	=	&K230_FMT(shrm_decompress_axi),
 	[K230_SHRM_SDMA_AXI]		=	&K230_FMT(shrm_sdma_axi),
 	[K230_SHRM_PDMA_AXI]		=	&K230_FMT(shrm_pdma_axi),
-	[K230_SHRM_NONAI2D_AXI]		=	&K230_FMT(shrm_nonai2d_axi),
 	[K230_DDRC_SRC]			=	&K230_FMT(ddrc_src),
 	[K230_DDRC_BYPASS]		=	&K230_FMT(ddrc_bypass),
 	[K230_DDRC_APB]			=	&K230_FMT(ddrc_apb),
@@ -1607,6 +1693,11 @@ static struct k230_clk *k230_clks[] = {
 	[K230_USB_100M]			=	&K230_FMT(usb_100m),
 	[K230_DPHY_DFT]			=	&K230_FMT(dphy_dft),
 	[K230_SPI2AXI]			=	&K230_FMT(spi2axi),
+	[K230_AI_SRC]			=	&K230_FMT(ai_src),
+	[K230_AI_AXI]			=	&K230_FMT(ai_axi),
+	[K230_CAMERA0]			=	&K230_FMT(camera0),
+	[K230_CAMERA1]			=	&K230_FMT(camera1),
+	[K230_CAMERA2]			=	&K230_FMT(camera2),
 };
 
 #define K230_CLK_NUM	ARRAY_SIZE(k230_clks)
