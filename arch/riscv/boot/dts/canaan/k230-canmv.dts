@@ -31,4 +31,6 @@
 
 &sysclk {
 	clocks = <&osc24m>, <&sysctl_apb>, <&shrm_sram_div2>, <&timerx_pulse_in>;
+	clock-names = "osc24m", "sysctl-apb", "sram-div2", "timer-pulse-in";
+
 };

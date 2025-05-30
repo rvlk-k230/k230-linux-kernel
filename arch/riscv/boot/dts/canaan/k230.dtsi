@@ -108,6 +108,7 @@
 			reg = <0x0 0x91102000 0x0 0x40>,
 			      <0x0 0x91100000 0x0 0x108>;
 			clocks = <&osc24m>, <&sysctl_apb>, <&shrm_sram_div2>;
+			clock-names = "osc24m", "sysctl-apb", "sram-div2";
 			#clock-cells = <1>;
 		};
 
