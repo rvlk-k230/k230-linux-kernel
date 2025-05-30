@@ -631,7 +631,7 @@ static struct k230_pll_div k230_pll_divs[] = {
  *                   shrm_axi_slave
  * pll0       child: dphy_dft
  * pll1       child: usb_480m
- * pll0_div2  child: cpu0_src, vpu_src 
+ * pll0_div2  child: cpu0_src, vpu_src
  * pll0_div3  child: display_clkext, display_gpu
  * pll0_div4  child: cpu0_apb, cpu1_apb, hs_hclk_high_src, hs_ssi0_axi,
  *                   hs_ss1, hs_ssi2, hs_qspi_axi_src, hs_sd_card_src,
@@ -651,7 +651,7 @@ static struct k230_pll_div k230_pll_divs[] = {
  * vpu_src    child: vpu_axi_src
  * ai_src     child: ai_axi
  * vpu_axi_src child:
- *                   vpu_axi, vpu_ddrcp2 
+ *                   vpu_axi, vpu_ddrcp2
  * shrm_axi_src child:
  *                   shrm_nonai2d_axi, shrm_sdma_axi,shrm_pdma_axi
  * hs_hclk_high_src child:
