@@ -2328,13 +2328,13 @@ static int k230_clk_get_parent_data(struct k230_clk_parent *pclk,
 {
 	switch (pclk->type) {
 	case K230_PLL:
-		parent_data->hw = &pclk->pll->hw ? &pclk->pll->hw : NULL;
+		parent_data->hw = &pclk->pll->hw;
 		break;
 	case K230_PLL_DIV:
-		parent_data->hw = pclk->pll_div->hw ? pclk->pll_div->hw : NULL;
+		parent_data->hw = pclk->pll_div->hw;
 		break;
 	case K230_CLK_COMPOSITE:
-		parent_data->hw = &pclk->clk->hw ? &pclk->clk->hw : NULL;
+		parent_data->hw = &pclk->clk->hw;
 		break;
 	default:
 		parent_data->index = pclk->type;
