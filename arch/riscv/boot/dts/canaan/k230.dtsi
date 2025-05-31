@@ -71,6 +71,7 @@
 		clock-frequency = <100000000>;
 		#clock-cells = <0>;
 	};
+
 	shrm_sram_div2: shrm_sram_div2 {
 		compatible = "fixed-factor-clock";
 		clock-div = <2>;
