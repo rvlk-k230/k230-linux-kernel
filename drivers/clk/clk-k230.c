@@ -2236,13 +2236,8 @@ static int k230_register_clk(struct platform_device *pdev,
 	if (clk->rate_cfg)
 		clk_id += K230_CLK_OPS_ID_RATE_ONLY;
 
-	if (clk->mux_cfg) {
+	if (clk->mux_cfg)
 		clk_id += K230_CLK_OPS_ID_MUX_ONLY;
-
-		/* mux clock doesn't match the case that num_parents less than 2 */
-		if (num_parents < 2)
-			return -EINVAL;
-	}
 
 	if (clk->gate_cfg)
 		clk_id += K230_CLK_OPS_ID_GATE_ONLY;
