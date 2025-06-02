@@ -212,7 +212,7 @@
 			.type = type1,						\
 			.ptr = clk1,						\
 		},								\
-		.parent[0] = {							\
+		.parent[1] = {							\
 			.type = type2,						\
 			.ptr = clk2,						\
 		},								\
@@ -246,11 +246,11 @@
 			.type = type1,						\
 			.ptr = clk1,						\
 		},								\
-		.parent[0] = {							\
+		.parent[1] = {							\
 			.type = type2,						\
 			.ptr = clk2,						\
 		},								\
-		.parent[0] = {							\
+		.parent[2] = {							\
 			.type = type3,						\
 			.ptr = clk3,						\
 		},								\
