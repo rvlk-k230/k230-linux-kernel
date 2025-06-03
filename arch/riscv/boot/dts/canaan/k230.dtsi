@@ -66,20 +66,6 @@
 		#clock-cells = <0>;
 	};
 
-	sysctl_apb: sysctl_apb_src {
-		compatible = "fixed-clock";
-		clock-frequency = <100000000>;
-		#clock-cells = <0>;
-	};
-
-	shrm_sram_div2: shrm_sram_div2 {
-		compatible = "fixed-factor-clock";
-		clock-div = <2>;
-		clock-mult = <1>;
-		clocks = <&sysclk K230_SHRM_SRAM>;
-		#clock-cells = <0>;
-	};
-
 	soc {
 		compatible = "simple-bus";
 		interrupt-parent = <&plic>;
@@ -108,8 +94,8 @@
 			compatible = "canaan,k230-clk";
 			reg = <0x0 0x91102000 0x0 0x40>,
 			      <0x0 0x91100000 0x0 0x108>;
-			clocks = <&osc24m>, <&sysctl_apb>, <&shrm_sram_div2>;
-			clock-names = "osc24m", "sysctl-apb", "sram-div2";
+			clocks = <&osc24m>;
+			clock-names = "osc24m";
 			#clock-cells = <1>;
 		};
 
