@@ -1664,16 +1664,7 @@ static unsigned long k230_pll_get_rate(struct clk_hw *hw, unsigned long parent_r
 	return mul_u64_u32_div(parent_rate, f, r * od);
 }
 
-static int k230_pll_init(struct clk_hw *hw)
-{
-	if (k230_pll_is_enabled(hw))
-		return clk_prepare_enable(hw->clk);
-
-	return 0;
-}
-
 static const struct clk_ops k230_pll_ops = {
-	.init		= k230_pll_init,
 	.prepare	= k230_pll_prepare,
 	.enable	        = k230_pll_enable,
 	.disable	= k230_pll_disable,
