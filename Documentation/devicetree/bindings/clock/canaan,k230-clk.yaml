@@ -19,26 +19,16 @@ properties:
       - description: Sysclk control registers
 
   clocks:
-    description:
-      Specifies the reference clocks from which the output frequency is derived.
-      Most of clocks are derived from osc24m and its derived clocks, a few clocks
-      are derived from sysctl-apb, and one derived from sram-div2.
-      And timer-pulse-in is a clock source for the timerX that uses external pulses
-      input through a pin, with 50M HZ maximum frequency.
-    minItems: 3
-    maxItems: 4
+    minItems: 1
+    items:
+      - description: Main external clock source.
+      - description: External pulse input.
 
   clock-names:
-    oneOf:
-      - items:
-        - const: osc24m
-        - const: sysctl-apb
-        - const: sram-div2
-      - items:
-        - const: osc24m
-        - const: sysctl-apb
-        - const: sram-div2
-        - const: timer-pulse-in
+    minItems: 1
+    items:
+      - const: osc24m
+      - const: timer-pulse-in
 
   '#clock-cells':
     const: 1
@@ -58,7 +48,7 @@ examples:
         compatible = "canaan,k230-clk";
         reg = <0x91102000 0x40>,
               <0x91100000 0x108>;
-        clocks = <&osc24m>, <&sysctl_apb>, <&shrm_sram_div2>;
-        clock-names = "osc24m", "sysctl-apb", "sram-div2";
+        clocks = <&osc24m>;
+        clock-names = "osc24m";
         #clock-cells = <1>;
     };
