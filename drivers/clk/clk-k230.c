@@ -1691,6 +1691,7 @@ static int k230_register_plls(struct platform_device *pdev, struct k230_sysclk *
 		init.parent_data = parent_data;
 		init.num_parents = 1;
 		init.ops = &k230_pll_ops;
+		init.flags = CLK_IS_CRITICAL;
 
 		pll->hw.init = &init;
 		pll->ksc = ksc;
