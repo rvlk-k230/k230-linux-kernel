@@ -9,6 +9,11 @@ title: Canaan Kendryte K230 Clock
 maintainers:
   - Xukai Wang <kingxukai@zohomail.com>
 
+description:
+  The Canaan K230 clock controller generates various clocks for SoC
+  peripherals. See include/dt-bindings/clock/canaan,k230-clk.h for
+  valid clock IDs.
+
 properties:
   compatible:
     const: canaan,k230-clk
@@ -21,8 +26,8 @@ properties:
   clocks:
     minItems: 1
     items:
-      - description: Main external clock source.
-      - description: External pulse input.
+      - description: Main external reference clock
+      - description: External pulse input
 
   clock-names:
     minItems: 1
