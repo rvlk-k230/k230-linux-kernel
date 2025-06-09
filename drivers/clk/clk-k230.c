@@ -1974,7 +1974,8 @@ static int k230_clk_find_approximate_div(u32 mul_min, u32 mul_max,
 static int k230_clk_find_approximate_mul_div(struct k230_clk_rate_cfg *rate_cfg,
 					     u32 mul_min, u32 mul_max,
 					     u32 div_min, u32 div_max,
-					     unsigned long rate, unsigned long parent_rate,
+					     unsigned long rate,
+					     unsigned long parent_rate,
 					     u32 *div, u32 *mul)
 {
 	const u32 codec_clk[9] = {
@@ -2213,8 +2214,8 @@ static int k230_clk_set_rate_mul_div(struct clk_hw *hw, unsigned long rate,
 	} else {
 		reg_c = readl(ksc->regs + rate_cfg->rate_reg_off);
 		reg_c &= ~((rate_cfg->rate_mul_mask) << (rate_cfg->rate_mul_shift));
-		reg_c |= BIT(rate_cfg->rate_write_enable_bit);
 		reg_c |= (mul & rate_cfg->rate_mul_mask) << (rate_cfg->rate_mul_shift);
+		reg_c |= BIT(rate_cfg->rate_write_enable_bit);
 		writel(reg_c, ksc->regs + rate_cfg->rate_reg_off2);
 	}
 	reg |= (div & rate_cfg->rate_div_mask) << (rate_cfg->rate_div_shift);
