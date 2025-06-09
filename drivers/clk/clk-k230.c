@@ -41,7 +41,7 @@
 
 #define K230_CLK_MAX_PARENT_NUM			3
 
-#define K230_FMT(_var)				&k230_##_var
+#define K230_FMT(_var)				(&k230_##_var)
 
 #define K230_PLLX_OFFSET(idx)			((idx) * 0x10)
 #define K230_PLLX_BASE(base, idx)		((base) + K230_PLLX_OFFSET(idx))
@@ -132,7 +132,7 @@
 			     _mul_min, _mul_max, _mul_shift, _mul_mask,		\
 			     _div_min, _div_max, _div_shift, _div_mask,		\
 			     _reg, _bit, _method, _reg2,			\
-			     _read_only, _flags, 				\
+			     _read_only, _flags,				\
 			     _pname, _index)					\
 	static struct k230_clk_rate_cfg k230_##_var##_cfg =			\
 		K230_RATE_FORMAT(_mul_min, _mul_max, _mul_shift,		\
@@ -150,8 +150,7 @@
 	}
 
 #define K230_CLK_GATE_FORMAT(_var,						\
-			     _reg, _bit,					\
-			     _flags, _gate_flags, 				\
+			     _reg, _bit, _flags, _gate_flags,			\
 			     _pname)						\
 	static struct k230_clk_gate_cfg k230_##_var##_cfg =			\
 		K230_GATE_FORMAT(_reg, _bit, _gate_flags);			\
@@ -164,28 +163,26 @@
 	}
 
 #define K230_CLK_MUX_FORMAT2(_var,						\
-			     _reg, _shift, _width,				\
-			     _flags, _mux_flags,				\
+			     _reg, _shift, _width, _flags, _mux_flags,		\
 			     _pname1, _pname2)					\
 	static struct k230_clk_mux_cfg k230_##_var##_cfg =			\
-		K230_MUX_FORMAT2(_reg, _shift, _width, _mux_flags, 		\
+		K230_MUX_FORMAT2(_reg, _shift, _width, _mux_flags,		\
 				 _pname1, _pname2);				\
 	static struct k230_clk k230_##_var = {					\
-		K230_CLK_CFG_FORMAT(#_var, _flags | CLK_IGNORE_UNUSED,		\
+		K230_CLK_CFG_FORMAT(#_var, (_flags) | CLK_IGNORE_UNUSED,	\
 				    K230_MUX),					\
 		.mux_cfg = &k230_##_var##_cfg,					\
 	}
 
 #define K230_CLK_MUX_FORMAT3(_var,						\
-			     _reg, _shift, _width,				\
-			     _flags, _mux_flags,				\
+			     _reg, _shift, _width, _flags, _mux_flags,		\
 			     _pname1, _pname2, _pname3)				\
 	static struct k230_clk_mux_cfg k230_##_var##_cfg =			\
 		K230_MUX_FORMAT3(_reg, _shift, _width, _mux_flags,		\
 				 _pname1, _pname2,				\
 				 _pname3);					\
 	static struct k230_clk k230_##_var = {					\
-		K230_CLK_CFG_FORMAT(#_var, _flags | CLK_IGNORE_UNUSED,		\
+		K230_CLK_CFG_FORMAT(#_var, (_flags) | CLK_IGNORE_UNUSED,	\
 				    K230_MUX),					\
 		.mux_cfg = &k230_##_var##_cfg,					\
 	}
@@ -193,7 +190,7 @@
 #define K230_CLK_FIXED_FACTOR_FORMAT(_var,					\
 				     _mul, _div, _flags,			\
 				     _pname)					\
- 	static struct k230_clk_fixed_factor_cfg k230_##_var##_cfg = {		\
+	static struct k230_clk_fixed_factor_cfg k230_##_var##_cfg = {		\
 		.mul = _mul,							\
 		.div = _div,							\
 	};									\
@@ -208,7 +205,7 @@
 #define K230_CLK_FIXED_RATE_FORMAT(_var,					\
 				   _fixed_rate,	_flags,				\
 				   _pname)					\
- 	static struct k230_clk_fixed_rate_cfg k230_##_var##_cfg = {		\
+	static struct k230_clk_fixed_rate_cfg k230_##_var##_cfg = {		\
 		.fixed_rate = _fixed_rate,					\
 	};									\
 	static struct k230_clk k230_##_var = {					\
@@ -383,19 +380,19 @@ static long k230_clk_round_rate_mul_div(struct clk_hw *hw, unsigned long rate,
 static unsigned long k230_clk_get_rate_mul_div(struct clk_hw *hw,
 					       unsigned long parent_rate);
 
-static struct clk_ops k230_clk_ops_mul = {
+static const struct clk_ops k230_clk_ops_mul = {
 	.set_rate	= k230_clk_set_rate_mul,
 	.round_rate	= k230_clk_round_rate_mul,
 	.recalc_rate	= k230_clk_get_rate_mul,
 };
 
-static struct clk_ops k230_clk_ops_div = {
+static const struct clk_ops k230_clk_ops_div = {
 	.set_rate	= k230_clk_set_rate_div,
 	.round_rate	= k230_clk_round_rate_div,
 	.recalc_rate	= k230_clk_get_rate_div,
 };
 
-static struct clk_ops k230_clk_ops_mul_div = {
+static const struct clk_ops k230_clk_ops_mul_div = {
 	.set_rate	= k230_clk_set_rate_mul_div,
 	.round_rate	= k230_clk_round_rate_mul_div,
 	.recalc_rate	= k230_clk_get_rate_mul_div,
@@ -612,8 +609,8 @@ K230_CLK_GATE_FORMAT(hs_sd1_card_gate,
 		     "hs_sd_card_src");
 
 K230_CLK_GATE_FORMAT(hs_sd_axi_src_gate,
-			  0x18, 9, 0, 0,
-			  "k230_pll2_div4");
+		     0x18, 9, 0, 0,
+		     "k230_pll2_div4");
 
 K230_CLK_RATE_FORMAT(hs_sd_axi_src_rate,
 		     1, 1, 0, 0,
@@ -655,15 +652,15 @@ K230_CLK_RATE_FORMAT(hs_usb_ref_50m_rate,
 		     "pll0_div16", 0);
 
 K230_CLK_GATE_FORMAT(hs_sd_timer_src_gate,
-			  0x18, 12, 0, 0,
-			  "osc24m");
+		     0x18, 12, 0, 0,
+		     "osc24m");
 
 K230_CLK_RATE_FORMAT(hs_sd_timer_src_rate,
-			  1, 1, 0, 0,
-			  24, 32, 15, 0x1F,
-			  0x1C, 31, div, 0x0,
-			  false, 0,
-			  "osc24m", 0);
+		     1, 1, 0, 0,
+		     24, 32, 15, 0x1F,
+		     0x1C, 31, div, 0x0,
+		     false, 0,
+		     "osc24m", 0);
 
 K230_CLK_GATE_FORMAT(hs_sd0_timer_gate,
 		     0x18, 16, 0, 0,
@@ -674,33 +671,33 @@ K230_CLK_GATE_FORMAT(hs_sd1_timer_gate,
 		     "hs_sd_timer_src_rate");
 
 K230_CLK_MUX_FORMAT2(hs_usb0_ref_mux,
-			  0x18, 23, 1,
-			  0, 0,
-			  "osc24m", "hs_usb_ref_50m_rate");
+		     0x18, 23, 1,
+		     0, 0,
+		     "osc24m", "hs_usb_ref_50m_rate");
 
 K230_CLK_GATE_FORMAT(hs_usb0_ref_gate,
-			  0x18, 21, CLK_IGNORE_UNUSED, 0,
-			  "hs_usb0_ref_mux");
+		     0x18, 21, CLK_IGNORE_UNUSED, 0,
+		     "hs_usb0_ref_mux");
 
 K230_CLK_MUX_FORMAT2(hs_usb1_ref_mux,
-			  0x18, 23, 1,
-			  0, 0,
-			  "osc24m", "hs_usb_ref_50m_rate");
+		     0x18, 23, 1,
+		     0, 0,
+		     "osc24m", "hs_usb_ref_50m_rate");
 
 K230_CLK_GATE_FORMAT(hs_usb1_ref_gate,
-			  0x18, 22, CLK_IGNORE_UNUSED, 0,
-			  "hs_usb1_ref_mux");
+		     0x18, 22, CLK_IGNORE_UNUSED, 0,
+		     "hs_usb1_ref_mux");
 
 K230_CLK_GATE_FORMAT(ls_apb_src_gate,
-			  0x24, 0, CLK_IS_CRITICAL, 0,
-			  "pll0_div4");
+		     0x24, 0, CLK_IS_CRITICAL, 0,
+		     "pll0_div4");
 
 K230_CLK_RATE_FORMAT(ls_apb_src_rate,
-			  1, 1, 0, 0,
-			  1, 8, 0, 0x7,
-			  0x30, 31, div, 0x0,
-			  false, 0,
-			  "ls_apb_src_gate", 0);
+		     1, 1, 0, 0,
+		     1, 8, 0, 0x7,
+		     0x30, 31, div, 0x0,
+		     false, 0,
+		     "ls_apb_src_gate", 0);
 
 K230_CLK_GATE_FORMAT(ls_uart0_apb_gate,
 		     0x24, 1, CLK_IS_CRITICAL, 0,
@@ -780,169 +777,169 @@ K230_CLK_GATE_FORMAT(ls_codec_apb_gate,
 		     "pll0_div4");
 
 K230_CLK_GATE_FORMAT(ls_i2c0_gate,
-			  0x24, 21, 0, 0,
-			  "pll0_div4");
+		     0x24, 21, 0, 0,
+		     "pll0_div4");
 
 K230_CLK_RATE_FORMAT(ls_i2c0_rate,
-			  1, 1, 0, 0,
-			  1, 8, 15, 0x7,
-			  0x2C, 31, div, 0x0,
-			  false, 0,
-			  "ls_i2c0_gate", 0);
+		     1, 1, 0, 0,
+		     1, 8, 15, 0x7,
+		     0x2C, 31, div, 0x0,
+		     false, 0,
+		     "ls_i2c0_gate", 0);
 
 K230_CLK_GATE_FORMAT(ls_i2c1_gate,
-			  0x24, 22, 0, 0,
-			  "pll0_div4");
+		     0x24, 22, 0, 0,
+		     "pll0_div4");
 
 K230_CLK_RATE_FORMAT(ls_i2c1_rate,
-			  1, 1, 0, 0,
-			  1, 8, 18, 0x7,
-			  0x2C, 31, div, 0x0,
-			  false, 0,
-			  "ls_i2c1_gate", 0);
+		     1, 1, 0, 0,
+		     1, 8, 18, 0x7,
+		     0x2C, 31, div, 0x0,
+		     false, 0,
+		     "ls_i2c1_gate", 0);
 
 K230_CLK_GATE_FORMAT(ls_i2c2_gate,
-			  0x24, 23, 0, 0,
-			  "pll0_div4");
+		     0x24, 23, 0, 0,
+		     "pll0_div4");
 
 K230_CLK_RATE_FORMAT(ls_i2c2_rate,
-			  1, 1, 0, 0,
-			  1, 8, 21, 0x7,
-			  0x2C, 31, div, 0x0,
-			  false, 0,
-			  "ls_i2c2_gate", 0);
+		     1, 1, 0, 0,
+		     1, 8, 21, 0x7,
+		     0x2C, 31, div, 0x0,
+		     false, 0,
+		     "ls_i2c2_gate", 0);
 
 K230_CLK_GATE_FORMAT(ls_i2c3_gate,
-			  0x24, 24, 0, 0,
-			  "pll0_div4");
+		     0x24, 24, 0, 0,
+		     "pll0_div4");
 
 K230_CLK_RATE_FORMAT(ls_i2c3_rate,
-			  1, 1, 0, 0,
-			  1, 8, 24, 0x7,
-			  0x2C, 31, div, 0x0,
-			  false, 0,
-			  "ls_i2c3_gate", 0);
+		     1, 1, 0, 0,
+		     1, 8, 24, 0x7,
+		     0x2C, 31, div, 0x0,
+		     false, 0,
+		     "ls_i2c3_gate", 0);
 
 K230_CLK_GATE_FORMAT(ls_i2c4_gate,
-			  0x24, 25, 0, 0,
-			  "pll0_div4");
+		     0x24, 25, 0, 0,
+		     "pll0_div4");
 
 K230_CLK_RATE_FORMAT(ls_i2c4_rate,
-			  1, 1, 0, 0,
-			  1, 8, 27, 0x7,
-			  0x2C, 31, div, 0x0,
-			  false, 0,
-			  "ls_i2c4_gate", 0);
+		     1, 1, 0, 0,
+		     1, 8, 27, 0x7,
+		     0x2C, 31, div, 0x0,
+		     false, 0,
+		     "ls_i2c4_gate", 0);
 
 K230_CLK_GATE_FORMAT(ls_codec_adc_gate,
-			  0x24, 29, 0, 0,
-			  "pll0_div4");
+		     0x24, 29, 0, 0,
+		     "pll0_div4");
 
 K230_CLK_RATE_FORMAT(ls_codec_adc_rate,
-			  0x10, 0x1B9, 14, 0x1FFF,
-			  0xC35, 0x3D09, 0, 0x3FFF,
-			  0x38, 31, mul_div, 0x0,
-			  false, 0,
-			  "ls_codec_adc_gate", 0);
+		     0x10, 0x1B9, 14, 0x1FFF,
+		     0xC35, 0x3D09, 0, 0x3FFF,
+		     0x38, 31, mul_div, 0x0,
+		     false, 0,
+		     "ls_codec_adc_gate", 0);
 
 K230_CLK_GATE_FORMAT(ls_codec_dac_gate,
-			  0x24, 30, 0, 0,
-			  "pll0_div4");
+		     0x24, 30, 0, 0,
+		     "pll0_div4");
 
 K230_CLK_RATE_FORMAT(ls_codec_dac_rate,
-			  0x10, 0x1B9, 14, 0x1FFF,
-			  0xC35, 0x3D09, 0, 0x3FFF,
-			  0x3C, 31, mul_div, 0x0,
-			  false, 0,
-			  "ls_codec_dac_gate", 0);
+		     0x10, 0x1B9, 14, 0x1FFF,
+		     0xC35, 0x3D09, 0, 0x3FFF,
+		     0x3C, 31, mul_div, 0x0,
+		     false, 0,
+		     "ls_codec_dac_gate", 0);
 
 K230_CLK_GATE_FORMAT(ls_audio_dev_gate,
-			  0x24, 28, 0, 0,
-			  "pll0_div4");
+		     0x24, 28, 0, 0,
+		     "pll0_div4");
 
 K230_CLK_RATE_FORMAT(ls_audio_dev_rate,
-			  0x4, 0x1B9, 16, 0x7FFF,
-			  0xC35, 0xF424, 0, 0xFFFF,
-			  0x34, 31, mul_div, 0x0,
-			  false, 0,
-			  "pll0_div4", 0);
+		     0x4, 0x1B9, 16, 0x7FFF,
+		     0xC35, 0xF424, 0, 0xFFFF,
+		     0x34, 31, mul_div, 0x0,
+		     false, 0,
+		     "pll0_div4", 0);
 
 K230_CLK_GATE_FORMAT(ls_pdm_gate,
-		  0x24, 31, 0, 0,
-		  "pll0_div4");
+		     0x24, 31, 0, 0,
+		     "pll0_div4");
 
 K230_CLK_RATE_FORMAT(ls_pdm_rate,
-		  0x2, 0x1B9, 0, 0xFFFF,
-		  0xC35, 0x1E848, 0, 0x1FFFF,
-		  0x40, 0, mul_div, 0x44,
-		  false, 0,
-		  "ls_pdm_gate", 0);
+		     0x2, 0x1B9, 0, 0xFFFF,
+		     0xC35, 0x1E848, 0, 0x1FFFF,
+		     0x40, 0, mul_div, 0x44,
+		     false, 0,
+		     "ls_pdm_gate", 0);
 
 K230_CLK_GATE_FORMAT(ls_adc_gate,
-			  0x24, 26, 0, 0,
-			  "pll0_div4");
+		     0x24, 26, 0, 0,
+		     "pll0_div4");
 
 K230_CLK_RATE_FORMAT(ls_adc_rate,
-			  1, 1, 0, 0,
-			  1, 1024, 3, 0x3FF,
-			  0x30, 31, div, 0x0,
-			  false, 0,
-			  "ls_adc_gate", 0);
+		     1, 1, 0, 0,
+		     1, 1024, 3, 0x3FF,
+		     0x30, 31, div, 0x0,
+		     false, 0,
+		     "ls_adc_gate", 0);
 
 K230_CLK_GATE_FORMAT(ls_uart0_gate,
-			  0x24, 16, CLK_IS_CRITICAL, 0,
-			  "pll0_div16");
+		     0x24, 16, CLK_IS_CRITICAL, 0,
+		     "pll0_div16");
 
 K230_CLK_RATE_FORMAT(ls_uart0_rate,
-			  1, 1, 0, 0,
-			  1, 8, 0, 0x7,
-			  0x2C, 31, div, 0x0,
-			  false, 0,
-			  "ls_uart0_gate", 0);
+		     1, 1, 0, 0,
+		     1, 8, 0, 0x7,
+		     0x2C, 31, div, 0x0,
+		     false, 0,
+		     "ls_uart0_gate", 0);
 
 K230_CLK_GATE_FORMAT(ls_uart1_gate,
-			  0x24, 17, CLK_IS_CRITICAL, 0,
-			  "pll0_div16");
+		     0x24, 17, CLK_IS_CRITICAL, 0,
+		     "pll0_div16");
 
 K230_CLK_RATE_FORMAT(ls_uart1_rate,
-			  1, 1, 0, 0,
-			  1, 8, 3, 0x7,
-			  0x2C, 31, div, 0x0,
-			  false, 0,
-			  "ls_uart1_gate", 0);
+		     1, 1, 0, 0,
+		     1, 8, 3, 0x7,
+		     0x2C, 31, div, 0x0,
+		     false, 0,
+		     "ls_uart1_gate", 0);
 
 K230_CLK_GATE_FORMAT(ls_uart2_gate,
-			  0x24, 18, CLK_IS_CRITICAL, 0,
-			  "pll0_div16");
+		     0x24, 18, CLK_IS_CRITICAL, 0,
+		     "pll0_div16");
 
 K230_CLK_RATE_FORMAT(ls_uart2_rate,
-			  1, 1, 0, 0,
-			  1, 8, 6, 0x7,
-			  0x2C, 31, div, 0x0,
-			  false, 0,
-			  "la_uart2_gate", 0);
+		     1, 1, 0, 0,
+		     1, 8, 6, 0x7,
+		     0x2C, 31, div, 0x0,
+		     false, 0,
+		     "la_uart2_gate", 0);
 
 K230_CLK_GATE_FORMAT(ls_uart3_gate,
-			  0x24, 19, CLK_IS_CRITICAL, 0,
-			  "pll0_div16");
+		     0x24, 19, CLK_IS_CRITICAL, 0,
+		     "pll0_div16");
 
 K230_CLK_RATE_FORMAT(ls_uart3_rate,
-			  1, 1, 0, 0,
-			  1, 8, 9, 0x7,
-			  0x2C, 31, div, 0x0,
-			  false, 0,
-			  "ls_uart3_gate", 0);
+		     1, 1, 0, 0,
+		     1, 8, 9, 0x7,
+		     0x2C, 31, div, 0x0,
+		     false, 0,
+		     "ls_uart3_gate", 0);
 
 K230_CLK_GATE_FORMAT(ls_uart4_gate,
-			  0x24, 20, CLK_IS_CRITICAL, 0,
-			  "pll0_div16");
+		     0x24, 20, CLK_IS_CRITICAL, 0,
+		     "pll0_div16");
 
 K230_CLK_RATE_FORMAT(ls_uart4_rate,
-			  1, 1, 0, 0,
-			  1, 8, 12, 0x7,
-			  0x2C, 31, div, 0x0,
-			  false, 0,
-			  "ls_uart4_gate", 0);
+		     1, 1, 0, 0,
+		     1, 8, 12, 0x7,
+		     0x2C, 31, div, 0x0,
+		     false, 0,
+		     "ls_uart4_gate", 0);
 
 K230_CLK_RATE_FORMAT(ls_jamlinkco_src_rate,
 		     1, 1, 0, 0,
@@ -968,15 +965,15 @@ K230_CLK_GATE_FORMAT(ls_jamlink3co_gate,
 		     "ls_jamlinkco_src_rate");
 
 K230_CLK_GATE_FORMAT(ls_gpio_debounce_gate,
-			  0x24, 27, 0, 0,
-			  "osc24m");
+		     0x24, 27, 0, 0,
+		     "osc24m");
 
 K230_CLK_RATE_FORMAT(ls_gpio_debounce_rate,
-			  1, 1, 0, 0,
-			  1, 1024, 13, 0x3FF,
-			  0x30, 31, div, 0x0,
-			  false, 0,
-			  "osc24m", 0);
+		     1, 1, 0, 0,
+		     1, 1024, 13, 0x3FF,
+		     0x30, 31, div, 0x0,
+		     false, 0,
+		     "osc24m", 0);
 
 K230_CLK_FIXED_RATE_FORMAT(sysctl_apb_src,
 			   100000000, 0, NULL);
@@ -1002,26 +999,26 @@ K230_CLK_GATE_FORMAT(sysctl_mailbox_apb_gate,
 		     "sysctl_apb_src");
 
 K230_CLK_GATE_FORMAT(sysctl_hdi_gate,
-			  0x50, 21, 0, 0,
-			  "pll0_div4");
+		     0x50, 21, 0, 0,
+		     "pll0_div4");
 
 K230_CLK_RATE_FORMAT(sysctl_hdi_rate,
-			  1, 1, 0, 0,
-			  1, 8, 28, 0x7,
-			  0x58, 31, div, 0x0,
-			  false, 0,
-			  "sysctl_hdi_gate", 0);
+		     1, 1, 0, 0,
+		     1, 8, 28, 0x7,
+		     0x58, 31, div, 0x0,
+		     false, 0,
+		     "sysctl_hdi_gate", 0);
 
 K230_CLK_GATE_FORMAT(sysctl_time_stamp_gate,
-			  0x50, 19, CLK_IS_CRITICAL, 0,
-			  "pll1_div4");
+		     0x50, 19, CLK_IS_CRITICAL, 0,
+		     "pll1_div4");
 
 K230_CLK_RATE_FORMAT(sysctl_time_stamp_rate,
-			  1, 1, 0, 0,
-			  1, 32, 15, 0x1F,
-			  0x58, 31, div, 0x0,
-			  false, 0,
-			  "sysctl_time_stamp_gate", 0);
+		     1, 1, 0, 0,
+		     1, 32, 15, 0x1F,
+		     0x58, 31, div, 0x0,
+		     false, 0,
+		     "sysctl_time_stamp_gate", 0);
 
 K230_CLK_RATE_FORMAT(sysctl_temp_sensor_rate,
 		     1, 1, 0, 0,
@@ -1031,26 +1028,26 @@ K230_CLK_RATE_FORMAT(sysctl_temp_sensor_rate,
 		     "osc24m", 0);
 
 K230_CLK_GATE_FORMAT(sysctl_wdt0_gate,
-			  0x50, 4, 0, 0,
-			  "osc24m");
+		     0x50, 4, 0, 0,
+		     "osc24m");
 
 K230_CLK_RATE_FORMAT(sysctl_wdt0_rate,
-			  1, 1, 0, 0,
-			  1, 64, 3, 0x3F,
-			  0x58, 31, div, 0x0,
-			  false, 0,
-			  "sysctl_wdt0_gate", 0);
+		     1, 1, 0, 0,
+		     1, 64, 3, 0x3F,
+		     0x58, 31, div, 0x0,
+		     false, 0,
+		     "sysctl_wdt0_gate", 0);
 
 K230_CLK_GATE_FORMAT(sysctl_wdt1_gate,
-			  0x50, 4, 0, 0,
-			  "osc24m");
+		     0x50, 4, 0, 0,
+		     "osc24m");
 
 K230_CLK_RATE_FORMAT(sysctl_wdt1_rate,
-			  1, 1, 0, 0,
-			  1, 64, 3, 0x3F,
-			  0x58, 31, div, 0x0,
-			  false, 0,
-			  "sysctl_wdt1_gate", 0);
+		     1, 1, 0, 0,
+		     1, 64, 3, 0x3F,
+		     0x58, 31, div, 0x0,
+		     false, 0,
+		     "sysctl_wdt1_gate", 0);
 
 K230_CLK_RATE_FORMAT(timer0_src_rate,
 		     1, 1, 0, 0,
@@ -1095,73 +1092,73 @@ K230_CLK_RATE_FORMAT(timer5_src_rate,
 		     "pll0_div16", 0);
 
 K230_CLK_MUX_FORMAT2(timer0_mux,
-			  0x50, 7, 1,
-			  0, 0,
-			  "timer0_src_rate", "timer-pulse-in");
+		     0x50, 7, 1,
+		     0, 0,
+		     "timer0_src_rate", "timer-pulse-in");
 
 K230_CLK_GATE_FORMAT(timer0_gate,
-			  0x50, 13, CLK_IGNORE_UNUSED, 0,
-			  "timer0_mux");
+		     0x50, 13, CLK_IGNORE_UNUSED, 0,
+		     "timer0_mux");
 
 K230_CLK_MUX_FORMAT2(timer1_mux,
-			  0x50, 8, 1,
-			  0, 0,
-			  "timer1_src_rate", "timer-pulse-in");
+		     0x50, 8, 1,
+		     0, 0,
+		     "timer1_src_rate", "timer-pulse-in");
 
 K230_CLK_GATE_FORMAT(timer1_gate,
-			  0x50, 14, CLK_IGNORE_UNUSED, 0,
-			  "timer1_mux");
+		     0x50, 14, CLK_IGNORE_UNUSED, 0,
+		     "timer1_mux");
 
 K230_CLK_MUX_FORMAT2(timer2_mux,
-			  0x50, 9, 1,
-			  0, 0,
-			  "timer2_src_rate", "timer-pulse-in");
+		     0x50, 9, 1,
+		     0, 0,
+		     "timer2_src_rate", "timer-pulse-in");
 
 K230_CLK_GATE_FORMAT(timer2_gate,
-			  0x50, 15, CLK_IGNORE_UNUSED, 0,
-			  "timer2_mux");
+		     0x50, 15, CLK_IGNORE_UNUSED, 0,
+		     "timer2_mux");
 
 K230_CLK_MUX_FORMAT2(timer3_mux,
-			  0x50, 10, 1,
-			  0, 0,
-			  "timer3_src_rate", "timer-pulse-in");
+		     0x50, 10, 1,
+		     0, 0,
+		     "timer3_src_rate", "timer-pulse-in");
 
 K230_CLK_GATE_FORMAT(timer3_gate,
-			  0x50, 16, CLK_IGNORE_UNUSED, 0,
-			  "timer3_mux");
+		     0x50, 16, CLK_IGNORE_UNUSED, 0,
+		     "timer3_mux");
 
 K230_CLK_MUX_FORMAT2(timer4_mux,
-			  0x50, 11, 1,
-			  0, 0,
-			  "timer4_src_rate", "timer-pulse-in");
+		     0x50, 11, 1,
+		     0, 0,
+		     "timer4_src_rate", "timer-pulse-in");
 
 K230_CLK_GATE_FORMAT(timer4_gate,
-			  0x50, 17, CLK_IGNORE_UNUSED, 0,
-			  "timer4_mux");
+		     0x50, 17, CLK_IGNORE_UNUSED, 0,
+		     "timer4_mux");
 
 K230_CLK_MUX_FORMAT2(timer5_mux,
-			  0x50, 12, 1,
-			  0, 0,
-			  "timer5_src_rate", "timer-pulse-in");
+		     0x50, 12, 1,
+		     0, 0,
+		     "timer5_src_rate", "timer-pulse-in");
 
 K230_CLK_GATE_FORMAT(timer5_gate,
-			  0x50, 18, CLK_IGNORE_UNUSED, 0,
-			  "timer5_mux");
+		     0x50, 18, CLK_IGNORE_UNUSED, 0,
+		     "timer5_mux");
 
 K230_CLK_GATE_FORMAT(shrm_apb_gate,
-			  0x5C, 0, 0, 0,
-			  "pll0_div4");
+		     0x5C, 0, 0, 0,
+		     "pll0_div4");
 
 K230_CLK_RATE_FORMAT(shrm_apb_rate,
-			  1, 1, 0, 0,
-			  1, 8, 18, 0x7,
-			  0x5C, 31, div, 0x0,
-			  false, 0,
-			  "shrm_apb_gate", 0);
+		     1, 1, 0, 0,
+		     1, 8, 18, 0x7,
+		     0x5C, 31, div, 0x0,
+		     false, 0,
+		     "shrm_apb_gate", 0);
 
 K230_CLK_GATE_FORMAT(shrm_sram_gate,
-			  0x5c, 10, CLK_IGNORE_UNUSED, 0,
-			  "shrm_sram_mux");
+		     0x5c, 10, CLK_IGNORE_UNUSED, 0,
+		     "shrm_sram_mux");
 
 K230_CLK_FIXED_FACTOR_FORMAT(shrm_sram_div2,
 			     1, 2, 0, "shrm_sram_gate");
@@ -1179,9 +1176,9 @@ K230_CLK_GATE_FORMAT(shrm_nonai2d_axi_gate,
 		     "shrm_axi_gate");
 
 K230_CLK_MUX_FORMAT2(shrm_sram_mux,
-			  0x50, 14, 1,
-			  0, 0,
-			  "pll3_div2", "pll0_div2");
+		     0x50, 14, 1,
+		     0, 0,
+		     "pll3_div2", "pll0_div2");
 
 K230_CLK_GATE_FORMAT(shrm_decompress_axi_gate,
 		     0x5C, 7, CLK_IGNORE_UNUSED, 0,
@@ -1196,105 +1193,105 @@ K230_CLK_GATE_FORMAT(shrm_pdma_axi_gate,
 		     "shrm_axi_gate");
 
 K230_CLK_MUX_FORMAT3(ddrc_src_mux,
-		 0x60, 0, 2,
-		 0, 0,
-		 "pll0_div2", "pll0_div3", "pll2_div4");
+		     0x60, 0, 2,
+		     0, 0,
+		     "pll0_div2", "pll0_div3", "pll2_div4");
 
 K230_CLK_GATE_FORMAT(ddrc_src_gate,
-		 0x60, 2, CLK_IGNORE_UNUSED, 0,
-		 "ddrc_src_mux");
+		     0x60, 2, CLK_IGNORE_UNUSED, 0,
+		     "ddrc_src_mux");
 
 K230_CLK_RATE_FORMAT(ddrc_src_rate,
-		 1, 1, 0, 0,
-		 1, 16, 10, 0xF,
-		 0x60, 31, div, 0x0,
-		 false, 0,
-		 "ddrc_src_gate", 0);
+		     1, 1, 0, 0,
+		     1, 16, 10, 0xF,
+		     0x60, 31, div, 0x0,
+		     false, 0,
+		     "ddrc_src_gate", 0);
 
 K230_CLK_GATE_FORMAT(ddrc_bypass_gate,
 		     0x60, 8, 0, 0,
 		     "pll2_div4");
 
 K230_CLK_GATE_FORMAT(ddrc_apb_gate,
-			  0x60, 9, 0, 0,
-			  "pll0_div4");
+		     0x60, 9, 0, 0,
+		     "pll0_div4");
 
 K230_CLK_RATE_FORMAT(ddrc_apb_rate,
-			  1, 1, 0, 0,
-			  1, 16, 14, 0xF,
-			  0x60, 31, div, 0x0,
-			  false, 0,
-			  "pll0_div4", 0);
+		     1, 1, 0, 0,
+		     1, 16, 14, 0xF,
+		     0x60, 31, div, 0x0,
+		     false, 0,
+		     "pll0_div4", 0);
 
 K230_CLK_GATE_FORMAT(display_ahb_gate,
-			  0x74, 0, 0, 0,
-			  "pll0_div4");
+		     0x74, 0, 0, 0,
+		     "pll0_div4");
 
 K230_CLK_RATE_FORMAT(display_ahb_rate,
-			  1, 1, 0, 0,
-			  1, 8, 0, 0x7,
-			  0x78, 31, div, 0x0,
-			  false, 0,
-			  "pll0_div4", 0);
+		     1, 1, 0, 0,
+		     1, 8, 0, 0x7,
+		     0x78, 31, div, 0x0,
+		     false, 0,
+		     "pll0_div4", 0);
 
 K230_CLK_GATE_FORMAT(display_axi_gate,
 		     0x74, 1, 0, 0,
 		     "pll0_div4");
 
 K230_CLK_RATE_FORMAT(display_clkext_rate,
-			  1, 1, 0, 0,
-			  1, 16, 16, 0xF,
-			  0x78, 31, div, 0x0,
-			  false, 0,
-			  "display_axi_gate", 0);
+		     1, 1, 0, 0,
+		     1, 16, 16, 0xF,
+		     0x78, 31, div, 0x0,
+		     false, 0,
+		     "display_axi_gate", 0);
 
 K230_CLK_GATE_FORMAT(display_gpu_gate,
-			  0x74, 6, 0, 0,
-			  "pll0_div3");
+		     0x74, 6, 0, 0,
+		     "pll0_div3");
 
 K230_CLK_RATE_FORMAT(display_gpu_rate,
-			  1, 1, 0, 0,
-			  1, 16, 20, 0xF,
-			  0x78, 31, div, 0x0,
-			  false, 0,
-			  "display_gpu_gate", 0);
+		     1, 1, 0, 0,
+		     1, 16, 20, 0xF,
+		     0x78, 31, div, 0x0,
+		     false, 0,
+		     "display_gpu_gate", 0);
 
 K230_CLK_GATE_FORMAT(display_dpip_gate,
-			  0x74, 2, 0, 0,
-			  "pll1_div4");
+		     0x74, 2, 0, 0,
+		     "pll1_div4");
 
 K230_CLK_RATE_FORMAT(display_dpip_rate,
-			  1, 1, 0, 0,
-			  1, 256, 3, 0xFF,
-			  0x78, 31, div, 0x0,
-			  false, 0,
-			  "display_dpip_gate", 0);
+		     1, 1, 0, 0,
+		     1, 256, 3, 0xFF,
+		     0x78, 31, div, 0x0,
+		     false, 0,
+		     "display_dpip_gate", 0);
 
 K230_CLK_GATE_FORMAT(display_cfg_gate,
-			  0x74, 4, 0, 0,
-			  "pll1_div4");
+		     0x74, 4, 0, 0,
+		     "pll1_div4");
 
 K230_CLK_RATE_FORMAT(display_cfg_rate,
-			  1, 1, 0, 0,
-			  1, 32, 11, 0x1F,
-			  0x78, 31, div, 0x0,
-			  false, 0,
-			  "display_cfg_gate", 0);
+		     1, 1, 0, 0,
+		     1, 32, 11, 0x1F,
+		     0x78, 31, div, 0x0,
+		     false, 0,
+		     "display_cfg_gate", 0);
 
 K230_CLK_GATE_FORMAT(display_ref_gate,
 		     0x74, 3, 0, 0,
 		     "osc24m");
 
 K230_CLK_GATE_FORMAT(vpu_src_gate,
-			  0xC, 0, 0, 0,
-			  "pll0_div2");
+		     0xC, 0, 0, 0,
+		     "pll0_div2");
 
 K230_CLK_RATE_FORMAT(vpu_src_rate,
-			  1, 16, 0, 0,
-			  16, 16, 1, 0xF,
-			  0xC, 31, mul, 0x0,
-			  false, 0,
-			  "vpu_src_gate", 0);
+		     1, 16, 0, 0,
+		     16, 16, 1, 0xF,
+		     0xC, 31, mul, 0x0,
+		     false, 0,
+		     "vpu_src_gate", 0);
 
 K230_CLK_RATE_FORMAT(vpu_axi_src_rate,
 		     1, 1, 0, 0,
@@ -1312,160 +1309,160 @@ K230_CLK_GATE_FORMAT(vpu_ddrcp2_gate,
 		     "vpu_axi_src_rate");
 
 K230_CLK_GATE_FORMAT(vpu_cfg_gate,
-			  0xC, 10, 0, 0,
-			  "pll0_div4");
+		     0xC, 10, 0, 0,
+		     "pll0_div4");
 
 K230_CLK_RATE_FORMAT(vpu_cfg_rate,
-			  1, 1, 0, 0,
-			  1, 16, 11, 0xF,
-			  0xC, 31, div, 0x0,
-			  false, 0,
-			  "vpu_cfg_gate", 0);
+		     1, 1, 0, 0,
+		     1, 16, 11, 0xF,
+		     0xC, 31, div, 0x0,
+		     false, 0,
+		     "vpu_cfg_gate", 0);
 
 K230_CLK_GATE_FORMAT(sec_apb_gate,
-			  0x80, 0, 0, 0,
-			  "pll0_div4");
+		     0x80, 0, 0, 0,
+		     "pll0_div4");
 
 K230_CLK_RATE_FORMAT(sec_apb_rate,
-			  1, 1, 0, 0,
-			  1, 8, 1, 0x7,
-			  0x80, 31, div, 0x0,
-			  false, 0,
-			  "sec_apb_gate", 0);
+		     1, 1, 0, 0,
+		     1, 8, 1, 0x7,
+		     0x80, 31, div, 0x0,
+		     false, 0,
+		     "sec_apb_gate", 0);
 
 K230_CLK_GATE_FORMAT(sec_fix_gate,
-			  0x80, 5, 0, 0,
-			  "pll1_div4");
+		     0x80, 5, 0, 0,
+		     "pll1_div4");
 
 K230_CLK_RATE_FORMAT(sec_fix_rate,
-			  1, 1, 0, 0,
-			  1, 32, 6, 0x1F,
-			  0x80, 31, div, 0x0,
-			  false, 0,
-			  "sec_fix_gate", 0);
+		     1, 1, 0, 0,
+		     1, 32, 6, 0x1F,
+		     0x80, 31, div, 0x0,
+		     false, 0,
+		     "sec_fix_gate", 0);
 
 K230_CLK_GATE_FORMAT(sec_axi_gate,
-			  0x80, 4, 0, 0,
-			  "pll1_div4");
+		     0x80, 4, 0, 0,
+		     "pll1_div4");
 
 K230_CLK_RATE_FORMAT(sec_axi_rate,
-			  1, 1, 0, 0,
-			  1, 8, 11, 0x3,
-			  0x80, 31, div, 0,
-			  false, 0,
-			  "sec_axi_gate", 0);
+		     1, 1, 0, 0,
+		     1, 8, 11, 0x3,
+		     0x80, 31, div, 0,
+		     false, 0,
+		     "sec_axi_gate", 0);
 
 K230_CLK_GATE_FORMAT(usb_480m_gate,
-			  0x100, 0, 0, 0,
-			  "pll1");
+		     0x100, 0, 0, 0,
+		     "pll1");
 
 K230_CLK_RATE_FORMAT(usb_480m_rate,
-			  1, 1, 0, 0,
-			  1, 8, 1, 0x7,
-			  0x100, 31, div, 0,
-			  false, 0,
-			  "usb_480m_gate", 0);
+		     1, 1, 0, 0,
+		     1, 8, 1, 0x7,
+		     0x100, 31, div, 0,
+		     false, 0,
+		     "usb_480m_gate", 0);
 
 K230_CLK_GATE_FORMAT(usb_100m_gate,
-			  0x100, 0, 0, 0,
-			  "pll0_div4");
+		     0x100, 0, 0, 0,
+		     "pll0_div4");
 
 K230_CLK_RATE_FORMAT(usb_100m_rate,
-			  1, 1, 0, 0,
-			  1, 8, 4, 0x7,
-			  0x100, 31, div, 0,
-			  false, 0,
-			  "usb_100m_gate", 0);
+		     1, 1, 0, 0,
+		     1, 8, 4, 0x7,
+		     0x100, 31, div, 0,
+		     false, 0,
+		     "usb_100m_gate", 0);
 
 K230_CLK_GATE_FORMAT(dphy_dft_gate,
-			  0x100, 0, 0, 0,
-			  "pll0");
+		     0x100, 0, 0, 0,
+		     "pll0");
 
 K230_CLK_RATE_FORMAT(dphy_dft_rate,
-			  1, 1, 0, 0,
-			  1, 16, 1, 0xF,
-			  0x104, 31, div, 0,
-			  false, 0,
-			  "dphy_dft_gate", 0);
+		     1, 1, 0, 0,
+		     1, 16, 1, 0xF,
+		     0x104, 31, div, 0,
+		     false, 0,
+		     "dphy_dft_gate", 0);
 
 K230_CLK_GATE_FORMAT(spi2axi_gate,
-			  0x108, 0, 0, 0,
-			  "pll0_div4");
+		     0x108, 0, 0, 0,
+		     "pll0_div4");
 
 K230_CLK_RATE_FORMAT(spi2axi_rate,
-			  1, 1, 0, 0,
-			  1, 8, 1, 0x7,
-			  0x108, 31, div, 0x0,
-			  false, 0,
-			  "pll0_div4", 0);
+		     1, 1, 0, 0,
+		     1, 8, 1, 0x7,
+		     0x108, 31, div, 0x0,
+		     false, 0,
+		     "pll0_div4", 0);
 
 K230_CLK_MUX_FORMAT2(ai_src_mux,
-		 0x8, 2, 1,
-		 0, 0,
-		 "pll0_div2", "pll3_div2");
+		     0x8, 2, 1,
+		     0, 0,
+		     "pll0_div2", "pll3_div2");
 
 K230_CLK_GATE_FORMAT(ai_src_gate,
-		 0x8, 0, CLK_IGNORE_UNUSED, 0,
-		 "ai_src_mux");
+		     0x8, 0, CLK_IGNORE_UNUSED, 0,
+		     "ai_src_mux");
 
 K230_CLK_RATE_FORMAT(ai_src_rate,
-		 1, 1, 0, 0,
-		 1, 8, 3, 0x7,
-		 0x8, 31, div, 0x0,
-		 false, 0,
-		 "ai_src_gate", 0);
+		     1, 1, 0, 0,
+		     1, 8, 3, 0x7,
+		     0x8, 31, div, 0x0,
+		     false, 0,
+		     "ai_src_gate", 0);
 
 K230_CLK_GATE_FORMAT(ai_axi_gate,
 		     0x8, 10, 0, 0,
 		     "ai_src");
 
 K230_CLK_MUX_FORMAT3(camera0_mux,
-		 0x6C, 3, 2,
-		 0, 0,
-		 "pll1_div3", "pll1_div4", "pll0_div4");
+		     0x6C, 3, 2,
+		     0, 0,
+		     "pll1_div3", "pll1_div4", "pll0_div4");
 
 K230_CLK_GATE_FORMAT(camera0_gate,
-		 0x6C, 0, CLK_IGNORE_UNUSED, 0,
-		 "camera0_mux");
+		     0x6C, 0, CLK_IGNORE_UNUSED, 0,
+		     "camera0_mux");
 
 K230_CLK_RATE_FORMAT(camera0_rate,
-		 1, 1, 0, 0,
-		 1, 32, 5, 0x1f,
-		 0x6C, 31, div, 0x0,
-		 false, 0,
-		 "camera0_gate", 0);
+		     1, 1, 0, 0,
+		     1, 32, 5, 0x1f,
+		     0x6C, 31, div, 0x0,
+		     false, 0,
+		     "camera0_gate", 0);
 
 K230_CLK_MUX_FORMAT3(camera1_mux,
-		 0x6C, 10, 2,
-		 0, 0,
-		 "pll1_div3", "pll1_div4", "pll0_div4");
+		     0x6C, 10, 2,
+		     0, 0,
+		     "pll1_div3", "pll1_div4", "pll0_div4");
 
 K230_CLK_GATE_FORMAT(camera1_gate,
-		 0x6C, 1, CLK_IGNORE_UNUSED, 0,
-		 "camera1_mux");
+		     0x6C, 1, CLK_IGNORE_UNUSED, 0,
+		     "camera1_mux");
 
 K230_CLK_RATE_FORMAT(camera1_rate,
-		 1, 1, 0, 0,
-		 1, 32, 12, 0x1f,
-		 0x6C, 31, div, 0x0,
-		 false, 0,
-		 "camera1_gate", 0);
+		     1, 1, 0, 0,
+		     1, 32, 12, 0x1f,
+		     0x6C, 31, div, 0x0,
+		     false, 0,
+		     "camera1_gate", 0);
 
 K230_CLK_MUX_FORMAT3(camera2_mux,
-		 0x6C, 17, 2,
-		 0, 0,
-		 "pll1_div3", "pll1_div4", "pll0_div4");
+		     0x6C, 17, 2,
+		     0, 0,
+		     "pll1_div3", "pll1_div4", "pll0_div4");
 
 K230_CLK_GATE_FORMAT(camera2_gate,
-		 0x6C, 2, CLK_IGNORE_UNUSED, 0,
-		 "camera2_mux");
+		     0x6C, 2, CLK_IGNORE_UNUSED, 0,
+		     "camera2_mux");
 
 K230_CLK_RATE_FORMAT(camera2_rate,
-		 1, 1, 0, 0,
-		 1, 32, 19, 0x1f,
-		 0x6C, 31, div, 0x0,
-		 false, 0,
-		 "camera2_gate", 0);
+		     1, 1, 0, 0,
+		     1, 32, 19, 0x1f,
+		     0x6C, 31, div, 0x0,
+		     false, 0,
+		     "camera2_gate", 0);
 
 static struct k230_clk *k230_clks[] = {
 	[K230_CPU0_SRC_GATE]		=	K230_FMT(cpu0_src_gate),
@@ -1849,7 +1846,7 @@ static int k230_register_pll_divs(struct platform_device *pdev, struct k230_sysc
 }
 
 static unsigned long k230_clk_get_rate_mul(struct clk_hw *hw,
-				       unsigned long parent_rate)
+					   unsigned long parent_rate)
 {
 	struct k230_clk_rate_cfg *rate_cfg = to_k230_rate_cfg(hw);
 	struct k230_sysclk *ksc = rate_cfg->ksc;
@@ -1869,7 +1866,7 @@ static unsigned long k230_clk_get_rate_mul(struct clk_hw *hw,
 }
 
 static unsigned long k230_clk_get_rate_div(struct clk_hw *hw,
-				       unsigned long parent_rate)
+					   unsigned long parent_rate)
 {
 	struct k230_clk_rate_cfg *rate_cfg = to_k230_rate_cfg(hw);
 	struct k230_sysclk *ksc = rate_cfg->ksc;
@@ -1889,7 +1886,7 @@ static unsigned long k230_clk_get_rate_div(struct clk_hw *hw,
 }
 
 static unsigned long k230_clk_get_rate_mul_div(struct clk_hw *hw,
-				       unsigned long parent_rate)
+					       unsigned long parent_rate)
 {
 	struct k230_clk_rate_cfg *rate_cfg = to_k230_rate_cfg(hw);
 	struct k230_sysclk *ksc = rate_cfg->ksc;
@@ -1945,8 +1942,8 @@ static int k230_clk_find_approximate_mul(u32 mul_min, u32 mul_max,
 
 static int k230_clk_find_approximate_div(u32 mul_min, u32 mul_max,
 					 u32 div_min, u32 div_max,
-				     	 unsigned long rate, unsigned long parent_rate,
-				     	 u32 *div, u32 *mul)
+					 unsigned long rate, unsigned long parent_rate,
+					 u32 *div, u32 *mul)
 {
 	long abs_min;
 	long abs_current;
@@ -2077,21 +2074,21 @@ static int k230_clk_find_approximate_mul_div(struct k230_clk_rate_cfg *rate_cfg,
 }
 
 static long k230_clk_round_rate_mul(struct clk_hw *hw, unsigned long rate,
-				unsigned long *parent_rate)
+				    unsigned long *parent_rate)
 {
 	struct k230_clk_rate_cfg *rate_cfg = to_k230_rate_cfg(hw);
 	u32 div, mul;
 
 	if (k230_clk_find_approximate_mul(rate_cfg->rate_mul_min, rate_cfg->rate_mul_max,
 					  rate_cfg->rate_div_min, rate_cfg->rate_div_max,
-				      	  rate, *parent_rate, &div, &mul))
+					  rate, *parent_rate, &div, &mul))
 		return 0;
 
 	return mul_u64_u32_div(*parent_rate, mul, div);
 }
 
 static long k230_clk_round_rate_div(struct clk_hw *hw, unsigned long rate,
-				unsigned long *parent_rate)
+				    unsigned long *parent_rate)
 {
 	struct k230_clk_rate_cfg *rate_cfg = to_k230_rate_cfg(hw);
 	u32 div, mul;
@@ -2105,22 +2102,22 @@ static long k230_clk_round_rate_div(struct clk_hw *hw, unsigned long rate,
 }
 
 static long k230_clk_round_rate_mul_div(struct clk_hw *hw, unsigned long rate,
-				unsigned long *parent_rate)
+					unsigned long *parent_rate)
 {
 	struct k230_clk_rate_cfg *rate_cfg = to_k230_rate_cfg(hw);
 	u32 div, mul;
 
 	if (k230_clk_find_approximate_mul_div(rate_cfg,
 					      rate_cfg->rate_mul_min, rate_cfg->rate_mul_max,
-				      	      rate_cfg->rate_div_min, rate_cfg->rate_div_max,
-				      	      rate, *parent_rate, &div, &mul))
+					      rate_cfg->rate_div_min, rate_cfg->rate_div_max,
+					      rate, *parent_rate, &div, &mul))
 		return 0;
 
 	return mul_u64_u32_div(*parent_rate, mul, div);
 }
 
 static int k230_clk_set_rate_mul(struct clk_hw *hw, unsigned long rate,
-			     unsigned long parent_rate)
+				 unsigned long parent_rate)
 {
 	struct k230_clk_rate_cfg *rate_cfg = to_k230_rate_cfg(hw);
 	struct k230_sysclk *ksc = rate_cfg->ksc;
@@ -2134,10 +2131,11 @@ static int k230_clk_set_rate_mul(struct clk_hw *hw, unsigned long rate,
 	if (rate_cfg->read_only)
 		return 0;
 
-	if (k230_clk_find_approximate_mul(
-				      rate_cfg->rate_mul_min, rate_cfg->rate_mul_max,
-				      rate_cfg->rate_div_min, rate_cfg->rate_div_max,
-				      rate, parent_rate, &div, &mul))
+	if (k230_clk_find_approximate_mul(rate_cfg->rate_mul_min,
+					  rate_cfg->rate_mul_max,
+					  rate_cfg->rate_div_min,
+					  rate_cfg->rate_div_max, rate, parent_rate,
+					  &div, &mul))
 		return -EINVAL;
 
 	guard(spinlock)(&ksc->clk_lock);
@@ -2152,7 +2150,7 @@ static int k230_clk_set_rate_mul(struct clk_hw *hw, unsigned long rate,
 }
 
 static int k230_clk_set_rate_div(struct clk_hw *hw, unsigned long rate,
-			     unsigned long parent_rate)
+				 unsigned long parent_rate)
 {
 	struct k230_clk_rate_cfg *rate_cfg = to_k230_rate_cfg(hw);
 	struct k230_sysclk *ksc = rate_cfg->ksc;
@@ -2167,8 +2165,8 @@ static int k230_clk_set_rate_div(struct clk_hw *hw, unsigned long rate,
 		return 0;
 
 	if (k230_clk_find_approximate_div(rate_cfg->rate_mul_min, rate_cfg->rate_mul_max,
-				      rate_cfg->rate_div_min, rate_cfg->rate_div_max,
-				      rate, parent_rate, &div, &mul))
+					  rate_cfg->rate_div_min, rate_cfg->rate_div_max,
+					  rate, parent_rate, &div, &mul))
 		return -EINVAL;
 
 	guard(spinlock)(&ksc->clk_lock);
@@ -2184,7 +2182,7 @@ static int k230_clk_set_rate_div(struct clk_hw *hw, unsigned long rate,
 }
 
 static int k230_clk_set_rate_mul_div(struct clk_hw *hw, unsigned long rate,
-			     unsigned long parent_rate)
+				     unsigned long parent_rate)
 {
 	struct k230_clk_rate_cfg *rate_cfg = to_k230_rate_cfg(hw);
 	struct k230_sysclk *ksc = rate_cfg->ksc;
@@ -2246,9 +2244,9 @@ static int k230_register_clks(struct platform_device *pdev,
 		case K230_FIXED_RATE:
 			fixed_rate = clk->fixed_rate_cfg->fixed_rate;
 			hw = devm_clk_hw_register_fixed_rate(&pdev->dev, clk->name,
-								  clk->parent[0].name,
-								  clk->flags,
-								  fixed_rate);
+							     clk->parent[0].name,
+							     clk->flags,
+							     fixed_rate);
 			if (IS_ERR(hw))
 				return PTR_ERR(hw);
 
