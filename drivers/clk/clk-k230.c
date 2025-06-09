@@ -30,8 +30,10 @@
 #define K230_PLL_GATE_REG_OFFSET		0x08
 #define K230_PLL_LOCK_REG_OFFSET		0x0C
 
-/* PLL lock register bits.  */
+/* PLL lock register  */
 #define K230_PLL_LOCK_STATUS_MASK		BIT(0)
+#define K230_PLL_LOCK_TIME_DELAY		400
+#define K230_PLL_LOCK_TIMEOUT			0
 
 /* K230 CLK registers offset */
 #define K230_CLK_AUDIO_CLKDIV_OFFSET		0x34
@@ -380,18 +382,21 @@ static long k230_clk_round_rate_mul_div(struct clk_hw *hw, unsigned long rate,
 static unsigned long k230_clk_get_rate_mul_div(struct clk_hw *hw,
 					       unsigned long parent_rate);
 
+/* clk_ops for clocks whose rate is determined by a configurable multiplier */
 static const struct clk_ops k230_clk_ops_mul = {
 	.set_rate	= k230_clk_set_rate_mul,
 	.round_rate	= k230_clk_round_rate_mul,
 	.recalc_rate	= k230_clk_get_rate_mul,
 };
 
+/* clk_ops for clocks whose rate is determined by a configurable divider */
 static const struct clk_ops k230_clk_ops_div = {
 	.set_rate	= k230_clk_set_rate_div,
 	.round_rate	= k230_clk_round_rate_div,
 	.recalc_rate	= k230_clk_get_rate_div,
 };
 
+/* clk_ops for clocks whose rate is determined by both a multiplier and a divider */
 static const struct clk_ops k230_clk_ops_mul_div = {
 	.set_rate	= k230_clk_set_rate_mul_div,
 	.round_rate	= k230_clk_round_rate_mul_div,
@@ -1689,7 +1694,7 @@ static int k230_pll_prepare(struct clk_hw *hw)
 	/* wait for PLL lock until it reaches lock status */
 	return readl_poll_timeout(K230_PLLX_LOCK_ADDR(ksc->pll_regs, pll->id), reg,
 				  reg & K230_PLL_LOCK_STATUS_MASK,
-				  400, 0);
+				  K230_PLL_LOCK_TIME_DELAY, K230_PLL_LOCK_TIMEOUT);
 }
 
 static inline bool k230_pll_hw_is_enabled(struct k230_pll *pll)
