@@ -60,11 +60,6 @@
 #define K230_PLLX_LOCK_ADDR(base, idx)						\
 	(K230_PLL_LOCK_REG_OFFSET + K230_PLLX_BASE(base, idx))
 
-#define K230_CLK_OPS_RATE							\
-	.set_rate	= k230_clk_set_rate,					\
-	.round_rate	= k230_clk_round_rate,					\
-	.recalc_rate	= k230_clk_get_rate
-
 #define K230_GATE_FORMAT(_reg, _bit, _gate_flags)				\
 {										\
 	.gate_reg_off = (_reg),							\
@@ -1764,7 +1759,7 @@ static unsigned long k230_pll_get_rate(struct clk_hw *hw, unsigned long parent_r
 
 	reg = readl(K230_PLLX_LOCK_ADDR(ksc->pll_regs, pll->id));
 	if (!(reg & (K230_PLL_LOCK_STATUS_MASK))) {
-		dev_err(&ksc->pdev->dev, "%s is unlock.\n", clk_hw_get_name(hw));
+		dev_err(&ksc->pdev->dev, "%s is unlocked.\n", clk_hw_get_name(hw));
 		return 0;
 	}
 
@@ -2192,7 +2187,7 @@ static int k230_clk_set_rate_mul_div(struct clk_hw *hw, unsigned long rate,
 {
 	struct k230_clk_rate_cfg *rate_cfg = to_k230_rate_cfg(hw);
 	struct k230_sysclk *ksc = rate_cfg->ksc;
-	u32 div, mul, reg, reg_c, reg_off;
+	u32 div, mul, reg, reg_c;
 
 	if (rate > parent_rate) {
 		dev_err(&ksc->pdev->dev, "rate should be smaller than parent rate\n");
@@ -2210,7 +2205,7 @@ static int k230_clk_set_rate_mul_div(struct clk_hw *hw, unsigned long rate,
 
 	guard(spinlock)(&ksc->clk_lock);
 
-	reg = readl(ksc->regs + reg_off);
+	reg = readl(ksc->regs + rate_cfg->rate_reg_off);
 	reg &= ~((rate_cfg->rate_div_mask) << (rate_cfg->rate_div_shift));
 	if (!rate_cfg->rate_reg_off2) {
 		reg |= (mul & rate_cfg->rate_mul_mask) << (rate_cfg->rate_mul_shift);
