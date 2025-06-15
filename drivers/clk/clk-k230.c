@@ -113,7 +113,7 @@
 			     _pvar1, _pvar2)					\
 	static const struct clk_hw *k230_##_var##_phw[] = {			\
 		&k230_##_pvar1.clk.hw,						\
-		&k230_##_pvar1.clk.hw,						\
+		&k230_##_pvar2.clk.hw,						\
 	};									\
 	static struct k230_clk_mux k230_##_var = {				\
 		.reg_off = _reg,						\
@@ -265,6 +265,7 @@
 struct k230_pll_self {
 	struct clk_hw	hw;
 	void __iomem	*reg;
+	/* ensures mutual exclusion for concurrent register access. */
 	spinlock_t	*lock;
 	int id;
 };
@@ -288,6 +289,7 @@ struct k230_clk_rate_self {
 	u32		div_max;
 	u32		div_shift;
 	u32		div_mask;
+	/* ensures mutual exclusion for concurrent register access. */
 	spinlock_t	*lock;
 };
 
@@ -390,6 +392,7 @@ struct k230_pll *k230_plls[] = {
 	K230_FMT(pll2),
 	K230_FMT(pll3),
 };
+
 #define K230_PLL_NUM ARRAY_SIZE(k230_plls)
 
 K230_CLK_PLL_DIV_FORMAT(pll0_div2, 2, 0, pll0);
@@ -421,6 +424,7 @@ struct k230_clk_fixed_factor *k230_pll_divs[] = {
 	K230_FMT(pll3_div3),
 	K230_FMT(pll3_div4),
 };
+
 #define K230_PLL_DIV_NUM ARRAY_SIZE(k230_pll_divs)
 
 K230_CLK_GATE_FORMAT(cpu0_src_gate,
@@ -513,8 +517,8 @@ K230_CLK_RATE_FORMAT(cpu1_apb_rate,
 		     cpu1_apb_gate);
 
 K230_CLK_GATE_FORMAT_PDATA(pmu_apb_gate,
-		     0x10, 0, 0, 0,
-		     0);
+			   0x10, 0, 0, 0,
+			   0);
 
 K230_CLK_RATE_FORMAT(hs_hclk_high_src_rate,
 		     1, 1, 0, 0,
@@ -2094,7 +2098,7 @@ static int k230_register_clks(struct platform_device *pdev,
 	struct device *dev = &pdev->dev;
 
 	ret = k230_register_clk_gate(K230_CPU0_SRC_GATE, K230_FMT(cpu0_src_gate),
-				     dev, hw_data, lock, reg); 
+				     dev, hw_data, lock, reg);
 	if (ret)
 		return ret;
 
@@ -2693,12 +2697,14 @@ static int k230_register_clks(struct platform_device *pdev,
 	if (ret)
 		return ret;
 
-	ret = k230_register_clk_gate(K230_SYSCTL_IOMUX_APB_GATE, K230_FMT(sysctl_iomux_apb_gate),
+	ret = k230_register_clk_gate(K230_SYSCTL_IOMUX_APB_GATE,
+				     K230_FMT(sysctl_iomux_apb_gate),
 				     dev, hw_data, lock, reg);
 	if (ret)
 		return ret;
 
-	ret = k230_register_clk_gate(K230_SYSCTL_MAILBOX_APB_GATE, K230_FMT(sysctl_mailbox_apb_gate),
+	ret = k230_register_clk_gate(K230_SYSCTL_MAILBOX_APB_GATE,
+				     K230_FMT(sysctl_mailbox_apb_gate),
 				     dev, hw_data, lock, reg);
 	if (ret)
 		return ret;
@@ -2713,17 +2719,20 @@ static int k230_register_clks(struct platform_device *pdev,
 	if (ret)
 		return ret;
 
-	ret = k230_register_clk_gate(K230_SYSCTL_TIME_STAMP_GATE, K230_FMT(sysctl_time_stamp_gate),
+	ret = k230_register_clk_gate(K230_SYSCTL_TIME_STAMP_GATE,
+				     K230_FMT(sysctl_time_stamp_gate),
 				     dev, hw_data, lock, reg);
 	if (ret)
 		return ret;
 
-	ret = k230_register_clk_rate(K230_SYSCTL_TIME_STAMP_RATE, K230_FMT(sysctl_time_stamp_rate),
+	ret = k230_register_clk_rate(K230_SYSCTL_TIME_STAMP_RATE,
+				     K230_FMT(sysctl_time_stamp_rate),
 				     dev, hw_data, lock, reg);
 	if (ret)
 		return ret;
 
-	ret = k230_register_clk_rate(K230_SYSCTL_TEMP_SENSOR_RATE, K230_FMT(sysctl_temp_sensor_rate),
+	ret = k230_register_clk_rate(K230_SYSCTL_TEMP_SENSOR_RATE,
+				     K230_FMT(sysctl_temp_sensor_rate),
 				     dev, hw_data, lock, reg);
 	if (ret)
 		return ret;
@@ -2873,17 +2882,20 @@ static int k230_register_clks(struct platform_device *pdev,
 	if (ret)
 		return ret;
 
-	ret = k230_register_clk_gate(K230_SHRM_NONAI2D_AXI_GATE, K230_FMT(shrm_nonai2d_axi_gate),
+	ret = k230_register_clk_gate(K230_SHRM_NONAI2D_AXI_GATE,
+				     K230_FMT(shrm_nonai2d_axi_gate),
 				     dev, hw_data, lock, reg);
 	if (ret)
 		return ret;
 
-	ret = k230_register_clk_gate(K230_SHRM_DECOMPRESS_AXI_GATE, K230_FMT(shrm_decompress_axi_gate),
+	ret = k230_register_clk_gate(K230_SHRM_DECOMPRESS_AXI_GATE,
+				     K230_FMT(shrm_decompress_axi_gate),
 				     dev, hw_data, lock, reg);
 	if (ret)
 		return ret;
 
-	ret = k230_register_clk_gate(K230_SHRM_SDMA_AXI_GATE, K230_FMT(shrm_sdma_axi_gate),
+	ret = k230_register_clk_gate(K230_SHRM_SDMA_AXI_GATE,
+				     K230_FMT(shrm_sdma_axi_gate),
 				     dev, hw_data, lock, reg);
 	if (ret)
 		return ret;
@@ -3155,6 +3167,7 @@ static int k230_clk_init_plls(struct platform_device *pdev)
 {
 	int ret;
 	void __iomem *reg;
+	/* used for all the plls */
 	spinlock_t *lock;
 
 	lock = devm_kzalloc(&pdev->dev, sizeof(*lock), GFP_KERNEL);
@@ -3183,6 +3196,7 @@ static int k230_clk_init_clks(struct platform_device *pdev,
 {
 	int ret;
 	void __iomem *reg;
+	/* used for all the clocks */
 	spinlock_t *lock;
 
 	lock = devm_kzalloc(&pdev->dev, sizeof(*lock), GFP_KERNEL);
