@@ -13,6 +13,7 @@
 #include <linux/mod_devicetable.h>
 #include <linux/platform_device.h>
 #include <linux/spinlock.h>
+
 #include <dt-bindings/clock/canaan,k230-clk.h>
 
 /* PLL control register bits. */
@@ -295,7 +296,7 @@ struct k230_clk_rate_self {
 
 struct k230_clk_rate {
 	u32				reg_off;
-	/* second register address */
+	/* second register address restoring divider to calculate rate */
 	u32				reg_off2;
 	struct k230_clk_rate_self	clk;
 };
@@ -1508,7 +1509,7 @@ static int k230_pll_prepare(struct clk_hw *hw)
 
 static inline bool k230_pll_hw_is_enabled(struct k230_pll_self *pll)
 {
-	return !!(readl(K230_PLLX_GATE_ADDR(pll->reg, pll->id)) & K230_PLL_GATE_ENABLE);
+	return readl(K230_PLLX_GATE_ADDR(pll->reg, pll->id)) & K230_PLL_GATE_ENABLE;
 }
 
 static void k230_pll_enable_hw(struct k230_pll_self *pll)
@@ -1671,15 +1672,12 @@ static unsigned long k230_clk_get_rate_mul_div(struct clk_hw *hw,
 	guard(spinlock)(rate_self->lock);
 
 	reg_off = clk->reg_off;
-	reg_off2 = clk->reg_off2 ?
-		   clk->reg_off2 : reg_off;
+	reg_off2 = clk->reg_off2 ? clk->reg_off2 : reg_off;
 
-	mul = (readl(rate_self->reg + reg_off2)
-		>> rate_self->mul_shift)
+	mul = (readl(rate_self->reg + reg_off2) >> rate_self->mul_shift)
 		& rate_self->mul_mask;
 
-	div = (readl(rate_self->reg + reg_off)
-		>> rate_self->div_shift)
+	div = (readl(rate_self->reg + reg_off) >> rate_self->div_shift)
 		& rate_self->div_mask;
 
 	return mul_u64_u32_div(parent_rate, mul, div);
