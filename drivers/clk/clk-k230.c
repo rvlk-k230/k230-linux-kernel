@@ -1696,7 +1696,7 @@ static int k230_clk_find_approximate_mul(u32 mul_min, u32 mul_max,
 	long abs_current;
 	long perfect_divide;
 
-	if (!rate || !parent_rate || !mul_min || !mul_max)
+	if (!rate || !parent_rate || !mul_min)
 		return -EINVAL;
 
 	perfect_divide = (long)((parent_rate * 1000) / rate);
@@ -1706,7 +1706,7 @@ static int k230_clk_find_approximate_mul(u32 mul_min, u32 mul_max,
 
 	for (u32 i = mul_min + 1; i <= mul_max; i++) {
 		abs_current = abs(perfect_divide -
-				(long)((long)((long)div_max * 1000) / (long)i));
+				(long)(((long)div_max * 1000) / (long)i));
 		if (abs_min > abs_current) {
 			abs_min = abs_current;
 			*mul = i;
@@ -1727,7 +1727,7 @@ static int k230_clk_find_approximate_div(u32 mul_min, u32 mul_max,
 	long abs_current;
 	long perfect_divide;
 
-	if (!rate || !parent_rate || !mul_min || !mul_max)
+	if (!rate || !parent_rate || !mul_max)
 		return -EINVAL;
 
 	perfect_divide = (long)((parent_rate * 1000) / rate);
@@ -1737,7 +1737,7 @@ static int k230_clk_find_approximate_div(u32 mul_min, u32 mul_max,
 
 	for (u32 i = div_min + 1; i <= div_max; i++) {
 		abs_current = abs(perfect_divide -
-				 (long)((long)((long)i * 1000) / (long)mul_max));
+				 (long)(((long)i * 1000) / (long)mul_max));
 		if (abs_min > abs_current) {
 			abs_min = abs_current;
 			*div = i;
@@ -1756,97 +1756,30 @@ static int k230_clk_find_approximate_mul_div(struct k230_clk_rate *clk,
 					     unsigned long parent_rate,
 					     u32 *div, u32 *mul)
 {
-	const u32 codec_clk[9] = {
-		2048000,
-		3072000,
-		4096000,
-		6144000,
-		8192000,
-		11289600,
-		12288000,
-		24576000,
-		49152000
-	};
+	long abs_min;
+	long abs_current;
+	long perfect_divide;
 
-	const u32 codec_div[9][2] = {
-		{3125, 16},
-		{3125, 24},
-		{3125, 32},
-		{3125, 48},
-		{3125, 64},
-		{15625, 441},
-		{3125, 96},
-		{3125, 192},
-		{3125, 384}
-	};
-
-	const u32 pdm_clk[20] = {
-		128000,
-		192000,
-		256000,
-		384000,
-		512000,
-		768000,
-		1024000,
-		1411200,
-		1536000,
-		2048000,
-		2822400,
-		3072000,
-		4096000,
-		5644800,
-		6144000,
-		8192000,
-		11289600,
-		12288000,
-		24576000,
-		49152000
-	};
-
-	const u32 pdm_div[20][2] = {
-		{3125, 1},
-		{6250, 3},
-		{3125, 2},
-		{3125, 3},
-		{3125, 4},
-		{3125, 6},
-		{3125, 8},
-		{125000, 441},
-		{3125, 12},
-		{3125, 16},
-		{62500, 441},
-		{3125, 24},
-		{3125, 32},
-		{31250, 441},
-		{3125, 48},
-		{3125, 64},
-		{15625, 441},
-		{3125, 96},
-		{3125, 192},
-		{3125, 384}
-	};
-
-	if (!rate || !parent_rate || !mul_min || !mul_max)
+	if (!rate || !parent_rate || !mul_min)
 		return -EINVAL;
 
-	if (clk->reg_off == K230_CLK_CODEC_ADC_MCLKDIV_OFFSET ||
-	    clk->reg_off == K230_CLK_CODEC_DAC_MCLKDIV_OFFSET) {
-		for (int i = 0; i < 9; i++) {
-			if (rate == codec_clk[i]) {
-				*div = codec_div[i][0];
-				*mul = codec_div[i][1];
+	perfect_divide = (long)((parent_rate * 1000) / rate);
+	abs_min = abs(perfect_divide -
+		     (long)(((long)div_max * 1000) / (long)mul_min));
+
+	*div = div_max;
+	*mul = mul_min;
+
+	for (u32 i = div_max - 1; i >= div_min; i--) {
+		for (u32 j = mul_min + 1; j <= mul_max; j++) {
+			abs_current = abs(perfect_divide -
+					 (long)(((long)i * 1000) / (long)j));
+			if (abs_min > abs_current) {
+				abs_min = abs_current;
+				*div = i;
+				*mul = j;
 			}
 		}
-	} else if (clk->reg_off == K230_CLK_AUDIO_CLKDIV_OFFSET ||
-		   clk->reg_off == K230_CLK_PDM_CLKDIV_OFFSET) {
-		for (int i = 0; i < 20; i++) {
-			if (rate == pdm_clk[i]) {
-				*div = pdm_div[i][0];
-				*mul = pdm_div[i][1];
-			}
-		}
-	} else {
-		return -EINVAL;
 	}
 
 	return 0;
