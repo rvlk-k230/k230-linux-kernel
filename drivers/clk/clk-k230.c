@@ -73,7 +73,7 @@
 	};									\
 	static struct k230_clk_rate k230_##_var = {				\
 		.reg_off = _reg,						\
-		.reg_off2 = _reg2,						\
+		.div_reg_off = _reg2,						\
 		.clk = {							\
 			.write_enable_bit = _bit,				\
 			.mul_min = _mul_min,					\
@@ -200,7 +200,7 @@
 	};									\
 	static struct k230_clk_rate k230_##_var = {				\
 		.reg_off = _reg,						\
-		.reg_off2 = _reg2,						\
+		.div_reg_off = _reg2,						\
 		.clk = {							\
 			.write_enable_bit = _bit,				\
 			.mul_min = _mul_min,					\
@@ -299,7 +299,7 @@ struct k230_clk_rate_self {
 struct k230_clk_rate {
 	u32				reg_off;
 	/* second register address restoring divider to calculate rate */
-	u32				reg_off2;
+	u32				div_reg_off;
 	struct k230_clk_rate_self	clk;
 };
 
@@ -1671,14 +1671,14 @@ static unsigned long k230_clk_get_rate_mul_div(struct clk_hw *hw,
 {
 	struct k230_clk_rate *clk = hw_to_k230_clk_rate(hw);
 	struct k230_clk_rate_self *rate_self = &clk->clk;
-	u32 mul, div, reg_off, reg_off2;
+	u32 mul, div, reg_off, div_reg_off;
 
 	guard(spinlock)(rate_self->lock);
 
 	reg_off = clk->reg_off;
-	reg_off2 = clk->reg_off2 ? clk->reg_off2 : reg_off;
+	div_reg_off = clk->div_reg_off ? clk->div_reg_off : reg_off;
 
-	mul = (readl(rate_self->reg + reg_off2) >> rate_self->mul_shift)
+	mul = (readl(rate_self->reg + div_reg_off) >> rate_self->mul_shift)
 		& rate_self->mul_mask;
 
 	div = (readl(rate_self->reg + reg_off) >> rate_self->div_shift)
@@ -1979,16 +1979,16 @@ static int k230_clk_set_rate_mul_div(struct clk_hw *hw, unsigned long rate,
 	reg = readl(rate_self->reg + clk->reg_off);
 	reg &= ~((rate_self->div_mask) << (rate_self->div_shift));
 
-	if (!clk->reg_off2) {
+	if (!clk->div_reg_off) {
 		reg |= (mul & rate_self->mul_mask) << (rate_self->mul_shift);
 		reg |= (div & rate_self->div_mask) << (rate_self->div_shift);
 		reg |= BIT(rate_self->write_enable_bit);
 	} else {
-		reg_c = readl(rate_self->reg + clk->reg_off2);
+		reg_c = readl(rate_self->reg + clk->div_reg_off);
 		reg_c &= ~((rate_self->mul_mask) << (rate_self->mul_shift));
 		reg_c |= (mul & rate_self->mul_mask) << (rate_self->mul_shift);
 		reg_c |= BIT(rate_self->write_enable_bit);
-		writel(reg_c, rate_self->reg + clk->reg_off2);
+		writel(reg_c, rate_self->reg + clk->div_reg_off);
 	}
 
 	reg |= (div & rate_self->div_mask) << (rate_self->div_shift);
