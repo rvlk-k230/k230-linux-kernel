@@ -892,7 +892,7 @@ K230_CLK_RATE_FORMAT(ls_audio_dev_rate,
 		     0xC35, 0xF424, 0, 0xFFFF,
 		     0x34, 31, mul_div, 0x0,
 		     false, 0,
-		     pll0_div4);
+		     ls_audio_dev_gate);
 
 K230_CLK_GATE_FORMAT(ls_pdm_gate,
 		     0x24, 31, 0, 0,
@@ -1960,7 +1960,7 @@ static int k230_clk_set_rate_mul_div(struct clk_hw *hw, unsigned long rate,
 {
 	struct k230_clk_rate *clk = hw_to_k230_clk_rate(hw);
 	struct k230_clk_rate_self *rate_self = &clk->clk;
-	u32 div, mul, reg, reg_c;
+	u32 div, mul, reg, reg_c; 
 
 	if (rate > parent_rate)
 		return -EINVAL;
