@@ -1939,7 +1939,7 @@ static inline int k230_register_clk_mux(int id, struct k230_clk_mux *clk,
 	struct clk_hw *hw = &clk->clk.hw;
 
 	clk->clk.lock = lock;
-	clk->clk.reg = reg;
+	clk->clk.reg = reg + clk->reg_off;
 
 	ret = devm_clk_hw_register(dev, hw);
 	if (ret)
@@ -1959,7 +1959,7 @@ static inline int k230_register_clk_gate(int id, struct k230_clk_gate *clk,
 	struct clk_hw *hw = &clk->clk.hw;
 
 	clk->clk.lock = lock;
-	clk->clk.reg = reg;
+	clk->clk.reg = reg + clk->reg_off;
 
 	ret = devm_clk_hw_register(dev, hw);
 	if (ret)
