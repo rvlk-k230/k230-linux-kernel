@@ -5,8 +5,8 @@
  * Author: Xukai Wang <kingxukai@zohomail.com>
  */
 
-#ifndef CLOCK_K230_CLK_H
-#define CLOCK_K230_CLK_H
+#ifndef __DT_BINDINGS_CANAAN_K230_CLOCK_H__
+#define __DT_BINDINGS_CANAAN_K230_CLOCK_H__
 
 /* Kendryte K230 SoC clock identifiers (arbitrary values). */
 #define K230_CPU0_SRC_GATE			0
@@ -221,4 +221,4 @@
 #define K230_CAMERA2_GATE			209
 #define K230_CAMERA2_RATE			210
 
-#endif /* _K230_CLK_H */
+#endif /* __DT_BINDINGS_CANAAN_K230_CLOCK_H__ */
