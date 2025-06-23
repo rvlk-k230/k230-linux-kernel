@@ -72,8 +72,8 @@
 		{ .index = _index, },						\
 	};									\
 	static struct k230_clk_rate k230_##_var = {				\
-		.reg_off = _reg,						\
-		.div_reg_off = _reg2,						\
+		.div_reg_off = _reg,						\
+		.mul_reg_off = _reg2,						\
 		.clk = {							\
 			.write_enable_bit = _bit,				\
 			.mul_min = _mul_min,					\
@@ -199,8 +199,8 @@
 		&k230_##_pvar.clk.hw,						\
 	};									\
 	static struct k230_clk_rate k230_##_var = {				\
-		.reg_off = _reg,						\
-		.div_reg_off = _reg2,						\
+		.div_reg_off = _reg,						\
+		.mul_reg_off = _reg2,						\
 		.clk = {							\
 			.write_enable_bit = _bit,				\
 			.mul_min = _mul_min,					\
@@ -297,8 +297,7 @@ struct k230_clk_rate_self {
 					struct k230_clk_rate_self, hw)
 
 struct k230_clk_rate {
-	u32				reg_off;
-	/* second register address restoring divider to calculate rate */
+	u32				mul_reg_off;
 	u32				div_reg_off;
 	struct k230_clk_rate_self	clk;
 };
@@ -432,8 +431,8 @@ K230_CLK_GATE_FORMAT(cpu0_src_gate,
 		     pll0_div2);
 
 K230_CLK_RATE_FORMAT(cpu0_src_rate,
-		     1, 16, 0, 0,
-		     16, 16, 1, 0xf,
+		     1, 16, 1, 0xF,
+		     16, 16, 0, 0x0,
 		     0x0, 31, mul, 0x0,
 		     false, 0,
 		     cpu0_src_gate);
@@ -868,7 +867,7 @@ K230_CLK_GATE_FORMAT(ls_codec_adc_gate,
 K230_CLK_RATE_FORMAT(ls_codec_adc_rate,
 		     0x10, 0x1B9, 14, 0x1FFF,
 		     0xC35, 0x3D09, 0, 0x3FFF,
-		     0x38, 31, mul_div, 0x0,
+		     0x38, 31, mul_div, 0x38,
 		     false, 0,
 		     ls_codec_adc_gate);
 
@@ -879,7 +878,7 @@ K230_CLK_GATE_FORMAT(ls_codec_dac_gate,
 K230_CLK_RATE_FORMAT(ls_codec_dac_rate,
 		     0x10, 0x1B9, 14, 0x1FFF,
 		     0xC35, 0x3D09, 0, 0x3FFF,
-		     0x3C, 31, mul_div, 0x0,
+		     0x3C, 31, mul_div, 0x3C,
 		     false, 0,
 		     ls_codec_dac_gate);
 
@@ -890,7 +889,7 @@ K230_CLK_GATE_FORMAT(ls_audio_dev_gate,
 K230_CLK_RATE_FORMAT(ls_audio_dev_rate,
 		     0x4, 0x1B9, 16, 0x7FFF,
 		     0xC35, 0xF424, 0, 0xFFFF,
-		     0x34, 31, mul_div, 0x0,
+		     0x34, 31, mul_div, 0x34,
 		     false, 0,
 		     ls_audio_dev_gate);
 
@@ -1323,9 +1322,9 @@ K230_CLK_GATE_FORMAT(vpu_src_gate,
 		     pll0_div2);
 
 K230_CLK_RATE_FORMAT(vpu_src_rate,
-		     1, 16, 0, 0,
-		     16, 16, 1, 0xF,
-		     0xC, 31, mul, 0x0,
+		     1, 16, 1, 0xF,
+		     16, 16, 0, 0,
+		     0x0, 31, mul, 0xC,
 		     false, 0,
 		     vpu_src_gate);
 
@@ -1639,15 +1638,16 @@ static unsigned long k230_clk_get_rate_mul(struct clk_hw *hw,
 {
 	struct k230_clk_rate *clk = hw_to_k230_clk_rate(hw);
 	struct k230_clk_rate_self *rate_self = &clk->clk;
-	u32 mul = 1, div;
+	u32 mul, div;
 
 	guard(spinlock)(rate_self->lock);
 
 	div = rate_self->div_max;
-	mul += (readl(rate_self->reg + clk->reg_off) >> rate_self->div_shift)
-		& rate_self->div_mask;
 
-	return mul_u64_u32_div(parent_rate, mul, div);
+	mul = (readl(rate_self->reg + clk->mul_reg_off) >> rate_self->mul_shift)
+	      & rate_self->mul_mask;
+
+	return mul_u64_u32_div(parent_rate, mul + 1, div);
 }
 
 static unsigned long k230_clk_get_rate_div(struct clk_hw *hw,
@@ -1655,34 +1655,32 @@ static unsigned long k230_clk_get_rate_div(struct clk_hw *hw,
 {
 	struct k230_clk_rate *clk = hw_to_k230_clk_rate(hw);
 	struct k230_clk_rate_self *rate_self = &clk->clk;
-	u32 mul, div = 1;
+	u32 mul, div;
 
 	guard(spinlock)(rate_self->lock);
 
 	mul = rate_self->mul_max;
-	div += (readl(rate_self->reg + clk->reg_off) >> rate_self->div_shift)
-		& rate_self->div_mask;
 
-	return mul_u64_u32_div(parent_rate, mul, div);
+	div = (readl(rate_self->reg + clk->div_reg_off) >> rate_self->div_shift)
+	      & rate_self->div_mask;
+
+	return mul_u64_u32_div(parent_rate, mul, div + 1);
 }
 
 static unsigned long k230_clk_get_rate_mul_div(struct clk_hw *hw,
-					       unsigned long parent_rate)
+					   unsigned long parent_rate)
 {
 	struct k230_clk_rate *clk = hw_to_k230_clk_rate(hw);
 	struct k230_clk_rate_self *rate_self = &clk->clk;
-	u32 mul, div, reg_off, div_reg_off;
+	u32 mul, div;
 
 	guard(spinlock)(rate_self->lock);
 
-	reg_off = clk->reg_off;
-	div_reg_off = clk->div_reg_off ? clk->div_reg_off : reg_off;
+	div = (readl(rate_self->reg + clk->div_reg_off) >> rate_self->div_shift)
+	      & rate_self->div_mask;
 
-	mul = (readl(rate_self->reg + div_reg_off) >> rate_self->mul_shift)
-		& rate_self->mul_mask;
-
-	div = (readl(rate_self->reg + reg_off) >> rate_self->div_shift)
-		& rate_self->div_mask;
+	mul = (readl(rate_self->reg + clk->mul_reg_off) >> rate_self->mul_shift)
+	      & rate_self->mul_mask;
 
 	return mul_u64_u32_div(parent_rate, mul, div);
 }
@@ -1749,8 +1747,7 @@ static int k230_clk_find_approximate_div(u32 mul_min, u32 mul_max,
 	return 0;
 }
 
-static int k230_clk_find_approximate_mul_div(struct k230_clk_rate *clk,
-					     u32 mul_min, u32 mul_max,
+static int k230_clk_find_approximate_mul_div(u32 mul_min, u32 mul_max,
 					     u32 div_min, u32 div_max,
 					     unsigned long rate,
 					     unsigned long parent_rate,
@@ -1816,12 +1813,10 @@ static long k230_clk_round_rate_div(struct clk_hw *hw, unsigned long rate,
 static long k230_clk_round_rate_mul_div(struct clk_hw *hw, unsigned long rate,
 					unsigned long *parent_rate)
 {
-	struct k230_clk_rate *clk = hw_to_k230_clk_rate(hw);
-	struct k230_clk_rate_self *rate_self = &clk->clk;
+	struct k230_clk_rate_self *rate_self = hw_to_k230_clk_rate_self(hw);
 	u32 div, mul;
 
-	if (k230_clk_find_approximate_mul_div(clk,
-					      rate_self->mul_min, rate_self->mul_max,
+	if (k230_clk_find_approximate_mul_div(rate_self->mul_min, rate_self->mul_max,
 					      rate_self->div_min, rate_self->div_max,
 					      rate, *parent_rate, &div, &mul))
 		return 0;
@@ -1834,7 +1829,7 @@ static int k230_clk_set_rate_mul(struct clk_hw *hw, unsigned long rate,
 {
 	struct k230_clk_rate *clk = hw_to_k230_clk_rate(hw);
 	struct k230_clk_rate_self *rate_self = &clk->clk;
-	u32 div, mul, reg;
+	u32 div, mul, mul_reg;
 
 	if (rate > parent_rate)
 		return -EINVAL;
@@ -1849,11 +1844,10 @@ static int k230_clk_set_rate_mul(struct clk_hw *hw, unsigned long rate,
 
 	guard(spinlock)(rate_self->lock);
 
-	reg = readl(rate_self->reg + clk->reg_off);
-	reg &= ~((rate_self->div_mask) << (rate_self->div_shift));
-	reg |= ((mul - 1) & rate_self->div_mask) << (rate_self->div_shift);
-	reg |= BIT(rate_self->write_enable_bit);
-	writel(reg, rate_self->reg + clk->reg_off);
+	mul_reg = readl(rate_self->reg + clk->mul_reg_off);
+	mul_reg |= ((mul - 1) & rate_self->mul_mask) << (rate_self->mul_shift);
+	mul_reg |= BIT(rate_self->write_enable_bit);
+	writel(mul_reg, rate_self->reg + clk->mul_reg_off);
 
 	return 0;
 }
@@ -1863,7 +1857,7 @@ static int k230_clk_set_rate_div(struct clk_hw *hw, unsigned long rate,
 {
 	struct k230_clk_rate *clk = hw_to_k230_clk_rate(hw);
 	struct k230_clk_rate_self *rate_self = &clk->clk;
-	u32 div, mul, reg;
+	u32 div, mul, div_reg;
 
 	if (rate > parent_rate)
 		return -EINVAL;
@@ -1878,12 +1872,10 @@ static int k230_clk_set_rate_div(struct clk_hw *hw, unsigned long rate,
 
 	guard(spinlock)(rate_self->lock);
 
-	reg = readl(rate_self->reg + clk->reg_off);
-	reg &= ~((rate_self->div_mask) << (rate_self->div_shift));
-	reg &= ~((rate_self->mul_mask) << (rate_self->mul_shift));
-	reg |= ((div - 1) & rate_self->div_mask) << (rate_self->div_shift);
-	reg |= BIT(rate_self->write_enable_bit);
-	writel(reg, rate_self->reg + clk->reg_off);
+	div_reg = readl(rate_self->reg + clk->div_reg_off);
+	div_reg |= ((div - 1) & rate_self->div_mask) << (rate_self->div_shift);
+	div_reg |= BIT(rate_self->write_enable_bit);
+	writel(div_reg, rate_self->reg + clk->div_reg_off);
 
 	return 0;
 }
@@ -1893,7 +1885,7 @@ static int k230_clk_set_rate_mul_div(struct clk_hw *hw, unsigned long rate,
 {
 	struct k230_clk_rate *clk = hw_to_k230_clk_rate(hw);
 	struct k230_clk_rate_self *rate_self = &clk->clk;
-	u32 div, mul, reg, reg_c; 
+	u32 div, mul, div_reg, mul_reg;
 
 	if (rate > parent_rate)
 		return -EINVAL;
@@ -1901,31 +1893,22 @@ static int k230_clk_set_rate_mul_div(struct clk_hw *hw, unsigned long rate,
 	if (rate_self->read_only)
 		return 0;
 
-	if (k230_clk_find_approximate_mul_div(clk,
-					      rate_self->mul_min, rate_self->mul_max,
+	if (k230_clk_find_approximate_mul_div(rate_self->mul_min, rate_self->mul_max,
 					      rate_self->div_min, rate_self->div_max,
 					      rate, parent_rate, &div, &mul))
 		return -EINVAL;
 
 	guard(spinlock)(rate_self->lock);
 
-	reg = readl(rate_self->reg + clk->reg_off);
-	reg &= ~((rate_self->div_mask) << (rate_self->div_shift));
+	div_reg = readl(rate_self->reg + clk->div_reg_off);
+	div_reg |= ((div - 1) & rate_self->div_mask) << (rate_self->div_shift);
+	div_reg |= BIT(rate_self->write_enable_bit);
+	writel(div_reg, rate_self->reg + clk->div_reg_off);
 
-	if (!clk->div_reg_off) {
-		reg |= (mul & rate_self->mul_mask) << (rate_self->mul_shift);
-		reg |= (div & rate_self->div_mask) << (rate_self->div_shift);
-		reg |= BIT(rate_self->write_enable_bit);
-	} else {
-		reg_c = readl(rate_self->reg + clk->div_reg_off);
-		reg_c &= ~((rate_self->mul_mask) << (rate_self->mul_shift));
-		reg_c |= (mul & rate_self->mul_mask) << (rate_self->mul_shift);
-		reg_c |= BIT(rate_self->write_enable_bit);
-		writel(reg_c, rate_self->reg + clk->div_reg_off);
-	}
-
-	reg |= (div & rate_self->div_mask) << (rate_self->div_shift);
-	writel(reg, rate_self->reg + clk->reg_off);
+	mul_reg = readl(rate_self->reg + clk->mul_reg_off);
+	mul_reg |= ((mul - 1) & rate_self->mul_mask) << (rate_self->mul_shift);
+	mul_reg |= BIT(rate_self->write_enable_bit);
+	writel(mul_reg, rate_self->reg + clk->mul_reg_off);
 
 	return 0;
 }
