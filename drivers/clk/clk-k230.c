@@ -1636,7 +1636,6 @@ static unsigned long k230_clk_get_rate_mul(struct clk_hw *hw,
 	guard(spinlock)(rate_self->lock);
 
 	div = rate_self->div_max;
-
 	mul = (readl(rate_self->reg + clk->mul_reg_off) >> rate_self->mul_shift)
 	      & rate_self->mul_mask;
 
@@ -1653,7 +1652,6 @@ static unsigned long k230_clk_get_rate_div(struct clk_hw *hw,
 	guard(spinlock)(rate_self->lock);
 
 	mul = rate_self->mul_max;
-
 	div = (readl(rate_self->reg + clk->div_reg_off) >> rate_self->div_shift)
 	      & rate_self->div_mask;
 
@@ -1671,7 +1669,6 @@ static unsigned long k230_clk_get_rate_mul_div(struct clk_hw *hw,
 
 	div = (readl(rate_self->reg + clk->div_reg_off) >> rate_self->div_shift)
 	      & rate_self->div_mask;
-
 	mul = (readl(rate_self->reg + clk->mul_reg_off) >> rate_self->mul_shift)
 	      & rate_self->mul_mask;
 
