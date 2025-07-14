@@ -44,7 +44,7 @@
 
 #define K230_FMT(_var)				(k230_##_var)
 
-#define K230_PLLX_BASE(base, idx)		((base) + (idx * 0x10))
+#define K230_PLLX_BASE(base, idx)		((base) + ((idx) * 0x10))
 
 #define K230_PLLX_DIV_ADDR(base, idx)						\
 	(K230_PLL_DIV_REG_OFFSET + K230_PLLX_BASE(base, idx))
@@ -59,13 +59,13 @@
 	(K230_PLL_LOCK_REG_OFFSET + K230_PLLX_BASE(base, idx))
 
 #define K230_CLK_ARRAY_MUX(id, clk)						\
-	[id] = clk
+	[(id)] = clk
 
 #define K230_CLK_ARRAY_GATE(id, clk)						\
-	[id - K230_CLK_MUX_NUM] = clk
+	[(id) - K230_CLK_MUX_NUM] = clk
 
 #define K230_CLK_ARRAY_RATE(id, clk)						\
-	[id - (K230_CLK_MUX_NUM + K230_CLK_GATE_NUM)] = clk
+	[(id) - (K230_CLK_MUX_NUM + K230_CLK_GATE_NUM)] = clk
 
 #define K230_CLK_RATE_FORMAT_PNAME(_var,					\
 				   _mul_min, _mul_max, _mul_shift, _mul_mask,	\
@@ -1146,9 +1146,9 @@ static const struct clk_parent_data k230_shrm_sram_mux_pdata[] = {
 };
 
 K230_CLK_MUX_FORMAT(shrm_sram_mux,
-		     0x50, 14, 0x1,
-		     0, 0,
-		     k230_shrm_sram_mux_pdata);
+		    0x50, 14, 0x1,
+		    0, 0,
+		    k230_shrm_sram_mux_pdata);
 
 K230_CLK_GATE_FORMAT(shrm_sram_gate,
 		     0x5c, 10, CLK_IGNORE_UNUSED, 0,
@@ -1189,9 +1189,9 @@ static const struct clk_parent_data k230_ddrc_src_mux_pdata[] = {
 };
 
 K230_CLK_MUX_FORMAT(ddrc_src_mux,
-		     0x60, 0, 0x3,
-		     0, 0,
-		     k230_ddrc_src_mux_pdata);
+		    0x60, 0, 0x3,
+		    0, 0,
+		    k230_ddrc_src_mux_pdata);
 
 K230_CLK_GATE_FORMAT(ddrc_src_gate,
 		     0x60, 2, CLK_IGNORE_UNUSED, 0,
@@ -1874,7 +1874,7 @@ static unsigned long k230_clk_get_rate_div(struct clk_hw *hw,
 }
 
 static unsigned long k230_clk_get_rate_mul_div(struct clk_hw *hw,
-					   unsigned long parent_rate)
+					       unsigned long parent_rate)
 {
 	struct k230_clk_rate *clk = hw_to_k230_clk_rate(hw);
 	struct k230_clk_rate_self *rate_self = &clk->clk;
