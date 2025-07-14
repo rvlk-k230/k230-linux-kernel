@@ -31,7 +31,7 @@
 #define K230_PLL_GATE_REG_OFFSET		0x08
 #define K230_PLL_LOCK_REG_OFFSET		0x0C
 
-/* PLL lock register  */
+/* PLL lock register */
 #define K230_PLL_LOCK_STATUS_MASK		BIT(0)
 #define K230_PLL_LOCK_TIME_DELAY		400
 #define K230_PLL_LOCK_TIMEOUT			0
@@ -42,12 +42,9 @@
 #define K230_CLK_CODEC_ADC_MCLKDIV_OFFSET	0x38
 #define K230_CLK_CODEC_DAC_MCLKDIV_OFFSET	0x3c
 
-#define K230_CLK_MAX_PARENT_NUM			3
-
 #define K230_FMT(_var)				(k230_##_var)
 
-#define K230_PLLX_OFFSET(idx)			((idx) * 0x10)
-#define K230_PLLX_BASE(base, idx)		((base) + K230_PLLX_OFFSET(idx))
+#define K230_PLLX_BASE(base, idx)		((base) + (idx * 0x10))
 
 #define K230_PLLX_DIV_ADDR(base, idx)						\
 	(K230_PLL_DIV_REG_OFFSET + K230_PLLX_BASE(base, idx))
@@ -61,17 +58,14 @@
 #define K230_PLLX_LOCK_ADDR(base, idx)						\
 	(K230_PLL_LOCK_REG_OFFSET + K230_PLLX_BASE(base, idx))
 
-#define K230_CLK_ARRAY(offset, id, clk)						\
-	[id - offset] = clk
-
 #define K230_CLK_ARRAY_MUX(id, clk)						\
-	K230_CLK_ARRAY(0, id, clk)
+	[id] = clk
 
 #define K230_CLK_ARRAY_GATE(id, clk)						\
-	K230_CLK_ARRAY(K230_CLK_MUX_NUM, id, clk)
+	[id - K230_CLK_MUX_NUM] = clk
 
 #define K230_CLK_ARRAY_RATE(id, clk)						\
-	K230_CLK_ARRAY((K230_CLK_MUX_NUM + K230_CLK_GATE_NUM), id, clk)
+	[id - (K230_CLK_MUX_NUM + K230_CLK_GATE_NUM)] = clk
 
 #define K230_CLK_RATE_FORMAT_PNAME(_var,					\
 				   _mul_min, _mul_max, _mul_shift, _mul_mask,	\
@@ -281,8 +275,6 @@ struct k230_pll *k230_plls[] = {
 	&K230_FMT(pll3),
 };
 
-#define K230_PLL_NUM ARRAY_SIZE(k230_plls)
-
 K230_CLK_FIXED_FACTOR_FORMAT(pll0_div2, 1, 2, 0, &K230_FMT(pll0).hw);
 K230_CLK_FIXED_FACTOR_FORMAT(pll0_div3, 1, 3, 0, &K230_FMT(pll0).hw);
 K230_CLK_FIXED_FACTOR_FORMAT(pll0_div4, 1, 4, 0, &K230_FMT(pll0).hw);
@@ -312,8 +304,6 @@ struct clk_fixed_factor *k230_pll_divs[] = {
 	&K230_FMT(pll3_div3),
 	&K230_FMT(pll3_div4),
 };
-
-#define K230_PLL_DIV_NUM ARRAY_SIZE(k230_pll_divs)
 
 static int k230_clk_set_rate_mul(struct clk_hw *hw, unsigned long rate,
 				 unsigned long parent_rate);
@@ -1741,7 +1731,6 @@ static void k230_pll_enable_hw(struct k230_pll *pll)
 	if (k230_pll_hw_is_enabled(pll))
 		return;
 
-	/* Set PLL factors */
 	reg = readl(K230_PLLX_GATE_ADDR(pll->reg, pll->id));
 	reg |= K230_PLL_GATE_ENABLE | K230_PLL_GATE_WRITE_ENABLE;
 	writel(reg, K230_PLLX_GATE_ADDR(pll->reg, pll->id));
@@ -1806,7 +1795,7 @@ static int k230_register_plls(struct platform_device *pdev, spinlock_t *lock,
 	int i, ret;
 	struct k230_pll *pll;
 
-	for (i = 0; i < K230_PLL_NUM; i++) {
+	for (i = 0; i < ARRAY_SIZE(k230_plls); i++) {
 		const char *name;
 
 		pll = k230_plls[i];
@@ -1832,7 +1821,7 @@ static int k230_register_pll_divs(struct platform_device *pdev)
 	struct clk_fixed_factor *pll_div;
 	int ret;
 
-	for (int i = 0; i < K230_PLL_DIV_NUM; i++) {
+	for (int i = 0; i < ARRAY_SIZE(k230_pll_divs); i++) {
 		const char *name;
 
 		pll_div = k230_pll_divs[i];
