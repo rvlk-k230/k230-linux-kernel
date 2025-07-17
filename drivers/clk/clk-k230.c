@@ -2138,15 +2138,16 @@ static int k230_register_clk_parent(struct device *dev, struct clk_hw *hw)
 	return 0;
 }
 
-static int k230_register_clk_mux(int id, struct k230_clk_mux *mux,
-				 struct device *dev,
-				 struct clk_hw_onecell_data *hw_data)
+static int k230_register_clk(int id, struct clk_hw *hw, struct device *dev,
+			     struct clk_hw_onecell_data *hw_data)
 {
 	int ret;
 	struct clk_hw *phw;
-	struct clk_hw *hw = &mux->clk.hw;
 	const struct clk_init_data *init = hw->init;
 
+	/* devm_clk_hw_register will set hw->init to NULL.
+	 * The check relies on this behavior.
+	 */
 	if (init) {
 		for (int i = 0; i < init->num_parents; i++) {
 			if (init->parent_data[i].fw_name)
@@ -2158,91 +2159,6 @@ static int k230_register_clk_mux(int id, struct k230_clk_mux *mux,
 				if (ret)
 					return ret;
 			}
-		}
-
-		ret = devm_clk_hw_register(dev, hw);
-		if (ret)
-			return ret;
-	}
-
-	hw_data->hws[id] = hw;
-
-	return 0;
-}
-
-static int k230_register_clk_gate(int id, struct k230_clk_gate *gate,
-				  struct device *dev,
-				  struct clk_hw_onecell_data *hw_data)
-{
-	int ret;
-	struct clk_hw *phw;
-	struct clk_hw *hw = &gate->clk.hw;
-	const struct clk_init_data *init = hw->init;
-
-	if (init) {
-		phw = (struct clk_hw *)init->parent_data[0].hw;
-
-		if (!init->parent_data[0].fw_name && phw && phw->init) {
-			ret = k230_register_clk_parent(dev, phw);
-			if (ret)
-				return ret;
-		}
-
-		ret = devm_clk_hw_register(dev, hw);
-		if (ret)
-			return ret;
-	}
-
-	hw_data->hws[id] = hw;
-
-	return 0;
-}
-
-static int k230_register_clk_rate(int id, struct k230_clk_rate *rate,
-				  struct device *dev,
-				  struct clk_hw_onecell_data *hw_data)
-{
-	int ret;
-	struct clk_hw *phw;
-	struct clk_hw *hw = &rate->clk.hw;
-	const struct clk_init_data *init = hw->init;
-
-	if (init) {
-		phw = (struct clk_hw *)init->parent_data[0].hw;
-
-		if (!init->parent_data[0].fw_name && phw && phw->init) {
-			ret = k230_register_clk_parent(dev, phw);
-			if (ret)
-				return ret;
-		}
-
-		ret = devm_clk_hw_register(dev, hw);
-		if (ret)
-			return ret;
-	}
-
-	hw_data->hws[id] = hw;
-
-	return 0;
-}
-
-static int k230_register_clk_fixed_factor(int id,
-					  struct clk_fixed_factor *fixed_factor,
-					  struct device *dev,
-					  struct clk_hw_onecell_data *hw_data)
-{
-	int ret;
-	struct clk_hw *phw;
-	struct clk_hw *hw = &fixed_factor->hw;
-	const struct clk_init_data *init = hw->init;
-
-	if (init) {
-		phw = (struct clk_hw *)init->parent_data[0].hw;
-
-		if (!init->parent_data[0].fw_name && phw && phw->init) {
-			ret = k230_register_clk_parent(dev, phw);
-			if (ret)
-				return ret;
 		}
 
 		ret = devm_clk_hw_register(dev, hw);
@@ -2270,7 +2186,7 @@ static int k230_register_clks(struct platform_device *pdev,
 		if (!mux)
 			continue;
 
-		ret = k230_register_clk_mux(i, mux, dev, hw_data);
+		ret = k230_register_clk(i, &mux->clk.hw, dev, hw_data);
 		if (ret)
 			return ret;
 	}
@@ -2282,7 +2198,7 @@ static int k230_register_clks(struct platform_device *pdev,
 		if (!gate)
 			continue;
 
-		ret = k230_register_clk_gate(i + clk_num, gate, dev, hw_data);
+		ret = k230_register_clk(i + clk_num, &gate->clk.hw, dev, hw_data);
 		if (ret)
 			return ret;
 	}
@@ -2294,14 +2210,14 @@ static int k230_register_clks(struct platform_device *pdev,
 		if (!rate)
 			continue;
 
-		ret = k230_register_clk_rate(i + clk_num, rate, dev, hw_data);
+		ret = k230_register_clk(i + clk_num, &rate->clk.hw, dev, hw_data);
 		if (ret)
 			return ret;
 	}
 
 	clk_num += K230_CLK_RATE_NUM;
 
-	ret = k230_register_clk_fixed_factor(clk_num++, fixed_factor, dev, hw_data);
+	ret = k230_register_clk(clk_num++, &fixed_factor->hw, dev, hw_data);
 	if (ret)
 		return ret;
 
