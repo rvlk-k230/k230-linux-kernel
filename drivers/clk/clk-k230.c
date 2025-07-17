@@ -2145,8 +2145,8 @@ static int k230_register_clk(int id, struct clk_hw *hw, struct device *dev,
 	struct clk_hw *phw;
 	const struct clk_init_data *init = hw->init;
 
-	/* devm_clk_hw_register will set hw->init to NULL.
-	 * The check relies on this behavior.
+	/* devm_clk_hw_register sets hw->init to NULL, and this behavior is
+	 * leveraged here to check if it is initialized.
 	 */
 	if (init) {
 		for (int i = 0; i < init->num_parents; i++) {
