@@ -1910,6 +1910,7 @@ static int k230_clk_find_approximate_mul(u32 mul_min, u32 mul_max,
 	for (u32 i = mul_min + 1; i <= mul_max; i++) {
 		abs_current = abs(perfect_divide -
 				(long)(((long)div_max * 1000) / (long)i));
+
 		if (abs_min > abs_current) {
 			abs_min = abs_current;
 			*mul = i;
@@ -1941,6 +1942,7 @@ static int k230_clk_find_approximate_div(u32 mul_min, u32 mul_max,
 	for (u32 i = div_min + 1; i <= div_max; i++) {
 		abs_current = abs(perfect_divide -
 				 (long)(((long)i * 1000) / (long)mul_max));
+
 		if (abs_min > abs_current) {
 			abs_min = abs_current;
 			*div = i;
@@ -1976,6 +1978,7 @@ static int k230_clk_find_approximate_mul_div(u32 mul_min, u32 mul_max,
 		for (u32 j = mul_min + 1; j <= mul_max; j++) {
 			abs_current = abs(perfect_divide -
 					 (long)(((long)i * 1000) / (long)j));
+
 			if (abs_min > abs_current) {
 				abs_min = abs_current;
 				*div = i;
