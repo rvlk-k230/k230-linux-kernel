@@ -44,19 +44,17 @@
 
 #define K230_FMT(_var)				(k230_##_var)
 
-#define K230_PLLX_BASE(base, idx)		((base) + ((idx) * 0x10))
-
 #define K230_PLLX_DIV_ADDR(base, idx)						\
-	(K230_PLL_DIV_REG_OFFSET + K230_PLLX_BASE(base, idx))
+	(K230_PLL_DIV_REG_OFFSET + (base) + (idx) * 0x10)
 
 #define K230_PLLX_BYPASS_ADDR(base, idx)					\
-	(K230_PLL_BYPASS_REG_OFFSET + K230_PLLX_BASE(base, idx))
+	(K230_PLL_BYPASS_REG_OFFSET + (base) + (idx) * 0x10)
 
 #define K230_PLLX_GATE_ADDR(base, idx)						\
-	(K230_PLL_GATE_REG_OFFSET + K230_PLLX_BASE(base, idx))
+	(K230_PLL_GATE_REG_OFFSET + (base) + (idx) * 0x10)
 
 #define K230_PLLX_LOCK_ADDR(base, idx)						\
-	(K230_PLL_LOCK_REG_OFFSET + K230_PLLX_BASE(base, idx))
+	(K230_PLL_LOCK_REG_OFFSET + (base) + (idx) * 0x10)
 
 #define K230_CLK_ARRAY_MUX(id, clk)						\
 	[(id)] = clk
