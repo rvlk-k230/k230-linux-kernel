@@ -60,9 +60,6 @@
 				   _reg, _bit, _method, _reg2,			\
 				   _read_only, _flags,				\
 				   _pname)					\
-	static const struct clk_parent_data k230_##_var##_pdata[] = {		\
-		{ .fw_name = _pname, },						\
-	};									\
 	static struct k230_clk_rate _var = {					\
 		.div_reg_off = _reg,						\
 		.mul_reg_off = _reg2,						\
@@ -78,9 +75,35 @@
 			.div_shift = _div_shift,				\
 			.div_mask = _div_mask,					\
 			.read_only = _read_only,				\
-			.hw.init = CLK_HW_INIT_PARENTS_DATA(#_var,		\
-				   k230_##_var##_pdata,				\
-				   &k230_clk_ops_##_method,			\
+			.hw.init = CLK_HW_INIT_FW_NAME(#_var,			\
+				   _pname, &k230_clk_ops_##_method,		\
+				   _flags),					\
+		},								\
+	}
+
+#define K230_CLK_RATE_FORMAT(_var, _id,						\
+			     _mul_min, _mul_max, _mul_shift, _mul_mask,		\
+			     _div_min, _div_max, _div_shift, _div_mask,		\
+			     _reg, _bit, _method, _reg2,			\
+			     _read_only, _flags,				\
+			     _phw)						\
+	static struct k230_clk_rate _var = {					\
+		.div_reg_off = _reg,						\
+		.mul_reg_off = _reg2,						\
+		.id = _id,							\
+		.clk = {							\
+			.write_enable_bit = _bit,				\
+			.mul_min = _mul_min,					\
+			.mul_max = _mul_max,					\
+			.mul_shift = _mul_shift,				\
+			.mul_mask = _mul_mask,					\
+			.div_min = _div_min,					\
+			.div_max = _div_max,					\
+			.div_shift = _div_shift,				\
+			.div_mask = _div_mask,					\
+			.read_only = _read_only,				\
+			.hw.init = CLK_HW_INIT_HW(#_var,			\
+				   _phw, &k230_clk_ops_##_method,		\
 				   _flags),					\
 		},								\
 	}
@@ -88,17 +111,28 @@
 #define K230_CLK_GATE_FORMAT_PNAME(_var, _id,					\
 				   _reg, _bit, _flags, _gate_flags,		\
 				   _pname)					\
-	static const struct clk_parent_data k230_##_var##_pdata[] = {		\
-		{ .fw_name = _pname, },						\
-	};									\
 	static struct k230_clk_gate _var = {					\
 		.reg_off = _reg,						\
 		.id = _id,							\
 		.clk = {							\
 			.bit_idx = _bit,					\
 			.flags = _gate_flags,					\
-			.hw.init = CLK_HW_INIT_PARENTS_DATA(#_var,		\
-				   k230_##_var##_pdata, &clk_gate_ops, _flags),	\
+			.hw.init = CLK_HW_INIT_FW_NAME(#_var,			\
+				   _pname, &clk_gate_ops, _flags),		\
+		},								\
+	}
+
+#define K230_CLK_GATE_FORMAT(_var, _id,						\
+			     _reg, _bit, _flags, _gate_flags,			\
+			     _phw)						\
+	static struct k230_clk_gate _var = {					\
+		.reg_off = _reg,						\
+		.id = _id,							\
+		.clk = {							\
+			.bit_idx = _bit,					\
+			.flags = _gate_flags,					\
+			.hw.init = CLK_HW_INIT_HW(#_var,			\
+				   _phw, &clk_gate_ops, _flags),		\
 		},								\
 	}
 
@@ -119,73 +153,17 @@
 #define K230_CLK_FIXED_FACTOR_FORMAT(_var,					\
 				     _mul, _div, _flags,			\
 				     _phw)					\
-	static const struct clk_parent_data k230_##_var##_pdata[] = {		\
-		{ .hw = _phw, },						\
-	};									\
 	static struct clk_fixed_factor _var = {					\
 		.mult = _mul,							\
 		.div = _div,							\
-		.hw.init = CLK_HW_INIT_PARENTS_DATA(#_var,			\
-			   k230_##_var##_pdata, &clk_fixed_factor_ops,		\
-			   _flags),						\
-	}
-
-#define K230_CLK_RATE_FORMAT(_var, _id,						\
-			     _mul_min, _mul_max, _mul_shift, _mul_mask,		\
-			     _div_min, _div_max, _div_shift, _div_mask,		\
-			     _reg, _bit, _method, _reg2,			\
-			     _read_only, _flags,				\
-			     _phw)						\
-	static const struct clk_parent_data k230_##_var##_pdata[] = {		\
-		{ .hw = _phw, },						\
-	};									\
-	static struct k230_clk_rate _var = {					\
-		.div_reg_off = _reg,						\
-		.mul_reg_off = _reg2,						\
-		.id = _id,							\
-		.clk = {							\
-			.write_enable_bit = _bit,				\
-			.mul_min = _mul_min,					\
-			.mul_max = _mul_max,					\
-			.mul_shift = _mul_shift,				\
-			.mul_mask = _mul_mask,					\
-			.div_min = _div_min,					\
-			.div_max = _div_max,					\
-			.div_shift = _div_shift,				\
-			.div_mask = _div_mask,					\
-			.read_only = _read_only,				\
-			.hw.init = CLK_HW_INIT_PARENTS_DATA(#_var,		\
-				   k230_##_var##_pdata,				\
-				   &k230_clk_ops_##_method,			\
-				   _flags),					\
-		},								\
-	}
-
-#define K230_CLK_GATE_FORMAT(_var, _id,						\
-			     _reg, _bit, _flags, _gate_flags,			\
-			     _phw)						\
-	static const struct clk_parent_data k230_##_var##_pdata[] = {		\
-		{ .hw = _phw, },						\
-	};									\
-	static struct k230_clk_gate _var = {					\
-		.reg_off = _reg,						\
-		.id = _id,							\
-		.clk = {							\
-			.bit_idx = _bit,					\
-			.flags = _gate_flags,					\
-			.hw.init = CLK_HW_INIT_PARENTS_DATA(#_var,		\
-				   k230_##_var##_pdata, &clk_gate_ops, _flags),	\
-		},								\
+		.hw.init = CLK_HW_INIT_HW(#_var,				\
+			   _phw, &clk_fixed_factor_ops, _flags),		\
 	}
 
 #define K230_CLK_PLL_FORMAT(_var, _id, _flags, _pname)				\
-	static const struct clk_parent_data k230_##_var##_parent[] = {		\
-		{ .fw_name = _pname, },						\
-	};									\
 	static struct k230_pll _var = {						\
-		.hw.init = CLK_HW_INIT_PARENTS_DATA(#_var,			\
-			   k230_##_var##_parent,				\
-			   &k230_pll_ops, _flags),				\
+		.hw.init = CLK_HW_INIT_FW_NAME(#_var,				\
+			   _pname, &k230_pll_ops, _flags),			\
 		.id = _id,							\
 	}
 
