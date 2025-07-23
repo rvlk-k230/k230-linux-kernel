@@ -667,7 +667,7 @@ K230_CLK_MUX_FORMAT(hs_usb_ref_mux,
 		    k230_hs_usb_ref_mux_pdata);
 
 K230_CLK_GATE_FORMAT(hs_usb0_ref_gate,
-		    K230_HS_USB0_REF_GATE,
+		     K230_HS_USB0_REF_GATE,
 		     0x18, 21, CLK_IGNORE_UNUSED, 0,
 		     &hs_usb_ref_mux.clk.hw);
 
