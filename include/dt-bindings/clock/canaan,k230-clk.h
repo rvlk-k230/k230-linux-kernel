@@ -8,7 +8,7 @@
 #ifndef __DT_BINDINGS_CANAAN_K230_CLOCK_H__
 #define __DT_BINDINGS_CANAAN_K230_CLOCK_H__
 
-/* Kendryte K230 SoC clock identifiers (arbitrary values). */
+/* Kendryte K230 SoC clock identifiers (arbitrary values) */
 #define K230_CPU0_SRC_GATE			0
 #define K230_CPU0_PLIC_GATE			1
 #define K230_CPU0_NOC_DDRCP4_GATE		2
