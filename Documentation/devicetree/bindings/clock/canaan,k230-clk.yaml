@@ -27,8 +27,9 @@ properties:
     minItems: 1
     items:
       - description: Main external reference clock
-      - description: External clock which used as the pulse input for
-        the timer to provide timing signals.
+      - description:
+          External clock which used as the pulse input
+          for the timer to provide timing signals.
 
   clock-names:
     minItems: 1
