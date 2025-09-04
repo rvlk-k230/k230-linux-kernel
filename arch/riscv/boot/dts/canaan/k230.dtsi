@@ -61,9 +61,9 @@
 
 	osc24m: clock-24m {
 		compatible = "fixed-clock";
+		#clock-cells = <0>;
 		clock-frequency = <24000000>;
 		clock-output-names = "osc24m";
-		#clock-cells = <0>;
 	};
 
 	soc {
