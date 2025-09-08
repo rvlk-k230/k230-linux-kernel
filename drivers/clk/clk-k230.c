@@ -6,6 +6,7 @@
  * Author: Troy Mitchell <troymitchell988@gmail.com>
  */
 
+#include <linux/bitfield.h>
 #include <linux/clk.h>
 #include <linux/clkdev.h>
 #include <linux/clk-provider.h>
@@ -20,12 +21,9 @@
 #define K230_PLL_BYPASS_ENABLE			BIT(19)
 #define K230_PLL_GATE_ENABLE			BIT(2)
 #define K230_PLL_GATE_WRITE_ENABLE		BIT(18)
-#define K230_PLL_OD_SHIFT			24
-#define K230_PLL_OD_MASK			0xF
-#define K230_PLL_R_SHIFT			16
-#define K230_PLL_R_MASK				0x3F
-#define K230_PLL_F_SHIFT			0
-#define K230_PLL_F_MASK				0x1FFF
+#define K230_PLL_OD_MASK			GENMASK(27, 24)
+#define K230_PLL_R_MASK				GENMASK(21, 16)
+#define K230_PLL_F_MASK				GENMASK(12, 0)
 #define K230_PLL_DIV_REG_OFFSET			0x00
 #define K230_PLL_BYPASS_REG_OFFSET		0x04
 #define K230_PLL_GATE_REG_OFFSET		0x08
@@ -1963,9 +1961,9 @@ static unsigned long k230_pll_get_rate(struct clk_hw *hw, unsigned long parent_r
 		return 0;
 
 	reg = readl(K230_PLLX_DIV_ADDR(pll->reg, pll->id));
-	r = ((reg >> K230_PLL_R_SHIFT) & K230_PLL_R_MASK) + 1;
-	f = ((reg >> K230_PLL_F_SHIFT) & K230_PLL_F_MASK) + 1;
-	od = ((reg >> K230_PLL_OD_SHIFT) & K230_PLL_OD_MASK) + 1;
+	r = FIELD_GET(K230_PLL_R_MASK, reg) + 1;
+	f = FIELD_GET(K230_PLL_F_MASK, reg) + 1;
+	od = FIELD_GET(K230_PLL_OD_MASK, reg) + 1;
 
 	return mul_u64_u32_div(parent_rate, f, r * od);
 }
