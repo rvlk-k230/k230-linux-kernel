@@ -12,6 +12,7 @@
 #include <linux/clk-provider.h>
 #include <linux/iopoll.h>
 #include <linux/platform_device.h>
+#include <linux/rational.h>
 #include <linux/spinlock.h>
 
 #include <dt-bindings/clock/canaan,k230-clk.h>
@@ -2138,32 +2139,23 @@ static int k230_clk_find_approximate_mul_div(u32 mul_min, u32 mul_max,
 					     unsigned long parent_rate,
 					     u32 *div, u32 *mul)
 {
-	long abs_min;
-	long abs_current;
-	long perfect_divide;
+	unsigned long best_mul, best_div;
 
 	if (!rate || !parent_rate || !mul_min)
 		return -EINVAL;
 
-	perfect_divide = (long)((parent_rate * 1000) / rate);
-	abs_min = abs(perfect_divide -
-		     (long)(((long)div_max * 1000) / (long)mul_min));
+	rational_best_approximation(rate, parent_rate,
+				    (unsigned long)mul_max, (unsigned long)div_max,
+				    &best_mul, &best_div);
 
-	*div = div_max;
-	*mul = mul_min;
+	if (best_mul < mul_min)
+		best_mul = mul_min;
 
-	for (u32 i = div_max - 1; i >= div_min; i--) {
-		for (u32 j = mul_min + 1; j <= mul_max; j++) {
-			abs_current = abs(perfect_divide -
-					 (long)(((long)i * 1000) / (long)j));
+	if (best_div < div_min)
+		best_div = div_min;
 
-			if (abs_min > abs_current) {
-				abs_min = abs_current;
-				*div = i;
-				*mul = j;
-			}
-		}
-	}
+	*mul = (u32)best_mul;
+	*div = (u32)best_div;
 
 	return 0;
 }
