@@ -11,7 +11,6 @@
 #include <linux/clkdev.h>
 #include <linux/clk-provider.h>
 #include <linux/iopoll.h>
-#include <linux/mod_devicetable.h>
 #include <linux/platform_device.h>
 #include <linux/spinlock.h>
 
@@ -2442,7 +2441,6 @@ static const struct of_device_id k230_clk_ids[] = {
 	{ .compatible = "canaan,k230-clk" },
 	{ /* Sentinel */ }
 };
-MODULE_DEVICE_TABLE(of, k230_clk_ids);
 
 static struct platform_driver k230_clk_driver = {
 	.driver = {
