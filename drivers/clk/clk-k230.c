@@ -225,6 +225,24 @@ static int k230_pll_enable(struct clk_hw *hw);
 static void k230_pll_disable(struct clk_hw *hw);
 static int k230_pll_is_enabled(struct clk_hw *hw);
 static unsigned long k230_pll_get_rate(struct clk_hw *hw, unsigned long parent_rate);
+static int k230_clk_set_rate_mul(struct clk_hw *hw, unsigned long rate,
+				 unsigned long parent_rate);
+static long k230_clk_round_rate_mul(struct clk_hw *hw, unsigned long rate,
+				    unsigned long *parent_rate);
+static unsigned long k230_clk_get_rate_mul(struct clk_hw *hw,
+					   unsigned long parent_rate);
+static int k230_clk_set_rate_div(struct clk_hw *hw, unsigned long rate,
+				 unsigned long parent_rate);
+static long k230_clk_round_rate_div(struct clk_hw *hw, unsigned long rate,
+				    unsigned long *parent_rate);
+static unsigned long k230_clk_get_rate_div(struct clk_hw *hw,
+					   unsigned long parent_rate);
+static int k230_clk_set_rate_mul_div(struct clk_hw *hw, unsigned long rate,
+				     unsigned long parent_rate);
+static long k230_clk_round_rate_mul_div(struct clk_hw *hw, unsigned long rate,
+					unsigned long *parent_rate);
+static unsigned long k230_clk_get_rate_mul_div(struct clk_hw *hw,
+					       unsigned long parent_rate);
 
 static const struct clk_ops k230_pll_ops = {
 	.prepare	= k230_pll_prepare,
@@ -232,6 +250,27 @@ static const struct clk_ops k230_pll_ops = {
 	.disable	= k230_pll_disable,
 	.is_enabled	= k230_pll_is_enabled,
 	.recalc_rate	= k230_pll_get_rate,
+};
+
+/* clk_ops for clocks whose rate is determined by a configurable multiplier */
+static const struct clk_ops k230_clk_ops_mul = {
+	.set_rate	= k230_clk_set_rate_mul,
+	.round_rate	= k230_clk_round_rate_mul,
+	.recalc_rate	= k230_clk_get_rate_mul,
+};
+
+/* clk_ops for clocks whose rate is determined by a configurable divider */
+static const struct clk_ops k230_clk_ops_div = {
+	.set_rate	= k230_clk_set_rate_div,
+	.round_rate	= k230_clk_round_rate_div,
+	.recalc_rate	= k230_clk_get_rate_div,
+};
+
+/* clk_ops for clocks whose rate is determined by both a multiplier and a divider */
+static const struct clk_ops k230_clk_ops_mul_div = {
+	.set_rate	= k230_clk_set_rate_mul_div,
+	.round_rate	= k230_clk_round_rate_mul_div,
+	.recalc_rate	= k230_clk_get_rate_mul_div,
 };
 
 K230_CLK_PLL_FORMAT(pll0, 0, CLK_IS_CRITICAL, 0);
@@ -274,46 +313,6 @@ struct clk_fixed_factor *k230_pll_divs[] = {
 	&pll3_div2,
 	&pll3_div3,
 	&pll3_div4,
-};
-
-static int k230_clk_set_rate_mul(struct clk_hw *hw, unsigned long rate,
-				 unsigned long parent_rate);
-static long k230_clk_round_rate_mul(struct clk_hw *hw, unsigned long rate,
-				    unsigned long *parent_rate);
-static unsigned long k230_clk_get_rate_mul(struct clk_hw *hw,
-					   unsigned long parent_rate);
-static int k230_clk_set_rate_div(struct clk_hw *hw, unsigned long rate,
-				 unsigned long parent_rate);
-static long k230_clk_round_rate_div(struct clk_hw *hw, unsigned long rate,
-				    unsigned long *parent_rate);
-static unsigned long k230_clk_get_rate_div(struct clk_hw *hw,
-					   unsigned long parent_rate);
-static int k230_clk_set_rate_mul_div(struct clk_hw *hw, unsigned long rate,
-				     unsigned long parent_rate);
-static long k230_clk_round_rate_mul_div(struct clk_hw *hw, unsigned long rate,
-					unsigned long *parent_rate);
-static unsigned long k230_clk_get_rate_mul_div(struct clk_hw *hw,
-					       unsigned long parent_rate);
-
-/* clk_ops for clocks whose rate is determined by a configurable multiplier */
-static const struct clk_ops k230_clk_ops_mul = {
-	.set_rate	= k230_clk_set_rate_mul,
-	.round_rate	= k230_clk_round_rate_mul,
-	.recalc_rate	= k230_clk_get_rate_mul,
-};
-
-/* clk_ops for clocks whose rate is determined by a configurable divider */
-static const struct clk_ops k230_clk_ops_div = {
-	.set_rate	= k230_clk_set_rate_div,
-	.round_rate	= k230_clk_round_rate_div,
-	.recalc_rate	= k230_clk_get_rate_div,
-};
-
-/* clk_ops for clocks whose rate is determined by both a multiplier and a divider */
-static const struct clk_ops k230_clk_ops_mul_div = {
-	.set_rate	= k230_clk_set_rate_mul_div,
-	.round_rate	= k230_clk_round_rate_mul_div,
-	.recalc_rate	= k230_clk_get_rate_mul_div,
 };
 
 K230_CLK_GATE_FORMAT(cpu0_src_gate,
