@@ -385,7 +385,7 @@ K230_CLK_GATE_FORMAT(cpu1_src_gate,
 		     &cpu1_src_mux.clk.hw);
 
 K230_CLK_RATE_FORMAT(cpu1_src_rate,
-		     K230_CPU1_SRC_GATE,
+		     K230_CPU1_SRC_RATE,
 		     1, 1, 0, 0,
 		     1, 8, 3, 0x7,
 		     0x4, 31, div, 0x0,
