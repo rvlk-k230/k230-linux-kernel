@@ -446,7 +446,7 @@ K230_CLK_GATE_FORMAT(hs_hclk_high_gate,
 
 K230_CLK_GATE_FORMAT(hs_hclk_src_gate,
 		     K230_HS_HCLK_SRC_GATE,
-		     0x18, 1, 0, 0,
+		     0x18, 0, 0, 0,
 		     &hs_hclk_high_src_rate.clk.hw);
 
 K230_CLK_RATE_FORMAT(hs_hclk_src_rate,
@@ -560,7 +560,7 @@ K230_CLK_RATE_FORMAT(hs_sd_card_src_rate,
 		     2, 8, 12, 0x7,
 		     0x1C, 31, div, 0x0,
 		     false, 0,
-		     &pll0_div4.hw);
+		     &hs_sd_card_src_gate.hw);
 
 K230_CLK_GATE_FORMAT(hs_sd0_card_gate,
 		     K230_HS_SD0_CARD_GATE,
