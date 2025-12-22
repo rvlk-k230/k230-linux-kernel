@@ -560,7 +560,7 @@ K230_CLK_RATE_FORMAT(hs_sd_card_src_rate,
 		     2, 8, 12, 0x7,
 		     0x1C, 31, div, 0x0,
 		     false, 0,
-		     &hs_sd_card_src_gate.hw);
+		     &hs_sd_card_src_gate.clk.hw);
 
 K230_CLK_GATE_FORMAT(hs_sd0_card_gate,
 		     K230_HS_SD0_CARD_GATE,
