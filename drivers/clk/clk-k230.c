@@ -368,7 +368,7 @@ K230_CLK_RATE_FORMAT(cpu0_apb_rate,
 		     &cpu0_apb_gate.clk.hw);
 
 static const struct clk_parent_data k230_cpu1_src_mux_pdata[] = {
-	{ .hw = &pll0_div2.hw, },
+	{ .hw = &pll1_div2.hw, },
 	{ .hw = &pll3.hw, },
 	{ .hw = &pll0.hw, },
 };
