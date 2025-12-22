@@ -317,7 +317,7 @@ struct clk_fixed_factor *k230_pll_divs[] = {
 
 K230_CLK_GATE_FORMAT(cpu0_src_gate,
 		     K230_CPU0_SRC_GATE,
-		     0, 0, 0, 0,
+		     0, 0, CLK_IS_CRITICAL, 0,
 		     &pll0_div2.hw);
 
 K230_CLK_RATE_FORMAT(cpu0_src_rate,
@@ -338,7 +338,7 @@ K230_CLK_RATE_FORMAT(cpu0_axi_rate,
 
 K230_CLK_GATE_FORMAT(cpu0_plic_gate,
 		     K230_CPU0_PLIC_GATE,
-		     0x0, 9, 0, 0,
+		     0x0, 9, CLK_IS_CRITICAL, 0,
 		     &cpu0_src_rate.clk.hw);
 
 K230_CLK_RATE_FORMAT(cpu0_plic_rate,
@@ -351,12 +351,12 @@ K230_CLK_RATE_FORMAT(cpu0_plic_rate,
 
 K230_CLK_GATE_FORMAT(cpu0_noc_ddrcp4_gate,
 		     K230_CPU0_NOC_DDRCP4_GATE,
-		     0x60, 7, 0, 0,
+		     0x60, 7, CLK_IS_CRITICAL, 0,
 		     &cpu0_src_rate.clk.hw);
 
 K230_CLK_GATE_FORMAT(cpu0_apb_gate,
 		     K230_CPU0_APB_GATE,
-		     0x0, 13, 0, 0,
+		     0x0, 13, CLK_IS_CRITICAL, 0,
 		     &pll0_div4.hw);
 
 K230_CLK_RATE_FORMAT(cpu0_apb_rate,
@@ -381,7 +381,7 @@ K230_CLK_MUX_FORMAT(cpu1_src_mux,
 
 K230_CLK_GATE_FORMAT(cpu1_src_gate,
 		     K230_CPU1_SRC_GATE,
-		     0x4, 0, CLK_IGNORE_UNUSED, 0,
+		     0x4, 0, CLK_IS_CRITICAL, 0,
 		     &cpu1_src_mux.clk.hw);
 
 K230_CLK_RATE_FORMAT(cpu1_src_rate,
@@ -402,7 +402,7 @@ K230_CLK_RATE_FORMAT(cpu1_axi_rate,
 
 K230_CLK_GATE_FORMAT(cpu1_plic_gate,
 		     K230_CPU1_PLIC_GATE,
-		     0x4, 15, CLK_IGNORE_UNUSED, 0,
+		     0x4, 15, CLK_IS_CRITICAL, 0,
 		     &cpu1_src_rate.clk.hw);
 
 K230_CLK_RATE_FORMAT(cpu1_plic_rate,
@@ -415,7 +415,7 @@ K230_CLK_RATE_FORMAT(cpu1_plic_rate,
 
 K230_CLK_GATE_FORMAT(cpu1_apb_gate,
 		     K230_CPU1_APB_GATE,
-		     0x4, 19, 0, 0,
+		     0x4, 19, CLK_IS_CRITICAL, 0,
 		     &pll0_div4.hw);
 
 K230_CLK_RATE_FORMAT(cpu1_apb_rate,
