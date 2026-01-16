@@ -418,14 +418,6 @@ K230_CLK_GATE_FORMAT(cpu1_apb_gate,
 		     0x4, 19, CLK_IS_CRITICAL, 0,
 		     &pll0_div4.hw);
 
-K230_CLK_RATE_FORMAT(cpu1_apb_rate,
-		     K230_CPU1_APB_RATE,
-		     1, 1, 0, 0,
-		     1, 8, 15, 0x7,
-		     0x0, 31, div, 0x0,
-		     false, 0,
-		     &cpu1_apb_gate.clk.hw);
-
 K230_CLK_GATE_FORMAT_PNAME(pmu_apb_gate,
 			   K230_PMU_APB_GATE,
 			   0x10, 0, 0, 0,
@@ -605,21 +597,21 @@ K230_CLK_GATE_FORMAT(hs_sd1_base_gate,
 		     0x18, 18, 0, 0,
 		     &hs_sd_axi_src_rate.clk.hw);
 
-static const struct clk_parent_data k230_hs_ospi_src_mux_pdata[] = {
+static const struct clk_parent_data k230_hs_ssi0_mux_pdata[] = {
 	{ .hw = &pll0_div2.hw, },
 	{ .hw = &pll2_div4.hw, },
 };
 
-K230_CLK_MUX_FORMAT(hs_ospi_src_mux,
-		    K230_HS_OSPI_SRC_MUX,
+K230_CLK_MUX_FORMAT(hs_ssi0_mux,
+		    K230_HS_SSI0_MUX,
 		    0x20, 18, 0x1,
 		    0, 0,
-		    k230_hs_ospi_src_mux_pdata);
+		    k230_hs_ssi0_mux_pdata);
 
-K230_CLK_GATE_FORMAT(hs_ospi_src_gate,
-		     K230_HS_OSPI_SRC_GATE,
+K230_CLK_GATE_FORMAT(hs_ssi0_gate,
+		     K230_HS_SSI0_GATE,
 		     0x18, 24, CLK_IGNORE_UNUSED, 0,
-		     &hs_ospi_src_mux.clk.hw);
+		     &hs_ssi0_mux.clk.hw);
 
 K230_CLK_RATE_FORMAT(hs_usb_ref_50m_rate,
 		     K230_HS_USB_REF_50M_RATE,
@@ -779,7 +771,7 @@ K230_CLK_GATE_FORMAT(ls_adc_apb_gate,
 K230_CLK_GATE_FORMAT(ls_codec_apb_gate,
 		     K230_LS_CODEC_APB_GATE,
 		     0x24, 14, 0, 0,
-		     &pll0_div4.hw);
+		     &ls_apb_src_rate.clk.hw);
 
 K230_CLK_GATE_FORMAT(ls_i2c0_gate,
 		     K230_LS_I2C0_GATE,
@@ -1376,7 +1368,7 @@ K230_CLK_RATE_FORMAT(display_clkext_rate,
 		     1, 16, 16, 0xF,
 		     0x78, 31, div, 0x0,
 		     false, 0,
-		     &display_axi_gate.clk.hw);
+		     &pll0_div3.hw);
 
 K230_CLK_GATE_FORMAT(display_gpu_gate,
 		     K230_DISPLAY_GPU_GATE,
@@ -1469,7 +1461,7 @@ K230_CLK_RATE_FORMAT(vpu_cfg_rate,
 K230_CLK_GATE_FORMAT(sec_apb_gate,
 		     K230_SEC_APB_GATE,
 		     0x80, 0, 0, 0,
-		     &pll0_div4.hw);
+		     &pll1_div4.hw);
 
 K230_CLK_RATE_FORMAT(sec_apb_rate,
 		     K230_SEC_APB_RATE,
@@ -1584,7 +1576,7 @@ K230_CLK_RATE_FORMAT(ai_src_rate,
 K230_CLK_GATE_FORMAT(ai_axi_gate,
 		     K230_AI_AXI_GATE,
 		     0x8, 10, 0, 0,
-		     &ai_src_rate.clk.hw);
+		     &pll0_div4.hw);
 
 static const struct clk_parent_data k230_camera0_mux_pdata[] = {
 	{ .hw = &pll1_div3.hw, },
@@ -1662,7 +1654,7 @@ K230_CLK_RATE_FORMAT(camera2_rate,
 		     &camera2_gate.clk.hw);
 
 static struct k230_clk_mux *k230_clk_muxs[] = {
-	&hs_ospi_src_mux,
+	&hs_ssi0_mux,
 	&hs_usb_ref_mux,
 	&cpu1_src_mux,
 	&timer0_mux,
@@ -1712,7 +1704,7 @@ static struct k230_clk_gate *k230_clk_gates[] = {
 	&hs_sd1_axi_gate,
 	&hs_sd0_base_gate,
 	&hs_sd1_base_gate,
-	&hs_ospi_src_gate,
+	&hs_ssi0_gate,
 	&hs_sd_timer_src_gate,
 	&hs_sd0_timer_gate,
 	&hs_sd1_timer_gate,
@@ -1818,7 +1810,6 @@ static struct k230_clk_rate *k230_clk_rates[] = {
 	&cpu1_src_rate,
 	&cpu1_axi_rate,
 	&cpu1_plic_rate,
-	&cpu1_apb_rate,
 	&hs_hclk_high_src_rate,
 	&hs_hclk_src_rate,
 	&hs_ssi0_axi_rate,
