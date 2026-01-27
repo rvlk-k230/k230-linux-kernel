@@ -423,61 +423,61 @@ K230_CLK_GATE_FORMAT_PNAME(pmu_apb_gate,
 			   0x10, 0, 0, 0,
 			   "osc24m");
 
-K230_CLK_RATE_FORMAT(hs_hclk_high_src_rate,
-		     K230_HS_HCLK_HIGH_SRC_RATE,
+K230_CLK_GATE_FORMAT(hs_hclk_high_gate,
+		     K230_HS_HCLK_HIGH_GATE,
+		     0x18, 1, 0, 0,
+		     &pll0_div4.hw);
+
+K230_CLK_RATE_FORMAT(hs_hclk_high_rate,
+		     K230_HS_HCLK_HIGH_RATE,
 		     1, 1, 0, 0,
 		     1, 8, 0, 0x7,
 		     0x1C, 31, div, 0x0,
 		     false, 0,
-		     &pll0_div4.hw);
+		     &hs_hclk_high_gate.clk.hw);
 
-K230_CLK_GATE_FORMAT(hs_hclk_high_gate,
-		     K230_HS_HCLK_HIGH_GATE,
-		     0x18, 1, 0, 0,
-		     &hs_hclk_high_src_rate.clk.hw);
-
-K230_CLK_GATE_FORMAT(hs_hclk_src_gate,
-		     K230_HS_HCLK_SRC_GATE,
+K230_CLK_GATE_FORMAT(hs_hclk_gate,
+		     K230_HS_HCLK_GATE,
 		     0x18, 0, 0, 0,
-		     &hs_hclk_high_src_rate.clk.hw);
+		     &hs_hclk_high_rate.clk.hw);
 
-K230_CLK_RATE_FORMAT(hs_hclk_src_rate,
-		     K230_HS_HCLK_SRC_RATE,
+K230_CLK_RATE_FORMAT(hs_hclk_rate,
+		     K230_HS_HCLK_RATE,
 		     1, 1, 0, 0,
 		     1, 8, 3, 0x7,
 		     0x1C, 31, div, 0x0,
 		     false, 0,
-		     &hs_hclk_src_gate.clk.hw);
+		     &hs_hclk_gate.clk.hw);
 
 K230_CLK_GATE_FORMAT(hs_sd0_ahb_gate,
 		     K230_HS_SD0_AHB_GATE,
 		     0x18, 2, 0, 0,
-		     &hs_hclk_src_rate.clk.hw);
+		     &hs_hclk_rate.clk.hw);
 
 K230_CLK_GATE_FORMAT(hs_sd1_ahb_gate,
 		     K230_HS_SD1_AHB_GATE,
 		     0x18, 3, 0, 0,
-		     &hs_hclk_src_rate.clk.hw);
+		     &hs_hclk_rate.clk.hw);
 
 K230_CLK_GATE_FORMAT(hs_ssi1_ahb_gate,
 		     K230_HS_SSI1_AHB_GATE,
 		     0x18, 7, 0, 0,
-		     &hs_hclk_src_rate.clk.hw);
+		     &hs_hclk_rate.clk.hw);
 
 K230_CLK_GATE_FORMAT(hs_ssi2_ahb_gate,
 		     K230_HS_SSI2_AHB_GATE,
 		     0x18, 8, 0, 0,
-		     &hs_hclk_src_rate.clk.hw);
+		     &hs_hclk_rate.clk.hw);
 
 K230_CLK_GATE_FORMAT(hs_usb0_ahb_gate,
 		     K230_HS_USB0_AHB_GATE,
 		     0x18, 4, 0, 0,
-		     &hs_hclk_src_rate.clk.hw);
+		     &hs_hclk_rate.clk.hw);
 
 K230_CLK_GATE_FORMAT(hs_usb1_ahb_gate,
 		     K230_HS_USB1_AHB_GATE,
 		     0x18, 5, 0, 0,
-		     &hs_hclk_src_rate.clk.hw);
+		     &hs_hclk_rate.clk.hw);
 
 K230_CLK_GATE_FORMAT(hs_ssi0_axi_gate,
 		     K230_HS_SSI0_AXI_GATE,
@@ -1683,7 +1683,7 @@ static struct k230_clk_gate *k230_clk_gates[] = {
 	&cpu1_apb_gate,
 	&pmu_apb_gate,
 	&hs_hclk_high_gate,
-	&hs_hclk_src_gate,
+	&hs_hclk_gate,
 	&hs_sd0_ahb_gate,
 	&hs_sd1_ahb_gate,
 	&hs_ssi1_ahb_gate,
@@ -1810,8 +1810,8 @@ static struct k230_clk_rate *k230_clk_rates[] = {
 	&cpu1_src_rate,
 	&cpu1_axi_rate,
 	&cpu1_plic_rate,
-	&hs_hclk_high_src_rate,
-	&hs_hclk_src_rate,
+	&hs_hclk_high_rate,
+	&hs_hclk_rate,
 	&hs_ssi0_axi_rate,
 	&hs_ssi1_rate,
 	&hs_ssi2_rate,
