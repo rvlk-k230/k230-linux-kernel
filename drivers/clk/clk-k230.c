@@ -270,12 +270,12 @@ static const struct clk_ops k230_clk_ops_mul_div = {
 	.recalc_rate	= k230_clk_get_rate_mul_div,
 };
 
-K230_CLK_PLL_FORMAT(pll0, 0, CLK_IS_CRITICAL, 0);
-K230_CLK_PLL_FORMAT(pll1, 1, CLK_IS_CRITICAL, 0);
-K230_CLK_PLL_FORMAT(pll2, 2, CLK_IS_CRITICAL, 0);
-K230_CLK_PLL_FORMAT(pll3, 3, CLK_IS_CRITICAL, 0);
+K230_CLK_PLL_FORMAT(pll0, 0, CLK_IS_CRITICAL, NULL);
+K230_CLK_PLL_FORMAT(pll1, 1, CLK_IS_CRITICAL, NULL);
+K230_CLK_PLL_FORMAT(pll2, 2, CLK_IS_CRITICAL, NULL);
+K230_CLK_PLL_FORMAT(pll3, 3, CLK_IS_CRITICAL, NULL);
 
-struct k230_pll *k230_plls[] = {
+static struct k230_pll *k230_plls[] = {
 	&pll0,
 	&pll1,
 	&pll2,
@@ -296,7 +296,7 @@ K230_CLK_FIXED_FACTOR_FORMAT(pll3_div2, 1, 2, 0, &pll3.hw);
 K230_CLK_FIXED_FACTOR_FORMAT(pll3_div3, 1, 3, 0, &pll3.hw);
 K230_CLK_FIXED_FACTOR_FORMAT(pll3_div4, 1, 4, 0, &pll3.hw);
 
-struct clk_fixed_factor *k230_pll_divs[] = {
+static struct clk_fixed_factor *k230_pll_divs[] = {
 	&pll0_div2,
 	&pll0_div3,
 	&pll0_div4,
